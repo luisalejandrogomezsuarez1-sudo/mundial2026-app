@@ -274,7 +274,7 @@ const VENUE_WIKI={
   'SoFi Stadium':'SoFi_Stadium',
   'NRG Stadium':'NRG_Stadium',
   'Arrowhead Stadium':'Arrowhead_Stadium',
-  'Levi Stadium':'Levi's_Stadium',
+  'Levi Stadium':"Levi_Stadium",
   'Lincoln Financial Field':'Lincoln_Financial_Field',
   'Gillette Stadium':'Gillette_Stadium',
   'Lumen Field':'Lumen_Field',
@@ -299,7 +299,7 @@ const VENUES=[
   {n:'Lincoln Financial Field', c:'Filadelfia, PA',        cap:'69,000',f:'🇺🇸',phase:'Octavos',     wk:'Lincoln_Financial_Field'},
   {n:'Gillette Stadium',        c:'Foxborough, MA',        cap:'65,000',f:'🇺🇸',phase:'Cuartos',     wk:'Gillette_Stadium'},
   {n:'Lumen Field',             c:'Seattle, Washington',   cap:'69,000',f:'🇺🇸',phase:'Octavos',     wk:'Lumen_Field'},
-  {n:'Levi Stadium',            c:'Santa Clara, California',cap:'71,000',f:'🇺🇸',phase:'Octavos',    wk:'Levi's_Stadium'},
+  {n:'Levi Stadium',            c:'Santa Clara, California',cap:'71,000',f:'🇺🇸',phase:'Octavos',    wk:"Levi_Stadium"},
   // México — 3 sedes (datos oficiales FIFA)
   {n:'Estadio Azteca',          c:'Tlalpan, CDMX',         cap:'83,000',f:'🇲🇽',phase:'Inauguración',wk:'Estadio_Azteca'},
   {n:'Estadio BBVA',            c:'Guadalupe, Monterrey',  cap:'53,500',f:'🇲🇽',phase:'Octavos',     wk:'BBVA_Stadium_(Monterrey)'},
