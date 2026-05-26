@@ -2600,7 +2600,7 @@ function PerfilScreen({user,onLogout,lang='es'}){
           )}
         </div>
 
-        <button onClick={onLogout} style={{width:'100%',marginTop:14,
+        <button onClick={()=>onLogout()} style={{width:'100%',marginTop:14,
           background:'rgba(229,62,62,.1)',border:'1px solid rgba(229,62,62,.22)',
           color:'#FC8181',borderRadius:12,padding:14,fontSize:14,fontWeight:700,
           cursor:'pointer',fontFamily:'var(--fb)',transition:'all .2s'}}
@@ -4236,7 +4236,7 @@ export default function App(){
   },[]);
 
   const logout=(reason='')=>{
-    if(reason) alert('⚠️ '+reason);
+    if(reason && typeof reason === 'string') alert('⚠️ '+reason);
     setUser(null);setScreen('auth');setMatch(null);
     setTab('home');setUserBets([]);setCredito(null);
   };
