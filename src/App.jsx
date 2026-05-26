@@ -1,15 +1,18 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 
-// ── Firebase (activa cuando firebase.js esté configurado) ───────
+// ── Firebase ACTIVO ─────────────────────────────────────────────
 let fbSendMsg = null, fbSubscribeChat = null, fbSaveUser = null;
-const FB_ACTIVE = false; // Cambia a true cuando configures Firebase
-if (FB_ACTIVE) {
-  import('./firebase.js').then(fb => {
-    fbSendMsg      = fb.sendChatMessage;
-    fbSubscribeChat= fb.subscribeToChatMessages;
-    fbSaveUser     = fb.saveUserToFirestore;
-  }).catch(e => console.warn('Firebase no configurado:', e));
-}
+let fbGetAllUsers = null, fbGiftCoins = null;
+const FB_ACTIVE = true;
+
+import('./firebase.js').then(fb => {
+  fbSendMsg       = fb.sendChatMessage;
+  fbSubscribeChat = fb.subscribeToChatMessages;
+  fbSaveUser      = fb.saveUserToFirestore;
+  fbGetAllUsers   = fb.getAllUsersFromFirestore;
+  fbGiftCoins     = fb.giftCoinsInFirestore;
+  console.log('🔥 Firebase conectado — mundial2026-15686');
+}).catch(e => console.warn('Firebase error:', e));
 
 // ═══════════════════════════════════════════════════════
 // 🔑 API-FOOTBALL CONFIG — Reemplaza con tu API Key
@@ -1675,9 +1678,31 @@ function PerfilScreen({user,onLogout}){
   const [dbLoaded,setDbLoaded]=useState(false);
   const [shareMsg,setShareMsg]=useState('');
 
+  // Load from BOTH localStorage AND Firestore
   useEffect(()=>{
     if(!user.isAdmin)return;
-    dbLoad().then(u=>{setDbUsers(u);setDbLoaded(true);});
+    const reload=async()=>{
+      // Load local users
+      const localUsers = await dbLoad();
+      // Load Firestore users (from ALL devices)
+      let fsUsers = [];
+      if(fbGetAllUsers) {
+        try{ fsUsers = await fbGetAllUsers(); }
+        catch(e){ console.warn('Firestore users error:', e); }
+      }
+      // Merge: Firestore users override local for same email
+      const merged = [...localUsers];
+      fsUsers.forEach(fu=>{
+        const idx = merged.findIndex(lu=>lu.email?.toLowerCase()===fu.email?.toLowerCase());
+        if(idx>=0) merged[idx]={...merged[idx],...fu};
+        else merged.push(fu);
+      });
+      setDbUsers(merged);
+      setDbLoaded(true);
+    };
+    reload();
+    const id=setInterval(reload,8000);
+    return()=>clearInterval(id);
   },[user.isAdmin]);
 
   const deleteUser=async id=>{
@@ -1885,10 +1910,16 @@ function PerfilScreen({user,onLogout}){
                     onClick={async()=>{
                       if(u.gifted){
                         const ok=await dbRevokeGift(u.email);
-                        if(ok){const updated=await dbLoad();setDbUsers(updated);}
+                        if(ok){
+                          if(fbGiftCoins&&u.id) fbGiftCoins(u.id,false);
+                          const updated=await dbLoad();setDbUsers(updated);
+                        }
                       } else {
                         const ok=await dbGiftCoins(u.email);
-                        if(ok){const updated=await dbLoad();setDbUsers(updated);}
+                        if(ok){
+                          if(fbGiftCoins&&u.id) fbGiftCoins(u.id,true);
+                          const updated=await dbLoad();setDbUsers(updated);
+                        }
                       }
                     }}
                     title={u.gifted?'Quitar monedas gratis':'Dar 1000 monedas gratis'}
@@ -2071,11 +2102,20 @@ function PerfilScreen({user,onLogout}){
 // ── Groups Screen ─────────────────────────────────
 function GruposScreen({user,userBets}){
   const [view,setView]=useState('list');
-  const [groups,setGroups]=useState([
-    {id:'g_demo',name:'Los Compadres del Mundial 🌎',
-     code:'WC26-K7X9',desc:'El grupo de los mejores pronosticadores',
-     created:Date.now()-172800000,members:DEMO_MEMBERS}
-  ]);
+  // Groups persisted per user in localStorage — no demo groups
+  const GROUPS_KEY = `wc2026_groups_${user?.id||'guest'}`;
+  const [groups,setGroups]=useState(()=>{
+    try{
+      const saved=localStorage.getItem(GROUPS_KEY);
+      return saved?JSON.parse(saved):[];
+    }catch{return[];}
+  });
+
+  // Persist groups whenever they change
+  useEffect(()=>{
+    try{localStorage.setItem(GROUPS_KEY,JSON.stringify(groups));}
+    catch(e){console.warn('Groups save error:',e);}
+  },[groups]);
   const [selGroup,setSelGroup]=useState(null);
   const [dtab,setDtab]=useState('ranking');
   const [newName,setNewName]=useState('');
@@ -2322,7 +2362,7 @@ function GruposScreen({user,userBets}){
     const allCats=[...new Set(allM.flatMap(m=>m.bets.map(b=>b.cat)))];
 
     const POINTS_INFO=[
-      ['Campeón del Torneo','20 pts'],['Bota de Oro','15 pts'],['Balón de Oro','12 pts'],
+      ['Campeón del Mundo','20 pts'],['Bota de Oro','15 pts'],['Balón de Oro','12 pts'],
       ['Ganador de Grupo','5 pts / grupo'],['1X2 correcto','3 pts'],
       ['Total Goles / BTTS','2 pts'],['Doble Oportunidad','1 pt'],
       ['Marcador Exacto','10 pts'],['Jugador que Anota','5 pts'],['Hándicap','3 pts'],
@@ -2915,7 +2955,7 @@ function PagoScreen({onExito,onCancelar,esReset=false}){
             <div style={{fontSize:11,fontWeight:700,color:'var(--muted)',marginBottom:8,letterSpacing:.5}}>
               ✅ INCLUYE TODO EN MI PRONÓSTICO
             </div>
-            {['🏆 Campeón del Torneo (80🪙)',
+            {['🏆 Campeón del Mundo (80🪙)',
               '⚽ Bota de Oro y Balón de Oro (60🪙 c/u)',
               '🏅 Ganadores de todos los grupos (25🪙 c/u)',
               '📊 1X2 · Total Goles · BTTS · Doble Oportunidad (10🪙 c/u)',
@@ -3098,7 +3138,7 @@ function BetsScreen({bets,placeBet,credito,onPagar,onReset}){
     );
   };
 
-  // ── Tab: Largo Plazo ──
+  // ── Tab: Partidos Mundial ──
   const LargoPlazo=()=>(
     <div>
       {/* Campeón */}
@@ -3108,7 +3148,7 @@ function BetsScreen({bets,placeBet,credito,onPagar,onReset}){
           <div style={{fontSize:12,color:'var(--muted)',marginBottom:8}}>¿Qué selección levantará la Copa?</div>
           <div style={{display:'flex',flexWrap:'wrap',gap:7}}>
             {CAMPEON_OPTS.map(o=>(
-              <OBtn key={o.v} id="campeon" category="Campeón del Torneo" val={o.v} odds={o.odds}
+              <OBtn key={o.v} id="campeon" category="Campeón del Mundo" val={o.v} odds={o.odds}
                 display={`${FLAGS[o.v]||'🏴'} ${o.v}`}/>
             ))}
           </div>
@@ -3430,7 +3470,7 @@ function BetsScreen({bets,placeBet,credito,onPagar,onReset}){
       </div>
       {/* Tabs */}
       <div style={{display:'flex',gap:8,padding:'8px 16px',overflowX:'auto',borderBottom:'1px solid rgba(255,255,255,.04)'}}>
-        {[['largo','🏅 Largo Plazo'],['partido','⚽ Por Partido'],['especiales','🎯 Especiales'],['stats','📈 Estadísticas']].map(([k,l])=>(
+        {[['largo','🏅 Partidos Mundial'],['partido','⚽ Por Partido'],['especiales','🎯 Especiales'],['stats','📈 Estadísticas']].map(([k,l])=>(
           <button key={k} className={`tpill ${tab===k?'on':''}`} onClick={()=>setTab(k)}>{l}</button>
         ))}
       </div>
@@ -3464,7 +3504,7 @@ function StatsScreen({bets,noWrapper=false}){
     else if(b.status==='pendiente')byCategory[c].pend++;
   });
 
-  const catColor={'Campeón del Torneo':'#F6C90E','Bota de Oro':'#FF6B35','Balón de Oro':'#C0C0C0',
+  const catColor={'Campeón del Mundo':'#F6C90E','Bota de Oro':'#FF6B35','Balón de Oro':'#C0C0C0',
     '1X2':'#4F8EF7','Total Goles':'#1EC66C','BTTS':'#E53E3E',
     'Doble Oportunidad':'#A855F7','Marcador Exacto':'#F97316',
     'Jugador que Anotará':'#22D3EE','Hándicap':'#FBBF24'};
@@ -3598,6 +3638,8 @@ export default function App(){
     setScreen('app');
     // Pedir permiso de notificaciones al login
     setTimeout(requestPush, 2000);
+    // Guardar usuario en Firestore (para que admin lo vea)
+    if(fbSaveUser) setTimeout(()=>fbSaveUser(u), 1000);
     // Admin gets unlimited coins automatically
     if(u.isAdmin){
       setCredito({coins:999999,paquetes:999,paidAt:Date.now(),isAdmin:true});
