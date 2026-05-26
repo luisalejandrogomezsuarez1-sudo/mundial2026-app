@@ -108,3 +108,9 @@ export async function getGroupByCode(code) {
 }
 
 export default app;
+
+// Make Firestore available globally for App.jsx dynamic access
+if(typeof window !== 'undefined'){
+  window._fbDB = db;
+  window._fbFirestore = { doc, onSnapshot, getDoc, getDocs, getFirestore: ()=>db };
+}

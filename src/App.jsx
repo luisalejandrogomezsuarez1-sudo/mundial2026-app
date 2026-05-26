@@ -1257,20 +1257,23 @@ function HomeScreen({onMatch}){
   const [liveMatches,setLiveMatches]=useState(LIVE_MATCHES);
   const [apiStatus,setApiStatus]=useState(AF_ON?'connecting':'off');
 
-  // Poll live scores every 30s when WC is active
+  // Read live data from Firestore (server updates this, not each user)
   useEffect(()=>{
-    if(!AF_ON||new Date()<new Date('2026-06-11'))return;
-    const poll=async()=>{
-      setApiStatus('loading');
-      const data=await afFetch(`/fixtures?live=all&league=${WC_ID}`);
-      if(data){
-        setLiveMatches(data.map(afFixtureToLive));
-        setApiStatus('live');
-      } else { setApiStatus('error'); }
-    };
-    poll();
-    const id=setInterval(poll,30000);
-    return()=>clearInterval(id);
+    if(new Date()<new Date('2026-06-11'))return;
+    if(!window._fbDB) return;
+    try{
+      const {doc,onSnapshot,getFirestore}=window._fbFirestore||{};
+      if(!onSnapshot) return;
+      const db=getFirestore();
+      const unsub=onSnapshot(doc(db,'live','matches'),snap=>{
+        if(snap.exists()){
+          const d=snap.data();
+          if(d.matches) setLiveMatches(d.matches);
+          setApiStatus('live');
+        }
+      });
+      return()=>unsub();
+    }catch(e){setApiStatus('error');}
   },[]);
   const doRef=useCallback(()=>{
     setRef(true);setTimeout(()=>{setRef(false);setUpd(new Date());},900);
@@ -1511,14 +1514,20 @@ function TablaScreen(){
   const [apiLoaded,setApiLoaded]=useState(false);
 
   useEffect(()=>{
-    if(!AF_ON)return;
-    afFetch(`/standings?league=${WC_ID}&season=${WC_SEASON}`)
-      .then(data=>{
-        if(data&&data[0]?.league?.standings){
-          const parsed=afStandings(data[0].league.standings);
-          if(parsed.length>0){setGroups(parsed);setApiLoaded(true);}
+    // Read standings from Firestore (server keeps these updated)
+    if(!window._fbDB) return;
+    try{
+      const {doc,onSnapshot,getFirestore}=window._fbFirestore||{};
+      if(!onSnapshot) return;
+      const db=getFirestore();
+      const unsub=onSnapshot(doc(db,'live','standings'),snap=>{
+        if(snap.exists()&&snap.data().groups?.length>0){
+          setGroups(snap.data().groups);
+          setApiLoaded(true);
         }
       });
+      return()=>unsub();
+    }catch(e){console.warn('standings error',e);}
   },[]);
 
   const grp=groups[gi]||GROUPS[0];
@@ -1602,13 +1611,17 @@ function GolesScreen(){
   const [loading,setLoading]=useState(false);
 
   useEffect(()=>{
-    if(!AF_ON)return;
-    setLoading(true);
-    afFetch(`/players/topscorers?league=${WC_ID}&season=${WC_SEASON}`)
-      .then(data=>{
-        if(data&&data.length>0) setScorers(data.slice(0,10).map(afScorer));
-      })
-      .finally(()=>setLoading(false));
+    // Read scorers from Firestore (server keeps these updated)
+    if(!window._fbDB) return;
+    try{
+      const {doc,getDoc,getFirestore}=window._fbFirestore||{};
+      if(!getDoc) return;
+      const db=getFirestore();
+      getDoc(doc(db,'live','scorers')).then(snap=>{
+        if(snap.exists()&&snap.data().list?.length>0)
+          setScorers(snap.data().list);
+      }).finally(()=>setLoading(false));
+    }catch(e){setLoading(false);}
   },[]);
   return(
     <div className="scr fin">
