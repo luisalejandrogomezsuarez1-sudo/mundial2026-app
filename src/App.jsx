@@ -1199,7 +1199,7 @@ function HomeScreen({onMatch}){
             borderTop:'1px solid rgba(255,255,255,.04)'}}>
             <span className="live" style={{fontSize:11}}><span className="ldot"/>EN VIVO</span>
             <span style={{fontSize:12,color:'var(--muted)'}}>
-              {LIVE_MATCHES.length} partido{LIVE_MATCHES.length!==1?'s':''} en curso
+              {liveMatches.length} partido{liveMatches.length!==1?'s':''} en curso
             </span>
             <span style={{marginLeft:'auto',fontSize:11,color:'var(--muted)'}}>
               🔄 Auto-refresh 30s
@@ -1215,7 +1215,7 @@ function HomeScreen({onMatch}){
       {new Date()>=new Date('2026-06-11')&&(
         <div>
           <div style={{height:10}}/>
-          {LIVE_MATCHES.map(m=><MatchCard key={m.id} m={m} onClick={()=>onMatch(m)}/>)}
+          {liveMatches.map(m=><MatchCard key={m.id} m={m} onClick={()=>onMatch(m)}/>)}
         </div>
       )}
 
@@ -1308,7 +1308,7 @@ function CalScreen(){
       </div>
 
       {/* Live matches only show during WC period (Jun 11 - Jul 19 2026) */}
-      {(fil==='todos'||fil==='hoy')&&LIVE_MATCHES.length>0&&new Date()>=new Date('2026-06-11')&&(
+      {fil==='todos'&&LIVE_MATCHES.length>0&&new Date()>=new Date('2026-06-11')&&(
         <div>
           <div style={{padding:'4px 16px 7px',fontSize:12,fontWeight:700,
             color:'var(--muted)',letterSpacing:.8,display:'flex',alignItems:'center',gap:6}}>
