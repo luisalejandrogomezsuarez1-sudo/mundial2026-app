@@ -1,5 +1,16 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 
+// ── Firebase (activa cuando firebase.js esté configurado) ───────
+let fbSendMsg = null, fbSubscribeChat = null, fbSaveUser = null;
+const FB_ACTIVE = false; // Cambia a true cuando configures Firebase
+if (FB_ACTIVE) {
+  import('./firebase.js').then(fb => {
+    fbSendMsg      = fb.sendChatMessage;
+    fbSubscribeChat= fb.subscribeToChatMessages;
+    fbSaveUser     = fb.saveUserToFirestore;
+  }).catch(e => console.warn('Firebase no configurado:', e));
+}
+
 // ═══════════════════════════════════════════════════════
 // 🔑 API-FOOTBALL CONFIG — Reemplaza con tu API Key
 // Consigue tu key gratis en: https://www.api-football.com
