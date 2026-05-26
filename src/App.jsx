@@ -141,7 +141,7 @@ const NEXT_MATCHES=[
   {id:3, home:'USA',           away:'Paraguay',         isoDate:'2026-06-12',date:'Jun 12',time:'19:00',phase:'Grupo D · J1',venue:'SoFi Stadium',           city:'Los Ángeles, USA',   wx:{ic:'☀️',desc:'Soleado',t:'28°C'},            odds:[1.7,3.5,4.8]},
   // Jun 13
   {id:4, home:'Brasil',        away:'Escocia',          isoDate:'2026-06-13',date:'Jun 13',time:'19:00',phase:'Grupo C · J1',venue:'Gillette Stadium',       city:'Boston, USA',        wx:{ic:'🌥️',desc:'Nublado',t:'19°C'},           odds:[1.4,4.2,8.0]},
-  {id:5, home:'Qatar',         away:'Suiza',            isoDate:'2026-06-13',date:'Jun 13',time:'22:00',phase:'Grupo B · J1',venue:'Levi's Stadium',        city:'San Francisco, USA', wx:{ic:'🌫️',desc:'Neblina',t:'16°C'},           odds:[5.0,3.8,1.6]},
+  {id:5, home:'Qatar',         away:'Suiza',            isoDate:'2026-06-13',date:'Jun 13',time:'22:00',phase:'Grupo B · J1',venue:'Levi Stadium',        city:'San Francisco, USA', wx:{ic:'🌫️',desc:'Neblina',t:'16°C'},           odds:[5.0,3.8,1.6]},
   // Jun 14
   {id:6, home:'Alemania',      away:'Curazao',          isoDate:'2026-06-14',date:'Jun 14',time:'11:00',phase:'Grupo E · J1',venue:'NRG Stadium',            city:'Houston, USA',       wx:{ic:'☀️',desc:'Caluroso',t:'34°C'},           odds:[1.2,6.0,18.0]},
   {id:7, home:'Costa de Marfil',away:'Ecuador',         isoDate:'2026-06-14',date:'Jun 14',time:'14:00',phase:'Grupo E · J1',venue:'Lincoln Financial Field',city:'Filadelfia, USA',    wx:{ic:'🌤️',desc:'Soleado parcial',t:'25°C'},   odds:[2.2,3.1,3.0]},
@@ -156,7 +156,7 @@ const NEXT_MATCHES=[
   {id:14,home:'Francia',       away:'Senegal',          isoDate:'2026-06-16',date:'Jun 16',time:'13:00',phase:'Grupo I · J1',venue:'MetLife Stadium',        city:'Nueva York, USA',    wx:{ic:'🌤️',desc:'Agradable',t:'23°C'},         odds:[1.5,3.8,6.5]},
   {id:15,home:'Noruega',       away:'Playoff AFC',      isoDate:'2026-06-16',date:'Jun 16',time:'16:00',phase:'Grupo I · J1',venue:'Gillette Stadium',       city:'Boston, USA',        wx:{ic:'⛅',desc:'Nublado',t:'20°C'},            odds:[1.4,4.0,7.0]},
   {id:16,home:'Argentina',     away:'Argelia',          isoDate:'2026-06-16',date:'Jun 16',time:'19:00',phase:'Grupo J · J1',venue:'Arrowhead Stadium',      city:'Kansas City, USA',   wx:{ic:'⛅',desc:'Parcialmente nublado',t:'27°C'},odds:[1.3,5.5,12.0]},
-  {id:17,home:'Austria',       away:'Jordania',         isoDate:'2026-06-16',date:'Jun 16',time:'22:00',phase:'Grupo J · J1',venue:'Levi's Stadium',        city:'San Francisco, USA', wx:{ic:'🌫️',desc:'Neblina costera',t:'15°C'},   odds:[1.5,3.8,6.0]},
+  {id:17,home:'Austria',       away:'Jordania',         isoDate:'2026-06-16',date:'Jun 16',time:'22:00',phase:'Grupo J · J1',venue:'Levi Stadium',        city:'San Francisco, USA', wx:{ic:'🌫️',desc:'Neblina costera',t:'15°C'},   odds:[1.5,3.8,6.0]},
   // Jun 17
   {id:18,home:'Portugal',      away:'Playoff Concacaf', isoDate:'2026-06-17',date:'Jun 17',time:'11:00',phase:'Grupo K · J1',venue:'NRG Stadium',            city:'Houston, USA',       wx:{ic:'☀️',desc:'Caluroso',t:'35°C'},           odds:[1.2,6.0,20.0]},
   {id:19,home:'Inglaterra',    away:'Croacia',          isoDate:'2026-06-17',date:'Jun 17',time:'15:00',phase:'Grupo L · J1',venue:'AT&T Stadium',           city:'Dallas, USA',        wx:{ic:'☀️',desc:'Muy caluroso',t:'33°C'},       odds:[1.6,3.6,5.5]},
@@ -224,7 +224,7 @@ const VENUE_WIKI={
   'SoFi Stadium':'SoFi_Stadium',
   'NRG Stadium':'NRG_Stadium',
   'Arrowhead Stadium':'Arrowhead_Stadium',
-  "Levi's Stadium":'Levi's_Stadium',
+  'Levi Stadium':'Levi Stadium',
   'Lincoln Financial Field':'Lincoln_Financial_Field',
   'Gillette Stadium':'Gillette_Stadium',
   'Lumen Field':'Lumen_Field',
@@ -245,7 +245,7 @@ const VENUES=[
   {n:'SoFi Stadium',             c:'Los Ángeles, USA',     cap:'70,240',f:'🇺🇸',phase:'Cuartos',    wk:'SoFi_Stadium'},
   {n:'NRG Stadium',              c:'Houston, USA',         cap:'72,220',f:'🇺🇸',phase:'Cuartos',    wk:'NRG_Stadium'},
   {n:'Arrowhead Stadium',        c:'Kansas City, USA',     cap:'76,416',f:'🇺🇸',phase:'Octavos',    wk:'Arrowhead_Stadium'},
-  {n:'Levi's Stadium',          c:'San Francisco, USA',   cap:'68,500',f:'🇺🇸',phase:'Octavos',    wk:'Levi's_Stadium'},
+  {n:'Levi Stadium',          c:'San Francisco, USA',   cap:'68,500',f:'🇺🇸',phase:'Octavos',    wk:'Levi Stadium'},
   {n:'Lincoln Financial Field',  c:'Filadelfia, USA',      cap:'69,328',f:'🇺🇸',phase:'Octavos',    wk:'Lincoln_Financial_Field'},
   {n:'Gillette Stadium',         c:'Boston, USA',          cap:'65,878',f:'🇺🇸',phase:'Octavos',    wk:'Gillette_Stadium'},
   {n:'Lumen Field',              c:'Seattle, USA',         cap:'68,740',f:'🇺🇸',phase:'Octavos',    wk:'Lumen_Field'},
