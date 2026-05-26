@@ -95,39 +95,57 @@ const css = `
 @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&display=swap');
 *{box-sizing:border-box;margin:0;padding:0;}
 :root{
-  --bg:#040C1E;--surf:#0A1628;--surf2:#112040;--surf3:#1A2E55;
-  --gold:#F6C90E;--gold2:#C49A0A;--acc:#4F8EF7;
+  --bg:#020B1A;--surf:#081525;--surf2:#0E1E35;--surf3:#162845;
+  --gold:#F6C90E;--gold2:#D4A800;--acc:#4F8EF7;
   --grn:#1EC66C;--red:#E53E3E;--ylw:#FFCC00;
   --txt:#F0F4FF;--muted:#6B82AF;--dim:#8A9BC9;
-  --br:rgba(255,255,255,0.08);--r:14px;
+  --br:rgba(255,255,255,0.07);--r:16px;
   --ff:'Bebas Neue',sans-serif;--fb:'DM Sans',sans-serif;
+  --shadow:0 4px 24px rgba(0,0,0,.5);
+  --glow:0 0 24px rgba(246,201,14,.18);
 }
 body{font-family:var(--fb);background:var(--bg);color:var(--txt);height:100%;overflow:hidden;}
 .app{max-width:430px;margin:0 auto;height:100vh;overflow:hidden;display:flex;flex-direction:column;position:relative;background:var(--bg);}
-.scr{flex:1;overflow-y:auto;overflow-x:hidden;padding-bottom:82px;}
+.scr{flex:1;overflow-y:auto;overflow-x:hidden;padding-bottom:84px;}
 .scr::-webkit-scrollbar{display:none;}
-.bnav{position:absolute;bottom:0;left:0;right:0;height:72px;background:var(--surf);border-top:1px solid var(--br);display:flex;align-items:center;justify-content:space-around;padding:0 4px;z-index:100;backdrop-filter:blur(20px);}
-.nitem{display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 2px;border-radius:10px;cursor:pointer;transition:all .2s;flex:1;}
-.nitem.on{background:rgba(246,201,14,0.1);}
-.nicon{font-size:18px;transition:transform .2s;}
-.nitem.on .nicon{transform:scale(1.1);}
-.nlbl{font-size:9px;font-weight:600;letter-spacing:0;text-transform:uppercase;color:var(--muted);}
+.bnav{position:absolute;bottom:0;left:0;right:0;height:76px;
+  background:rgba(6,14,28,0.97);border-top:1px solid rgba(246,201,14,0.12);
+  display:flex;align-items:center;justify-content:space-around;
+  padding:0 4px 6px;z-index:100;backdrop-filter:blur(28px);
+  box-shadow:0 -6px 24px rgba(0,0,0,.4);}
+.nitem{display:flex;flex-direction:column;align-items:center;gap:2px;
+  padding:6px 2px;border-radius:12px;cursor:pointer;transition:all .25s;flex:1;}
+.nitem.on{background:rgba(246,201,14,0.08);}
+.nicon{font-size:20px;transition:transform .25s;}
+.nitem.on .nicon{transform:scale(1.12);}
+.nlbl{font-size:9px;font-weight:700;letter-spacing:.3px;text-transform:uppercase;color:var(--muted);}
 .nitem.on .nlbl{color:var(--gold);}
-.live{display:inline-flex;align-items:center;gap:5px;background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;letter-spacing:1px;text-transform:uppercase;}
+.live{display:inline-flex;align-items:center;gap:5px;
+  background:linear-gradient(135deg,#E53E3E,#B02020);color:#fff;
+  font-size:10px;font-weight:800;padding:3px 10px;border-radius:20px;
+  letter-spacing:1.5px;text-transform:uppercase;
+  box-shadow:0 2px 12px rgba(229,62,62,.45);}
 .ldot{width:6px;height:6px;background:#fff;border-radius:50%;animation:blink 1s infinite;}
-@keyframes blink{0%,100%{opacity:1;}50%{opacity:.3;}}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:.2;}}
 @keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
-@keyframes fin{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fin{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
 @keyframes slidein{from{transform:translateX(30px);opacity:0}to{transform:translateX(0);opacity:1}}
 @keyframes popbadge{0%{transform:scale(0)}80%{transform:scale(1.2)}100%{transform:scale(1)}}
 @keyframes slide{0%{transform:translateX(-100%)}100%{transform:translateX(350%)}}
+@keyframes pulse{0%,100%{box-shadow:var(--glow)}50%{box-shadow:0 0 32px rgba(246,201,14,.3)}}
 .fin{animation:fin .35s ease forwards;}
-.inp{width:100%;background:var(--surf2);border:1.5px solid var(--br);border-radius:10px;padding:13px 16px;color:var(--txt);font-family:var(--fb);font-size:15px;outline:none;transition:border-color .2s,box-shadow .2s;}
-.inp:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(246,201,14,.08);}
+.inp{width:100%;background:var(--surf2);border:1.5px solid var(--br);
+  border-radius:12px;padding:14px 16px;color:var(--txt);font-family:var(--fb);
+  font-size:15px;outline:none;transition:border-color .2s,box-shadow .2s;}
+.inp:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(246,201,14,.1);}
 .inp::placeholder{color:var(--muted);}
-.btn{width:100%;background:var(--gold);color:#000;border:none;border-radius:12px;padding:15px;font-family:var(--ff);font-size:19px;letter-spacing:1px;cursor:pointer;transition:all .15s;font-weight:400;}
-.btn:hover{opacity:.92;transform:scale(.99);}
-.btn:active{transform:scale(.97);}
+.btn{width:100%;background:linear-gradient(135deg,#F6C90E,#D4A800);
+  color:#000;border:none;border-radius:14px;padding:15px;
+  font-family:var(--ff);font-size:20px;letter-spacing:1px;cursor:pointer;
+  transition:all .18s;font-weight:400;
+  box-shadow:0 4px 18px rgba(246,201,14,.35);}
+.btn:hover{opacity:.92;transform:translateY(-1px);box-shadow:0 6px 24px rgba(246,201,14,.45);}
+.btn:active{transform:scale(.98) translateY(0);}
 .btng{width:100%;background:var(--surf2);color:var(--txt);border:1.5px solid var(--br);border-radius:12px;padding:14px;font-family:var(--fb);font-size:15px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;transition:all .2s;}
 .btng:hover{border-color:var(--gold);background:var(--surf3);}
 .tpill{flex-shrink:0;padding:7px 16px;border-radius:20px;font-size:13px;font-weight:600;cursor:pointer;background:var(--surf2);color:var(--muted);border:1.5px solid transparent;transition:all .2s;font-family:var(--fb);}
@@ -3556,9 +3574,28 @@ export default function App(){
   const [credito,setCredito]=useState(null);
   // credito = {coins:1000, paquetes:N, paidAt:timestamp} | null
 
+  // ── Push Notification helper ──────────────────────────
+  const requestPush = async () => {
+    if(!('Notification' in window)||!('serviceWorker' in navigator)) return;
+    try {
+      const perm = await Notification.requestPermission();
+      if(perm === 'granted') {
+        console.log('Push notifications activadas ✓');
+        // Notificación de bienvenida
+        new Notification('⚽ Mundial FIFA 2026', {
+          body: 'Notificaciones activadas. Te avisaremos cuando empiece cada partido.',
+          icon: '/icon-192.png',
+          badge: '/icon-192.png',
+        });
+      }
+    } catch(e) { console.warn('Push error:', e); }
+  };
+
   const login=async u=>{
     setUser(u);
     setScreen('app');
+    // Pedir permiso de notificaciones al login
+    setTimeout(requestPush, 2000);
     // Admin gets unlimited coins automatically
     if(u.isAdmin){
       setCredito({coins:999999,paquetes:999,paidAt:Date.now(),isAdmin:true});
