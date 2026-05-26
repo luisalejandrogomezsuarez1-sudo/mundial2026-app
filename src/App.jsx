@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, createContext, useContext } from "react";
 
 // ── Firebase ACTIVO ─────────────────────────────────────────────
 let fbSendMsg = null, fbSubscribeChat = null, fbSaveUser = null;
@@ -13,6 +13,268 @@ import('./firebase.js').then(fb => {
   fbGiftCoins     = fb.giftCoinsInFirestore;
   console.log('🔥 Firebase conectado — mundial2026-15686');
 }).catch(e => console.warn('Firebase error:', e));
+
+
+// ── Multi-language support — lightweight, no external packages ──
+const TRANSLATIONS={
+  es:{
+    // Nav
+    nav_home:'Inicio',nav_matches:'Partidos',nav_table:'Tabla',
+    nav_goals:'Goles',nav_bets:'Pronóstico',nav_groups:'Grupos',nav_profile:'Perfil',
+    // Auth
+    login:'Iniciar Sesión',register:'Registrarse',logout:'Cerrar sesión',
+    email:'Correo electrónico',password:'Contraseña',name:'Nombre completo',
+    birthdate:'Fecha de nacimiento',nationality:'Nacionalidad',gender:'Género',
+    have_account:'¿Ya tienes cuenta?',no_account:'¿No tienes cuenta?',
+    google_login:'Continuar con Google',language:'Idioma',
+    // Home
+    live_matches:'Partidos en Vivo',next_matches:'Próximos Partidos',
+    see_all:'Ver todos →',countdown_title:'Cuenta Regresiva',
+    days:'días',hours:'horas',minutes:'minutos',seconds:'segundos',
+    wc_starts:'El Mundial comienza',live_soon:'Los marcadores en vivo aparecerán aquí',
+    // Matches
+    matches_title:'PARTIDOS',all:'Todos',today:'Hoy',tomorrow:'Mañana',
+    venues:'Sedes Oficiales',
+    // Table
+    table_title:'CLASIFICACIÓN',group_stage:'Fase de grupos',
+    top_goals:'Más goles',best_defense:'Mejor defensa',leader:'Líder',
+    bracket_title:'LLAVE ELIMINATORIA',auto_flags:'Las banderas aparecen conforme avanza el torneo',
+    champion:'CAMPEÓN DEL MUNDO',
+    // Goals
+    goals_title:'GOLEADORES',golden_boot:'Candidatos a la Bota de Oro',
+    // Bets
+    bets_title:'MIS PRONÓSTICOS',long_term:'Partidos Mundial',
+    per_match:'Por Partido',specials:'Especiales',stats:'Estadísticas',
+    world_champion:'Campeón del Mundo',golden_ball:'Balón de Oro',
+    buy_package:'Comprar Paquete de Pronósticos',price:'$20 MXN',
+    pay_card:'Tarjeta',pay_oxxo:'OXXO',pay_transfer:'Transferencia',
+    pay_btn:'Pagar $20 MXN',payment_success:'¡PAGO EXITOSO!',
+    coins_added:'monedas añadidas a tu cuenta',
+    // Groups
+    groups_title:'MIS GRUPOS',create_group:'Crear Grupo',join_group:'Unirse',
+    join_code:'Código del grupo',group_name:'Nombre del grupo',
+    ranking:'Ranking',predictions:'Pronósticos',members:'Miembros',
+    report:'Reporte',chat:'Chat',lock:'Bloquear',
+    group_code:'Código',copy:'Copiar',share_group:'Compartir grupo',
+    // Profile
+    profile_title:'MI PERFIL',share_app:'Compartir la App',
+    admin_panel:'PANEL ADMIN',registered:'Registrados',with_package:'Con paquete',
+    gift_coins:'Monedas regalo',no_package:'Sin paquete',
+    income:'Ingresos',
+    // Common
+    loading:'Cargando...', error:'Error', retry:'Reintentar',
+    tbd:'Por definir',active:'Activo',
+  },
+  en:{
+    nav_home:'Home',nav_matches:'Matches',nav_table:'Table',
+    nav_goals:'Scorers',nav_bets:'Predictions',nav_groups:'Groups',nav_profile:'Profile',
+    login:'Sign In',register:'Sign Up',logout:'Sign Out',
+    email:'Email',password:'Password',name:'Full name',
+    birthdate:'Date of birth',nationality:'Nationality',gender:'Gender',
+    have_account:'Already have an account?',no_account:"Don't have an account?",
+    google_login:'Continue with Google',language:'Language',
+    live_matches:'Live Matches',next_matches:'Upcoming Matches',
+    see_all:'See all →',countdown_title:'Countdown',
+    days:'days',hours:'hours',minutes:'minutes',seconds:'seconds',
+    wc_starts:'The World Cup starts',live_soon:'Live scores will appear here',
+    matches_title:'MATCHES',all:'All',today:'Today',tomorrow:'Tomorrow',
+    venues:'Official Venues',
+    table_title:'STANDINGS',group_stage:'Group Stage',
+    top_goals:'Top scorer',best_defense:'Best defense',leader:'Leader',
+    bracket_title:'KNOCKOUT BRACKET',auto_flags:'Flags update automatically as teams advance',
+    champion:'WORLD CHAMPION',
+    goals_title:'SCORERS',golden_boot:'Golden Boot Candidates',
+    bets_title:'MY PREDICTIONS',long_term:'World Cup Matches',
+    per_match:'Per Match',specials:'Specials',stats:'Statistics',
+    world_champion:'World Champion',golden_ball:'Golden Ball',
+    buy_package:'Buy Predictions Package',price:'$20 MXN',
+    pay_card:'Card',pay_oxxo:'OXXO',pay_transfer:'Transfer',
+    pay_btn:'Pay $20 MXN',payment_success:'PAYMENT SUCCESSFUL!',
+    coins_added:'coins added to your account',
+    groups_title:'MY GROUPS',create_group:'Create Group',join_group:'Join',
+    join_code:'Group code',group_name:'Group name',
+    ranking:'Ranking',predictions:'Predictions',members:'Members',
+    report:'Report',chat:'Chat',lock:'Lock',
+    group_code:'Code',copy:'Copy',share_group:'Share group',
+    profile_title:'MY PROFILE',share_app:'Share the App',
+    admin_panel:'ADMIN PANEL',registered:'Registered',with_package:'With package',
+    gift_coins:'Gift coins',no_package:'No package',income:'Income',
+    loading:'Loading...',error:'Error',retry:'Retry',
+    tbd:'TBD',active:'Active',
+  },
+  pt:{
+    nav_home:'Início',nav_matches:'Jogos',nav_table:'Tabela',
+    nav_goals:'Artilheiros',nav_bets:'Palpites',nav_groups:'Grupos',nav_profile:'Perfil',
+    login:'Entrar',register:'Cadastrar',logout:'Sair',
+    email:'E-mail',password:'Senha',name:'Nome completo',
+    birthdate:'Data de nascimento',nationality:'Nacionalidade',gender:'Gênero',
+    have_account:'Já tem conta?',no_account:'Não tem conta?',
+    google_login:'Continuar com Google',language:'Idioma',
+    live_matches:'Jogos ao Vivo',next_matches:'Próximos Jogos',
+    see_all:'Ver todos →',countdown_title:'Contagem Regressiva',
+    days:'dias',hours:'horas',minutes:'minutos',seconds:'segundos',
+    wc_starts:'A Copa começa',live_soon:'Os placares ao vivo aparecerão aqui',
+    matches_title:'JOGOS',all:'Todos',today:'Hoje',tomorrow:'Amanhã',
+    venues:'Estádios Oficiais',
+    table_title:'CLASSIFICAÇÃO',group_stage:'Fase de grupos',
+    top_goals:'Mais gols',best_defense:'Melhor defesa',leader:'Líder',
+    bracket_title:'CHAVES ELIMINATÓRIAS',auto_flags:'As bandeiras aparecem conforme o torneio avança',
+    champion:'CAMPEÃO MUNDIAL',
+    goals_title:'ARTILHEIROS',golden_boot:'Candidatos à Chuteira de Ouro',
+    bets_title:'MEUS PALPITES',long_term:'Jogos da Copa',
+    per_match:'Por Jogo',specials:'Especiais',stats:'Estatísticas',
+    world_champion:'Campeão Mundial',golden_ball:'Bola de Ouro',
+    buy_package:'Comprar Pacote de Palpites',price:'$20 MXN',
+    pay_card:'Cartão',pay_oxxo:'OXXO',pay_transfer:'Transferência',
+    pay_btn:'Pagar $20 MXN',payment_success:'PAGAMENTO REALIZADO!',
+    coins_added:'moedas adicionadas à sua conta',
+    groups_title:'MEUS GRUPOS',create_group:'Criar Grupo',join_group:'Entrar',
+    join_code:'Código do grupo',group_name:'Nome do grupo',
+    ranking:'Classificação',predictions:'Palpites',members:'Membros',
+    report:'Relatório',chat:'Chat',lock:'Bloquear',
+    group_code:'Código',copy:'Copiar',share_group:'Compartilhar grupo',
+    profile_title:'MEU PERFIL',share_app:'Compartilhar o App',
+    admin_panel:'PAINEL ADMIN',registered:'Cadastrados',with_package:'Com pacote',
+    gift_coins:'Moedas presente',no_package:'Sem pacote',income:'Receita',
+    loading:'Carregando...',error:'Erro',retry:'Tentar novamente',
+    tbd:'A definir',active:'Ativo',
+  },
+  zh:{
+    nav_home:'首页',nav_matches:'赛程',nav_table:'积分榜',
+    nav_goals:'射手榜',nav_bets:'预测',nav_groups:'小组',nav_profile:'我的',
+    login:'登录',register:'注册',logout:'退出',
+    email:'邮箱',password:'密码',name:'全名',
+    birthdate:'出生日期',nationality:'国籍',gender:'性别',
+    have_account:'已有账号？',no_account:'没有账号？',
+    google_login:'使用Google继续',language:'语言',
+    live_matches:'直播赛事',next_matches:'即将开始',
+    see_all:'查看全部 →',countdown_title:'倒计时',
+    days:'天',hours:'小时',minutes:'分钟',seconds:'秒',
+    wc_starts:'世界杯开幕',live_soon:'实时比分将显示在这里',
+    matches_title:'赛程',all:'全部',today:'今天',tomorrow:'明天',
+    venues:'官方球场',
+    table_title:'积分榜',group_stage:'小组赛阶段',
+    top_goals:'进球最多',best_defense:'最佳防守',leader:'榜首',
+    bracket_title:'淘汰赛对阵',auto_flags:'随着赛事推进自动显示国旗',
+    champion:'世界冠军',
+    goals_title:'射手榜',golden_boot:'金靴奖候选人',
+    bets_title:'我的预测',long_term:'世界杯赛事',
+    per_match:'按场次',specials:'特别预测',stats:'统计',
+    world_champion:'世界冠军',golden_ball:'金球奖',
+    buy_package:'购买预测套餐',price:'$20 MXN',
+    pay_card:'银行卡',pay_oxxo:'OXXO',pay_transfer:'转账',
+    pay_btn:'支付 $20 MXN',payment_success:'支付成功！',
+    coins_added:'金币已添加到您的账户',
+    groups_title:'我的小组',create_group:'创建小组',join_group:'加入',
+    join_code:'小组代码',group_name:'小组名称',
+    ranking:'排名',predictions:'预测',members:'成员',
+    report:'报告',chat:'聊天',lock:'锁定',
+    group_code:'代码',copy:'复制',share_group:'分享小组',
+    profile_title:'我的档案',share_app:'分享应用',
+    admin_panel:'管理面板',registered:'已注册',with_package:'有套餐',
+    gift_coins:'赠送金币',no_package:'无套餐',income:'收入',
+    loading:'加载中...',error:'错误',retry:'重试',
+    tbd:'待定',active:'活跃',
+  },
+  ko:{
+    nav_home:'홈',nav_matches:'경기',nav_table:'순위',
+    nav_goals:'득점왕',nav_bets:'예측',nav_groups:'그룹',nav_profile:'프로필',
+    login:'로그인',register:'회원가입',logout:'로그아웃',
+    email:'이메일',password:'비밀번호',name:'이름',
+    birthdate:'생년월일',nationality:'국적',gender:'성별',
+    have_account:'계정이 있으신가요?',no_account:'계정이 없으신가요?',
+    google_login:'Google로 계속하기',language:'언어',
+    live_matches:'실시간 경기',next_matches:'예정 경기',
+    see_all:'전체 보기 →',countdown_title:'카운트다운',
+    days:'일',hours:'시간',minutes:'분',seconds:'초',
+    wc_starts:'월드컵 시작',live_soon:'실시간 점수가 여기에 표시됩니다',
+    matches_title:'경기',all:'전체',today:'오늘',tomorrow:'내일',
+    venues:'공식 경기장',
+    table_title:'순위표',group_stage:'조별 리그',
+    top_goals:'최다 득점',best_defense:'최고 수비',leader:'선두',
+    bracket_title:'토너먼트 대진표',auto_flags:'경기 진행에 따라 국기가 자동으로 표시됩니다',
+    champion:'월드컵 우승팀',
+    goals_title:'득점왕',golden_boot:'골든 부트 후보',
+    bets_title:'내 예측',long_term:'월드컵 경기',
+    per_match:'경기별',specials:'특별 예측',stats:'통계',
+    world_champion:'월드 챔피언',golden_ball:'골든 볼',
+    buy_package:'예측 패키지 구매',price:'$20 MXN',
+    pay_card:'카드',pay_oxxo:'OXXO',pay_transfer:'이체',
+    pay_btn:'$20 MXN 결제',payment_success:'결제 완료!',
+    coins_added:'코인이 계정에 추가되었습니다',
+    groups_title:'내 그룹',create_group:'그룹 만들기',join_group:'참가',
+    join_code:'그룹 코드',group_name:'그룹 이름',
+    ranking:'순위',predictions:'예측',members:'멤버',
+    report:'보고서',chat:'채팅',lock:'잠금',
+    group_code:'코드',copy:'복사',share_group:'그룹 공유',
+    profile_title:'내 프로필',share_app:'앱 공유',
+    admin_panel:'관리자 패널',registered:'등록됨',with_package:'패키지 보유',
+    gift_coins:'코인 선물',no_package:'패키지 없음',income:'수입',
+    loading:'로딩 중...',error:'오류',retry:'다시 시도',
+    tbd:'미정',active:'활성',
+  },
+  fr:{
+    nav_home:'Accueil',nav_matches:'Matchs',nav_table:'Classement',
+    nav_goals:'Buteurs',nav_bets:'Pronostics',nav_groups:'Groupes',nav_profile:'Profil',
+    login:'Se connecter',register:"S'inscrire",logout:'Se déconnecter',
+    email:'Email',password:'Mot de passe',name:'Nom complet',
+    birthdate:'Date de naissance',nationality:'Nationalité',gender:'Genre',
+    have_account:'Déjà un compte?',no_account:'Pas de compte?',
+    google_login:'Continuer avec Google',language:'Langue',
+    live_matches:'Matchs en Direct',next_matches:'Prochains Matchs',
+    see_all:'Voir tout →',countdown_title:'Compte à Rebours',
+    days:'jours',hours:'heures',minutes:'minutes',seconds:'secondes',
+    wc_starts:'La Coupe du Monde commence',live_soon:'Les scores en direct apparaîtront ici',
+    matches_title:'MATCHS',all:'Tous',today:"Aujourd'hui",tomorrow:'Demain',
+    venues:'Stades Officiels',
+    table_title:'CLASSEMENT',group_stage:'Phase de groupes',
+    top_goals:'Meilleur buteur',best_defense:'Meilleure défense',leader:'Leader',
+    bracket_title:'TABLEAU ÉLIMINATOIRE',auto_flags:'Les drapeaux se mettent à jour automatiquement',
+    champion:'CHAMPION DU MONDE',
+    goals_title:'BUTEURS',golden_boot:"Candidats au Soulier d'Or",
+    bets_title:'MES PRONOSTICS',long_term:'Matchs Coupe du Monde',
+    per_match:'Par Match',specials:'Spéciaux',stats:'Statistiques',
+    world_champion:'Champion du Monde',golden_ball:"Ballon d'Or",
+    buy_package:'Acheter un Pack de Pronostics',price:'$20 MXN',
+    pay_card:'Carte',pay_oxxo:'OXXO',pay_transfer:'Virement',
+    pay_btn:'Payer $20 MXN',payment_success:'PAIEMENT RÉUSSI!',
+    coins_added:'pièces ajoutées à votre compte',
+    groups_title:'MES GROUPES',create_group:'Créer un Groupe',join_group:'Rejoindre',
+    join_code:'Code du groupe',group_name:'Nom du groupe',
+    ranking:'Classement',predictions:'Pronostics',members:'Membres',
+    report:'Rapport',chat:'Chat',lock:'Verrouiller',
+    group_code:'Code',copy:'Copier',share_group:'Partager le groupe',
+    profile_title:'MON PROFIL',share_app:"Partager l'App",
+    admin_panel:'PANNEAU ADMIN',registered:'Inscrits',with_package:'Avec forfait',
+    gift_coins:'Pièces offertes',no_package:'Sans forfait',income:'Revenus',
+    loading:'Chargement...',error:'Erreur',retry:'Réessayer',
+    tbd:'À déterminer',active:'Actif',
+  },
+};
+
+// ── Auto-detect language from nationality ──────────────────────
+const LANG_BY_NAT={
+  // Spanish
+  'México':'es','España':'es','Argentina':'es','Colombia':'es','Chile':'es',
+  'Venezuela':'es','Perú':'es','Ecuador':'es','Bolivia':'es','Uruguay':'es',
+  'Paraguay':'es','Cuba':'es','Guatemala':'es','Honduras':'es','Nicaragua':'es',
+  'Costa Rica':'es','Panamá':'es','Rep. Dominicana':'es','Puerto Rico':'es',
+  // English
+  'Estados Unidos':'en','USA':'en','Canadá':'en','Reino Unido':'en',
+  'Australia':'en','Nueva Zelanda':'en','Jamaica':'en','Trinidad':'en',
+  // Portuguese
+  'Brasil':'pt','Portugal':'pt','Angola':'pt','Mozambique':'pt',
+  // French
+  'Francia':'fr','Bélgica':'fr','Suiza':'fr','Senegal':'fr','Costa de Marfil':'fr',
+  'Marruecos':'fr','Argelia':'fr','Túnez':'fr','Haití':'fr','Camerún':'fr',
+};
+
+const LANG_FLAGS={'es':'🇪🇸','en':'🇺🇸','pt':'🇧🇷','fr':'🇫🇷','zh':'🇨🇳','ko':'🇰🇷'};
+const LANG_NAMES={'es':'Español','en':'English','pt':'Português','fr':'Français','zh':'中文','ko':'한국어'};
+
+// React Context for language
+const LangCtx=createContext((k)=>TRANSLATIONS.es[k]||k);
+const useLang=()=>useContext(LangCtx);
 
 // ═══════════════════════════════════════════════════════
 // 🔑 API-FOOTBALL CONFIG — Reemplaza con tu API Key
@@ -731,9 +993,9 @@ function Splash({done}){
 }
 
 // ── Auth ─────────────────────────────────────────
-function Auth({onLogin}){
+function Auth({onLogin,onLangChange=()=>{}}){
   const [mode,setMode]=useState('login');
-  const [f,setF]=useState({email:'',pass:'',name:'',bd:'',nat:'',gen:''});
+  const [f,setF]=useState({email:'',pass:'',name:'',bd:'',nat:'',gen:'',lang:'es'});
   const [err,setErr]=useState('');
   const [loading,setLoading]=useState(false);
   const set=k=>e=>setF(p=>({...p,[k]:e.target.value}));
@@ -771,9 +1033,10 @@ function Auth({onLogin}){
       // Save new user to DB
       const newUser={
         id:'u_'+Date.now(),
-        email,pass,                        // ⚠️ En producción usar hash (bcrypt)
+        email,pass,
         name:f.name.trim(),
         bd:f.bd,nat:f.nat.trim(),gen:f.gen,
+        lang:f.lang||LANG_BY_NAT[f.nat.trim()]||'es',
         createdAt:new Date().toISOString(),
         paquetes:0,isAdmin:false
       };
@@ -850,7 +1113,42 @@ function Auth({onLogin}){
             <input className="inp" type="date" value={f.bd} onChange={set('bd')}
               style={{colorScheme:'dark'}}/>
           </div>
-          <input className="inp" placeholder="Nacionalidad (ej. Mexicano/a)" value={f.nat} onChange={set('nat')}/>
+          <input className="inp" placeholder="Nacionalidad (ej. Mexicano/a)" value={f.nat}
+            onChange={e=>{
+              set('nat')(e);
+              // Auto-detect language from nationality
+              const nat=e.target.value.trim();
+              const suggestedLang=Object.keys(LANG_BY_NAT).find(k=>
+                nat.toLowerCase().includes(k.toLowerCase())
+              );
+              if(suggestedLang){
+                const lk=LANG_BY_NAT[suggestedLang];
+                setF(p=>({...p,lang:lk}));
+                onLangChange(lk);
+              }
+            }}/>
+          {/* Language selector — appears in registration */}
+          {mode==='reg'&&(
+            <div>
+              <div style={{fontSize:11,color:'var(--muted)',marginBottom:6,paddingLeft:2}}>
+                🌐 Idioma de la app / App language
+              </div>
+              <div style={{display:'flex',gap:6}}>
+                {Object.entries(LANG_NAMES).map(([lk,ln])=>(
+                  <button key={lk} onClick={()=>{setF(p=>({...p,lang:lk}));onLangChange(lk);}}
+                    type="button"
+                    style={{flex:1,padding:'9px 4px',borderRadius:10,fontSize:11,
+                      fontWeight:700,cursor:'pointer',
+                      background:f.lang===lk?'var(--gold)':'var(--surf2)',
+                      color:f.lang===lk?'#000':'var(--muted)',
+                      border:`1.5px solid ${f.lang===lk?'var(--gold)':'var(--br)'}`,
+                      transition:'all .2s',lineHeight:1.3,textAlign:'center'}}>
+                    {LANG_FLAGS[lk]}<br/><span style={{fontSize:10}}>{ln}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
           <select className="inp" value={f.gen} onChange={set('gen')} style={{appearance:'none',WebkitAppearance:'none'}}>
             <option value="">Selecciona tu género</option>
             <option>Masculino</option><option>Femenino</option>
@@ -1856,7 +2154,7 @@ function GolesScreen(){
 }
 
 // ── Profile Screen ───────────────────────────────
-function PerfilScreen({user,onLogout}){
+function PerfilScreen({user,onLogout,lang='es'}){
   const ini=(user.name||user.email||'U')[0].toUpperCase();
   const [saved,setSaved]=useState(false);
   const [dbUsers,setDbUsers]=useState([]);
@@ -2217,6 +2515,31 @@ function PerfilScreen({user,onLogout}){
             </div>
           </div>
         )}
+        {/* ── Selector de idioma en Perfil ── */}
+        <div style={{margin:'0 0 14px',background:'var(--surf)',borderRadius:14,
+          border:'1px solid var(--br)',padding:'14px 16px'}}>
+          <div style={{fontFamily:'var(--ff)',fontSize:16,letterSpacing:1,marginBottom:10}}>
+            🌐 {t('language')}
+          </div>
+          <div style={{display:'flex',gap:8}}>
+            {Object.entries(LANG_NAMES).map(([lk,ln])=>(
+              <button key={lk} onClick={()=>{
+                if(fbSaveUser) fbSaveUser({...user,lang:lk});
+                window.dispatchEvent(new CustomEvent('wc_lang',{detail:lk}));
+              }}
+                style={{padding:'8px 4px',borderRadius:10,fontSize:10,
+                  fontWeight:700,cursor:'pointer',textAlign:'center',
+                  background:lang===lk?'var(--gold)':'var(--surf2)',
+                  color:lang===lk?'#000':'var(--muted)',
+                  border:`1.5px solid ${lang===lk?'var(--gold)':'var(--br)'}`,
+                  transition:'all .2s',lineHeight:1.4}}>
+                <div style={{fontSize:18}}>{LANG_FLAGS[lk]}</div>
+                <div>{ln}</div>
+              </button>
+            ))}
+          </div>
+        </div>
+
         {/* ── Compartir la app ── */}
         <div style={{margin:'0 0 14px',background:'var(--surf)',borderRadius:14,
           border:'1px solid rgba(79,142,247,.2)',padding:'16px'}}>
@@ -3801,6 +4124,8 @@ function StatsScreen({bets,noWrapper=false}){
 export default function App(){
   const [screen,setScreen]=useState('splash');
   const [user,setUser]=useState(null);
+  const [lang,setLang]=useState('es');
+  const t=k=>TRANSLATIONS[lang]?.[k]||TRANSLATIONS.es[k]||k;
   const [tab,setTab]=useState('home');
   const [match,setMatch]=useState(null);
   const [userBets,setUserBets]=useState([]);
@@ -3827,6 +4152,8 @@ export default function App(){
   const login=async u=>{
     setUser(u);
     setScreen('app');
+    // Apply user language preference
+    if(u.lang && TRANSLATIONS[u.lang]) setLang(u.lang);
     // Pedir permiso de notificaciones al login
     setTimeout(requestPush, 2000);
     // Generar sessionId único para este dispositivo
@@ -3857,6 +4184,13 @@ export default function App(){
       }
     }catch(e){console.warn('login check error:',e);}
   };
+  // Listen for language changes dispatched from Profile screen
+  useEffect(()=>{
+    const handleLang=e=>{if(TRANSLATIONS[e.detail])setLang(e.detail);};
+    window.addEventListener('wc_lang',handleLang);
+    return()=>window.removeEventListener('wc_lang',handleLang);
+  },[]);
+
   const logout=(reason='')=>{
     if(reason) alert('⚠️ '+reason);
     setUser(null);setScreen('auth');setMatch(null);
@@ -3918,7 +4252,7 @@ export default function App(){
       <style>{css}</style>
       <div className="app">
         {screen==='splash'&&<Splash done={()=>setScreen('auth')}/>}
-        {screen==='auth'&&<Auth onLogin={login}/>}
+        {screen==='auth'&&<Auth onLogin={login} onLangChange={setLang}/>}
         {screen==='app'&&user&&<>
           {/* Match detail overlay */}
           {match&&(
@@ -3933,7 +4267,7 @@ export default function App(){
           {tab==='pronostico' &&<BetsScreen bets={userBets} placeBet={placeBet}
                                   credito={credito} onPagar={onPagar} onReset={onReset}/>}
           {tab==='grupos'     &&<GruposScreen user={user} userBets={userBets}/>}
-          {tab==='perfil'     &&<PerfilScreen user={user} onLogout={logout}/>}
+          {tab==='perfil'     &&<PerfilScreen user={user} onLogout={logout} lang={lang}/>}
           {/* Bottom nav */}
           <div className="bnav">
             {nav.map(([id,ic,lb])=>{
