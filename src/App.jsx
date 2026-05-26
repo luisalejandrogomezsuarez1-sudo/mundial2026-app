@@ -1507,26 +1507,158 @@ function CalScreen(){
   );
 }
 
+// ── Bracket View Component ────────────────────────
+function BracketSlot({slot,highlight=false}){
+  const hasTeams = slot?.home||slot?.away;
+  const isWon    = !!slot?.winner;
+  return(
+    <div style={{background:highlight?'rgba(246,201,14,.08)':'var(--surf2)',
+      borderRadius:10,border:`1px solid ${highlight?'rgba(246,201,14,.3)':'var(--br)'}`,
+      padding:'8px 10px',minWidth:148,flexShrink:0,
+      boxShadow:highlight?'0 0 12px rgba(246,201,14,.15)':'none'}}>
+      {/* Team home */}
+      <div style={{display:'flex',alignItems:'center',gap:6,marginBottom:5,
+        opacity:isWon&&slot.winner!==slot.home?.name?.slice(0,8)?0.4:1}}>
+        <span style={{fontSize:16,lineHeight:1}}>{slot?.homeFl||'🏳️'}</span>
+        <span style={{fontSize:11,fontWeight:slot.winner===slot.home?.name?.slice(0,8)?700:500,
+          color:slot.winner===slot.home?.name?.slice(0,8)?'var(--gold)':'var(--txt)',
+          whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis',maxWidth:90}}>
+          {slot?.home||<span style={{color:'var(--muted)',fontStyle:'italic'}}>Por definir</span>}
+        </span>
+      </div>
+      <div style={{height:1,background:'var(--br)',marginBottom:5}}/>
+      {/* Team away */}
+      <div style={{display:'flex',alignItems:'center',gap:6,
+        opacity:isWon&&slot.winner!==slot.away?.name?.slice(0,8)?0.4:1}}>
+        <span style={{fontSize:16,lineHeight:1}}>{slot?.awayFl||'🏳️'}</span>
+        <span style={{fontSize:11,fontWeight:slot.winner===slot.away?.name?.slice(0,8)?700:500,
+          color:slot.winner===slot.away?.name?.slice(0,8)?'var(--gold)':'var(--txt)',
+          whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis',maxWidth:90}}>
+          {slot?.away||<span style={{color:'var(--muted)',fontStyle:'italic'}}>Por definir</span>}
+        </span>
+      </div>
+      {/* Date/venue */}
+      <div style={{marginTop:5,fontSize:9,color:'var(--muted)',whiteSpace:'nowrap',overflow:'hidden',
+        textOverflow:'ellipsis'}}>
+        📅 {slot.date} · {slot.venue}
+      </div>
+    </div>
+  );
+}
+
+function BracketRound({title,slots,color='var(--acc)',icon=''}){
+  return(
+    <div style={{marginBottom:20}}>
+      <div style={{display:'flex',alignItems:'center',gap:8,padding:'0 16px',marginBottom:10}}>
+        <div style={{width:3,height:18,borderRadius:2,background:color}}/>
+        <span style={{fontFamily:'var(--ff)',fontSize:18,letterSpacing:1,color}}>{icon} {title}</span>
+        <span style={{fontSize:10,color:'var(--muted)',background:'var(--surf)',
+          padding:'2px 8px',borderRadius:10,border:'1px solid var(--br)'}}>
+          {slots.length} {slots.length===1?'partido':'partidos'}
+        </span>
+      </div>
+      <div style={{display:'flex',gap:10,padding:'0 16px',overflowX:'auto',paddingBottom:4}}>
+        {slots.map((s,i)=>(
+          <BracketSlot key={i} slot={s}
+            highlight={title.includes('FINAL')&&!title.includes('3er')}/>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function BracketView({bracket}){
+  if(!bracket) return null;
+  const winner = bracket.final?.winner;
+  return(
+    <div style={{paddingBottom:20}}>
+      {winner&&(
+        <div style={{margin:'0 16px 16px',background:'linear-gradient(135deg,rgba(246,201,14,.2),rgba(246,201,14,.05))',
+          borderRadius:14,border:'2px solid var(--gold)',padding:'16px',textAlign:'center',
+          animation:'pulse 2s infinite'}}>
+          <div style={{fontSize:32,marginBottom:4}}>🏆</div>
+          <div style={{fontFamily:'var(--ff)',fontSize:28,color:'var(--gold)',letterSpacing:2}}>
+            CAMPEÓN DEL MUNDO
+          </div>
+          <div style={{fontSize:22,marginTop:4,display:'flex',alignItems:'center',
+            justifyContent:'center',gap:8}}>
+            <span>{bracket.final?.winnerFl||'🏳️'}</span>
+            <span style={{fontWeight:700}}>{winner}</span>
+          </div>
+        </div>
+      )}
+      <BracketRound title="RONDA DE 16"  slots={bracket.r16||[]}  color='var(--acc)'  icon='⚔️'/>
+      <BracketRound title="CUARTOS"      slots={bracket.qf||[]}   color='var(--grn)'  icon='🎯'/>
+      <BracketRound title="SEMIFINALES"  slots={bracket.sf||[]}   color='#A855F7'     icon='⭐'/>
+      <BracketRound title="3er LUGAR"    slots={[bracket.tercero||{}]} color='#CD7F32' icon='🥉'/>
+      <BracketRound title="🏆 GRAN FINAL" slots={[bracket.final||{}]}  color='var(--gold)' icon=''/>
+    </div>
+  );
+}
+
 // ── Standings Screen ─────────────────────────────
 function TablaScreen(){
   const [gi,setGi]=useState(0);
   const [groups,setGroups]=useState(GROUPS);
   const [apiLoaded,setApiLoaded]=useState(false);
 
+  // ── Initial bracket — all TBD until tournament plays ──
+  const mkSlot=(label,date,venue='')=>({label,date,venue,home:null,away:null,winner:null});
+  const [bracket,setBracket]=useState({
+    r16:[
+      mkSlot('2°A vs 2°B',     'Jun 28','Los Ángeles'),
+      mkSlot('1°E vs 3°*',     'Jun 29','Boston'),
+      mkSlot('1°F vs 2°C',     'Jun 29','Monterrey'),
+      mkSlot('1°C vs 3°*',     'Jun 30','?'),
+      mkSlot('1°I vs 3°*',     'Jun 30','MetLife'),
+      mkSlot('2°E vs 2°I',     'Jun 30','Dallas'),
+      mkSlot('1°A vs 3°*',     'Jun 30','Azteca'),
+      mkSlot('1°L vs 3°*',     'Jul 1', 'Atlanta'),
+      mkSlot('1°D vs 3°*',     'Jul 1', 'San Francisco'),
+      mkSlot('1°G vs 3°*',     'Jul 1', 'Seattle'),
+      mkSlot('2°K vs 2°L',     'Jul 2', 'Toronto'),
+      mkSlot('1°H vs 2°J',     'Jul 2', 'Los Ángeles'),
+      mkSlot('1°B vs 3°*',     'Jul 2', 'Vancouver'),
+      mkSlot('1°J vs 2°H',     'Jul 3', 'Miami'),
+      mkSlot('1°K vs 3°*',     'Jul 3', 'Kansas City'),
+      mkSlot('2°D vs 2°G',     'Jul 3', 'Dallas'),
+    ],
+    qf:[
+      mkSlot('G.P74 vs G.P77', 'Jul 4', 'Filadelfia'),
+      mkSlot('G.P75 vs G.P76', 'Jul 4', 'Houston'),
+      mkSlot('G.P77 vs G.P79', 'Jul 5', 'MetLife'),
+      mkSlot('G.P73 vs G.P80', 'Jul 5', 'Azteca'),
+      mkSlot('G.P83 vs G.P84', 'Jul 6', 'Dallas'),
+      mkSlot('G.P81 vs G.P82', 'Jul 6', 'Seattle'),
+      mkSlot('G.P86 vs G.P88', 'Jul 7', 'Atlanta'),
+      mkSlot('G.P85 vs G.P87', 'Jul 7', 'Vancouver'),
+    ],
+    sf:[
+      mkSlot('SF1','Jul 14','Dallas'),
+      mkSlot('SF2','Jul 15','Atlanta'),
+    ],
+    tercero: mkSlot('3er Lugar','Jul 18','Miami'),
+    final:   mkSlot('🏆 FINAL', 'Jul 19','MetLife Stadium, NJ'),
+  });
+
+  // Firestore listener for standings AND bracket
   useEffect(()=>{
-    // Read standings from Firestore (server keeps these updated)
     if(!window._fbDB) return;
     try{
       const {doc,onSnapshot,getFirestore}=window._fbFirestore||{};
       if(!onSnapshot) return;
       const db=getFirestore();
-      const unsub=onSnapshot(doc(db,'live','standings'),snap=>{
+      // standings
+      const u1=onSnapshot(doc(db,'live','standings'),snap=>{
         if(snap.exists()&&snap.data().groups?.length>0){
-          setGroups(snap.data().groups);
-          setApiLoaded(true);
+          setGroups(snap.data().groups);setApiLoaded(true);
         }
       });
-      return()=>unsub();
+      // bracket updates from server
+      const u2=onSnapshot(doc(db,'live','bracket'),snap=>{
+        if(snap.exists()&&snap.data().r16) setBracket(snap.data());
+      });
+      return()=>{u1();u2();};
     }catch(e){console.warn('standings error',e);}
   },[]);
 
@@ -1589,17 +1721,47 @@ function TablaScreen(){
           </div>
         </div>
       </div>
-      {/* Quick stats */}
-      <div style={{display:'flex',gap:10,padding:'14px 16px',overflowX:'auto'}}>
-        {[{l:'Más goles',v:'Brasil · 6',ic:'⚽'},{l:'Mejor defensa',v:'México · 0 GC',ic:'🛡️'},{l:'Líder gral.',v:'España · 6 pts',ic:'🥇'}].map(s=>(
-          <div key={s.l} style={{flexShrink:0,background:'var(--surf)',borderRadius:12,
-            padding:'10px 14px',border:'1px solid var(--br)',minWidth:120}}>
-            <div style={{fontSize:18,marginBottom:4}}>{s.ic}</div>
-            <div style={{fontSize:11,color:'var(--muted)',marginBottom:2}}>{s.l}</div>
-            <div style={{fontSize:13,fontWeight:700}}>{s.v}</div>
+
+      {/* ── Stats dinámicas del grupo seleccionado ── */}
+      {sorted[0]?.pj>0 ? (()=>{
+        const leader  = sorted[0];
+        const topScor = [...sorted].sort((a,b)=>b.gf-a.gf)[0];
+        const bestDef = [...sorted].sort((a,b)=>a.gc-b.gc)[0];
+        return(
+          <div style={{display:'flex',gap:10,padding:'14px 16px',overflowX:'auto'}}>
+            {[
+              {l:'Más goles',    v:`${FLAGS[topScor.n]||'🏴'} ${topScor.n} · ${topScor.gf}`, ic:'⚽'},
+              {l:'Mejor defensa',v:`${FLAGS[bestDef.n]||'🏴'} ${bestDef.n} · ${bestDef.gc} GC`,ic:'🛡️'},
+              {l:'Líder '+grp.name, v:`${FLAGS[leader.n]||'🏴'} ${leader.n} · ${leader.pts} pts`,ic:'🥇'},
+            ].map(s=>(
+              <div key={s.l} style={{flexShrink:0,background:'var(--surf)',borderRadius:12,
+                padding:'10px 14px',border:'1px solid var(--br)',minWidth:130}}>
+                <div style={{fontSize:18,marginBottom:4}}>{s.ic}</div>
+                <div style={{fontSize:11,color:'var(--muted)',marginBottom:2}}>{s.l}</div>
+                <div style={{fontSize:12,fontWeight:700}}>{s.v}</div>
+              </div>
+            ))}
           </div>
-        ))}
+        );
+      })() : (
+        <div style={{padding:'8px 16px 14px'}}>
+          <div style={{background:'var(--surf)',borderRadius:12,padding:'12px 16px',
+            border:'1px dashed var(--br)',textAlign:'center',fontSize:12,color:'var(--muted)'}}>
+            📊 Las estadísticas del {grp.name} aparecerán cuando inicien los partidos
+          </div>
+        </div>
+      )}
+
+      {/* ════════════════════════════════════════════════════
+          LLAVE ELIMINATORIA — no cambia al cambiar de grupo
+          ════════════════════════════════════════════════════ */}
+      <div style={{padding:'16px 16px 6px'}}>
+        <div style={{fontFamily:'var(--ff)',fontSize:24,letterSpacing:2}}>LLAVE ELIMINATORIA</div>
+        <div style={{fontSize:11,color:'var(--muted)',marginBottom:12}}>
+          Copa Mundial FIFA 2026 · Las banderas aparecen automáticamente conforme avanza el torneo
+        </div>
       </div>
+      <BracketView bracket={bracket}/>
     </div>
   );
 }
