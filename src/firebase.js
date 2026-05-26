@@ -7,7 +7,7 @@ import { initializeApp } from 'firebase/app';
 import {
   getFirestore, collection, addDoc, onSnapshot,
   query, orderBy, limit, serverTimestamp,
-  doc, setDoc, getDoc, updateDoc
+  doc, setDoc, getDoc, getDocs, updateDoc, where
 } from 'firebase/firestore';
 import {
   getAuth, GoogleAuthProvider, signInWithPopup,
@@ -47,7 +47,6 @@ export async function saveUserToFirestore(user) {
 
 export async function getAllUsersFromFirestore() {
   try {
-    const { getDocs } = await import('firebase/firestore');
     const snap = await getDocs(collection(db,'users'));
     return snap.docs.map(d => ({ id: d.id, ...d.data() }));
   } catch(e) { console.warn('getUsers error:', e); return []; }
@@ -98,7 +97,6 @@ export async function saveGroupToFirestore(group, userId) {
 
 export async function getGroupByCode(code) {
   try {
-    const { getDocs, where } = await import('firebase/firestore');
     const q = query(collection(db,'groups'), where('code','==',code));
     const snap = await getDocs(q);
     if(snap.empty) return null;
