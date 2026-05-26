@@ -2645,6 +2645,17 @@ function GruposScreen({user,userBets}){
   const [chatInput,setChatInput]=useState('');
   const chatEndRef=useRef(null);
 
+  // ── Helper functions ──────────────────────────────────────────
+  // Generate unique group code
+  const genCode=()=>{
+    const chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    let c='WC26-';
+    for(let i=0;i<5;i++) c+=chars[Math.floor(Math.random()*chars.length)];
+    return c;
+  };
+  // Navigate to group detail — a user can be in multiple groups
+  const goDetail=(g)=>{setSelGroup(g);setDtab('ranking');setView('detail');};
+
   const sendMsg=(gid)=>{
     const txt=chatInput.trim();
     if(!txt)return;
@@ -3657,7 +3668,7 @@ function BetsScreen({bets,placeBet,credito,onPagar,onReset}){
     <div>
       {/* Campeón */}
       <div style={{margin:'0 16px 13px',background:'var(--surf)',borderRadius:14,border:'1px solid var(--br)',overflow:'hidden'}}>
-        <SecHead icon="🏆" title="CAMPEÓN DEL TORNEO" betId="campeon"/>
+        <SecHead icon="🏆" title="CAMPEÓN DEL MUNDO" betId="campeon"/>
         <div style={{padding:'10px 14px'}}>
           <div style={{fontSize:12,color:'var(--muted)',marginBottom:8}}>¿Qué selección levantará la Copa?</div>
           <div style={{display:'flex',flexWrap:'wrap',gap:7}}>
