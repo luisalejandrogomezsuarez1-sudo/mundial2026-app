@@ -2614,7 +2614,40 @@ function PerfilScreen({user,onLogout,lang='es'}){
 }
 
 // ── Groups Screen ─────────────────────────────────
-function GruposScreen({user,userBets}){
+function GruposScreen({user,userBets,credito,onPagar}){
+  // ── PAYMENT GATE: must pay to access groups ──────────────────
+  if(!credito) return(
+    <div className="scr fin" style={{display:'flex',flexDirection:'column',
+      alignItems:'center',justifyContent:'center',padding:'32px 24px',
+      textAlign:'center',
+      background:'radial-gradient(ellipse at 50% 30%,rgba(79,142,247,.1) 0%,transparent 60%)'}}>
+      <div style={{fontSize:56,marginBottom:16}}>👥</div>
+      <div style={{fontFamily:'var(--ff)',fontSize:28,letterSpacing:2,marginBottom:8}}>
+        GRUPOS PRIVADOS
+      </div>
+      <div style={{fontSize:13,color:'var(--muted)',lineHeight:1.8,marginBottom:24,maxWidth:280}}>
+        Crea o únete a grupos de amigos, comparte tus pronósticos y compite en el ranking.
+        <br/><br/>
+        <strong style={{color:'var(--txt)'}}>Requiere el paquete de pronósticos</strong> para acceder.
+      </div>
+      <div style={{background:'rgba(246,201,14,.08)',borderRadius:16,
+        border:'1px solid rgba(246,201,14,.25)',padding:'16px 20px',marginBottom:20,width:'100%',maxWidth:300}}>
+        <div style={{fontFamily:'var(--ff)',fontSize:22,color:'var(--gold)',marginBottom:4}}>
+          🪙 1,000 MONEDAS
+        </div>
+        <div style={{fontSize:12,color:'var(--dim)'}}>
+          Acceso completo a Grupos + Pronósticos
+        </div>
+        <div style={{fontSize:24,fontWeight:800,color:'var(--gold)',marginTop:6}}>$20 MXN</div>
+      </div>
+      <button className="btn" onClick={onPagar} style={{maxWidth:300,width:'100%'}}>
+        💳 PAGAR Y ACCEDER
+      </button>
+      <div style={{fontSize:11,color:'var(--muted)',marginTop:12}}>
+        Pago único · Acceso toda la Copa del Mundo 2026
+      </div>
+    </div>
+  );
   const [view,setView]=useState('list');
   // Groups persisted per user in localStorage — no demo groups
   const GROUPS_KEY = `wc2026_groups_${user?.id||'guest'}`;
@@ -4277,7 +4310,7 @@ export default function App(){
           {tab==='goles'      &&<GolesScreen/>}
           {tab==='pronostico' &&<BetsScreen bets={userBets} placeBet={placeBet}
                                   credito={credito} onPagar={onPagar} onReset={onReset}/>}
-          {tab==='grupos'     &&<GruposScreen user={user} userBets={userBets}/>}
+          {tab==='grupos'     &&<GruposScreen user={user} userBets={userBets} credito={credito} onPagar={onPagar}/>}
           {tab==='perfil'     &&<PerfilScreen user={user} onLogout={logout} lang={lang}/>}
           {/* Bottom nav */}
           <div className="bnav">
@@ -4313,11 +4346,11 @@ export default function App(){
                     position:'relative',paddingTop:isPremium?2:0}}>
                   {isPremium&&(
                     <div style={{position:'absolute',top:-1,left:'50%',transform:'translateX(-50%)',
-                      background:'linear-gradient(90deg,#F6C90E,#E2A800)',
+                      background:credito?'linear-gradient(90deg,#F6C90E,#E2A800)':'rgba(100,100,100,.8)',
                       borderRadius:'0 0 8px 8px',padding:'1px 10px',
-                      fontSize:8,fontWeight:800,letterSpacing:.5,color:'#000',
-                      boxShadow:'0 2px 8px rgba(246,201,14,.4)'}}>
-                      VIP
+                      fontSize:8,fontWeight:800,letterSpacing:.5,color:credito?'#000':'#fff',
+                      boxShadow:credito?'0 2px 8px rgba(246,201,14,.4)':'none'}}>
+                      {credito?'VIP':'🔒'}
                     </div>
                   )}
                   <div style={{
