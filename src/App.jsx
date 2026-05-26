@@ -133,111 +133,178 @@ const LIVE_MATCHES=[];
 // Live match data will be populated by sports API (SportRadar / API-Football)
 // when the World Cup begins on June 11, 2026.
 const NEXT_MATCHES=[
-  // Jornada 1 - Apertura
-  {id:3, home:'México',   away:'Ecuador',   isoDate:'2026-06-11',date:'Jun 11',time:'19:00',phase:'Grupo C · J1',venue:'Estadio Azteca',  city:'CDMX, México',   wx:{ic:'⛅',desc:'Parcialmente nublado',t:'22°C'},odds:[1.9,3.2,3.8]},
-  {id:4, home:'USA',      away:'Canadá',    isoDate:'2026-06-12',date:'Jun 12',time:'16:00',phase:'Grupo C · J1',venue:'SoFi Stadium',    city:'Los Ángeles, USA',wx:{ic:'☀️',desc:'Soleado',t:'28°C'},        odds:[2.0,3.1,3.6]},
-  {id:5, home:'Argentina',away:'Ecuador',   isoDate:'2026-06-13',date:'Jun 13',time:'19:00',phase:'Grupo A · J1',venue:'MetLife Stadium', city:'Nueva York, USA', wx:{ic:'🌤️',desc:'Mayormente soleado',t:'24°C'},odds:[1.5,3.8,5.5]},
-  {id:6, home:'Brasil',   away:'Colombia',  isoDate:'2026-06-13',date:'Jun 13',time:'22:00',phase:'Grupo A · J1',venue:'AT&T Stadium',    city:'Dallas, USA',    wx:{ic:'☀️',desc:'Caluroso y despejado',t:'32°C'},odds:[1.6,3.5,5.0]},
-  {id:7, home:'España',   away:'Polonia',   isoDate:'2026-06-14',date:'Jun 14',time:'16:00',phase:'Grupo B · J1',venue:'Rose Bowl',       city:'Pasadena, USA',  wx:{ic:'☀️',desc:'Soleado',t:'26°C'},        odds:[1.3,4.5,8.0]},
-  {id:8, home:'Francia',  away:'Países Bajos',isoDate:'2026-06-14',date:'Jun 14',time:'19:00',phase:'Grupo B · J1',venue:'SoFi Stadium',  city:'Los Ángeles, USA',wx:{ic:'🌤️',desc:'Agradable',t:'24°C'},     odds:[1.9,3.2,3.8]},
-  {id:9, home:'Alemania', away:'Ghana',     isoDate:'2026-06-15',date:'Jun 15',time:'16:00',phase:'Grupo D · J1',venue:'BC Place',        city:'Vancouver, CAN', wx:{ic:'🌧️',desc:'Lluvia ligera',t:'17°C'},  odds:[1.5,3.8,6.0]},
-  {id:10,home:'Inglaterra',away:'Croacia', isoDate:'2026-06-15',date:'Jun 15',time:'19:00',phase:'Grupo D · J1',venue:'AT&T Stadium',    city:'Dallas, USA',    wx:{ic:'☀️',desc:'Despejado',t:'30°C'},      odds:[1.7,3.4,4.5]},
-  // Jornada 2
-  {id:11,home:'México',   away:'USA',       isoDate:'2026-06-17',date:'Jun 17',time:'20:00',phase:'Grupo C · J2',venue:'Estadio Azteca',  city:'CDMX, México',   wx:{ic:'⛅',desc:'Parcialmente nublado',t:'21°C'},odds:[2.4,3.1,2.8]},
-  {id:12,home:'Argentina',away:'Colombia',  isoDate:'2026-06-18',date:'Jun 18',time:'16:00',phase:'Grupo A · J2',venue:'MetLife Stadium', city:'Nueva York, USA', wx:{ic:'☀️',desc:'Soleado',t:'26°C'},       odds:[1.6,3.5,5.0]},
-  {id:13,home:'Brasil',   away:'Ecuador',   isoDate:'2026-06-18',date:'Jun 18',time:'19:00',phase:'Grupo A · J2',venue:'Rose Bowl',       city:'Pasadena, USA',  wx:{ic:'🌤️',desc:'Mayormente soleado',t:'25°C'},odds:[1.4,4.0,7.0]},
-  {id:14,home:'España',   away:'Países Bajos',isoDate:'2026-06-19',date:'Jun 19',time:'16:00',phase:'Grupo B · J2',venue:'BC Place',      city:'Vancouver, CAN', wx:{ic:'🌥️',desc:'Nublado',t:'18°C'},       odds:[1.5,3.8,5.5]},
-  {id:15,home:'Francia',  away:'Polonia',   isoDate:'2026-06-19',date:'Jun 19',time:'19:00',phase:'Grupo B · J2',venue:'SoFi Stadium',   city:'Los Ángeles, USA',wx:{ic:'☀️',desc:'Soleado',t:'27°C'},       odds:[1.4,4.0,7.5]},
-  {id:16,home:'Alemania', away:'Croacia',   isoDate:'2026-06-20',date:'Jun 20',time:'16:00',phase:'Grupo D · J2',venue:'AT&T Stadium',   city:'Dallas, USA',    wx:{ic:'☀️',desc:'Caluroso',t:'33°C'},        odds:[1.6,3.6,4.8]},
-  {id:17,home:'Canadá',   away:'Jamaica',   isoDate:'2026-06-20',date:'Jun 20',time:'19:00',phase:'Grupo C · J2',venue:'BC Place',       city:'Vancouver, CAN', wx:{ic:'🌤️',desc:'Agradable',t:'19°C'},     odds:[2.2,3.0,3.2]},
+  // ── JORNADA 1 ── Jun 11-17, 2026 ─────────────────────────────────────────
+  // Jun 11 — Partido Inaugural
+  {id:1, home:'México',        away:'Sudáfrica',       isoDate:'2026-06-11',date:'Jun 11',time:'13:00',phase:'Grupo A · J1',venue:'Estadio Azteca',         city:'CDMX, México',       wx:{ic:'⛅',desc:'Parcialmente nublado',t:'20°C'},odds:[1.8,3.5,4.5]},
+  // Jun 12
+  {id:2, home:'Canadá',        away:'Bosnia-Herzegovina',isoDate:'2026-06-12',date:'Jun 12',time:'16:00',phase:'Grupo B · J1',venue:'BMO Field',             city:'Toronto, Canadá',    wx:{ic:'🌤️',desc:'Agradable',t:'22°C'},         odds:[1.9,3.4,4.0]},
+  {id:3, home:'USA',           away:'Paraguay',         isoDate:'2026-06-12',date:'Jun 12',time:'19:00',phase:'Grupo D · J1',venue:'SoFi Stadium',           city:'Los Ángeles, USA',   wx:{ic:'☀️',desc:'Soleado',t:'28°C'},            odds:[1.7,3.5,4.8]},
+  // Jun 13
+  {id:4, home:'Brasil',        away:'Escocia',          isoDate:'2026-06-13',date:'Jun 13',time:'19:00',phase:'Grupo C · J1',venue:'Gillette Stadium',       city:'Boston, USA',        wx:{ic:'🌥️',desc:'Nublado',t:'19°C'},           odds:[1.4,4.2,8.0]},
+  {id:5, home:'Qatar',         away:'Suiza',            isoDate:'2026-06-13',date:'Jun 13',time:'22:00',phase:'Grupo B · J1',venue:'Levi's Stadium',        city:'San Francisco, USA', wx:{ic:'🌫️',desc:'Neblina',t:'16°C'},           odds:[5.0,3.8,1.6]},
+  // Jun 14
+  {id:6, home:'Alemania',      away:'Curazao',          isoDate:'2026-06-14',date:'Jun 14',time:'11:00',phase:'Grupo E · J1',venue:'NRG Stadium',            city:'Houston, USA',       wx:{ic:'☀️',desc:'Caluroso',t:'34°C'},           odds:[1.2,6.0,18.0]},
+  {id:7, home:'Costa de Marfil',away:'Ecuador',         isoDate:'2026-06-14',date:'Jun 14',time:'14:00',phase:'Grupo E · J1',venue:'Lincoln Financial Field',city:'Filadelfia, USA',    wx:{ic:'🌤️',desc:'Soleado parcial',t:'25°C'},   odds:[2.2,3.1,3.0]},
+  {id:8, home:'Países Bajos',  away:'Japón',            isoDate:'2026-06-14',date:'Jun 14',time:'17:00',phase:'Grupo F · J1',venue:'AT&T Stadium',           city:'Dallas, USA',        wx:{ic:'☀️',desc:'Despejado',t:'31°C'},          odds:[1.6,3.8,5.5]},
+  {id:9, home:'Túnez',         away:'Playoff UEFA',     isoDate:'2026-06-14',date:'Jun 14',time:'20:00',phase:'Grupo F · J1',venue:'Estadio BBVA',           city:'Monterrey, México',  wx:{ic:'⛅',desc:'Caluroso',t:'32°C'},           odds:[2.1,3.2,3.3]},
+  // Jun 15
+  {id:10,home:'España',        away:'Cabo Verde',       isoDate:'2026-06-15',date:'Jun 15',time:'10:00',phase:'Grupo H · J1',venue:'Mercedes-Benz Stadium',  city:'Atlanta, USA',       wx:{ic:'🌤️',desc:'Caluroso',t:'31°C'},          odds:[1.2,6.5,20.0]},
+  {id:11,home:'Bélgica',       away:'Egipto',           isoDate:'2026-06-15',date:'Jun 15',time:'13:00',phase:'Grupo G · J1',venue:'Lumen Field',            city:'Seattle, USA',       wx:{ic:'🌧️',desc:'Lluvia',t:'16°C'},            odds:[1.5,3.8,6.5]},
+  {id:12,home:'Arabia Saudita',away:'Uruguay',          isoDate:'2026-06-15',date:'Jun 15',time:'16:00',phase:'Grupo H · J1',venue:'Hard Rock Stadium',      city:'Miami, USA',         wx:{ic:'⛈️',desc:'Tormenta',t:'29°C'},          odds:[4.5,3.4,1.8]},
+  {id:13,home:'Irán',          away:'Nueva Zelanda',    isoDate:'2026-06-15',date:'Jun 15',time:'19:00',phase:'Grupo G · J1',venue:'SoFi Stadium',           city:'Los Ángeles, USA',   wx:{ic:'☀️',desc:'Soleado',t:'27°C'},            odds:[1.8,3.2,4.0]},
+  // Jun 16
+  {id:14,home:'Francia',       away:'Senegal',          isoDate:'2026-06-16',date:'Jun 16',time:'13:00',phase:'Grupo I · J1',venue:'MetLife Stadium',        city:'Nueva York, USA',    wx:{ic:'🌤️',desc:'Agradable',t:'23°C'},         odds:[1.5,3.8,6.5]},
+  {id:15,home:'Noruega',       away:'Playoff AFC',      isoDate:'2026-06-16',date:'Jun 16',time:'16:00',phase:'Grupo I · J1',venue:'Gillette Stadium',       city:'Boston, USA',        wx:{ic:'⛅',desc:'Nublado',t:'20°C'},            odds:[1.4,4.0,7.0]},
+  {id:16,home:'Argentina',     away:'Argelia',          isoDate:'2026-06-16',date:'Jun 16',time:'19:00',phase:'Grupo J · J1',venue:'Arrowhead Stadium',      city:'Kansas City, USA',   wx:{ic:'⛅',desc:'Parcialmente nublado',t:'27°C'},odds:[1.3,5.5,12.0]},
+  {id:17,home:'Austria',       away:'Jordania',         isoDate:'2026-06-16',date:'Jun 16',time:'22:00',phase:'Grupo J · J1',venue:'Levi's Stadium',        city:'San Francisco, USA', wx:{ic:'🌫️',desc:'Neblina costera',t:'15°C'},   odds:[1.5,3.8,6.0]},
+  // Jun 17
+  {id:18,home:'Portugal',      away:'Playoff Concacaf', isoDate:'2026-06-17',date:'Jun 17',time:'11:00',phase:'Grupo K · J1',venue:'NRG Stadium',            city:'Houston, USA',       wx:{ic:'☀️',desc:'Caluroso',t:'35°C'},           odds:[1.2,6.0,20.0]},
+  {id:19,home:'Inglaterra',    away:'Croacia',          isoDate:'2026-06-17',date:'Jun 17',time:'15:00',phase:'Grupo L · J1',venue:'AT&T Stadium',           city:'Dallas, USA',        wx:{ic:'☀️',desc:'Muy caluroso',t:'33°C'},       odds:[1.6,3.6,5.5]},
+  {id:20,home:'Colombia',      away:'Uzbekistán',       isoDate:'2026-06-17',date:'Jun 17',time:'20:00',phase:'Grupo K · J1',venue:'BC Place',               city:'Vancouver, Canadá',  wx:{ic:'🌤️',desc:'Agradable',t:'18°C'},         odds:[1.4,4.0,7.5]},
+  // ── JORNADA 2 ── Jun 18-23, 2026 ─────────────────────────────────────────
+  {id:21,home:'México',        away:'Corea del Sur',    isoDate:'2026-06-21',date:'Jun 21',time:'13:00',phase:'Grupo A · J2',venue:'Estadio Akron',          city:'Guadalajara, México', wx:{ic:'⛅',desc:'Parcialmente nublado',t:'24°C'},odds:[2.0,3.2,3.5]},
+  {id:22,home:'Sudáfrica',     away:'Playoff UEFA',     isoDate:'2026-06-21',date:'Jun 21',time:'17:00',phase:'Grupo A · J2',venue:'NRG Stadium',            city:'Houston, USA',       wx:{ic:'☀️',desc:'Caluroso',t:'34°C'},           odds:[2.5,3.2,2.8]},
+  {id:23,home:'USA',           away:'Australia',        isoDate:'2026-06-22',date:'Jun 22',time:'16:00',phase:'Grupo D · J2',venue:'Lumen Field',            city:'Seattle, USA',       wx:{ic:'🌧️',desc:'Lluvia',t:'17°C'},            odds:[1.6,3.5,5.5]},
+  {id:24,home:'Argentina',     away:'Austria',          isoDate:'2026-06-22',date:'Jun 22',time:'19:00',phase:'Grupo J · J2',venue:'AT&T Stadium',           city:'Dallas, USA',        wx:{ic:'☀️',desc:'Despejado',t:'32°C'},          odds:[1.3,5.0,10.0]},
+  {id:25,home:'España',        away:'Arabia Saudita',   isoDate:'2026-06-22',date:'Jun 22',time:'10:00',phase:'Grupo H · J2',venue:'Mercedes-Benz Stadium',  city:'Atlanta, USA',       wx:{ic:'🌤️',desc:'Agradable',t:'28°C'},         odds:[1.2,6.5,22.0]},
+  {id:26,home:'Brasil',        away:'Marruecos',        isoDate:'2026-06-23',date:'Jun 23',time:'13:00',phase:'Grupo C · J2',venue:'NRG Stadium',            city:'Houston, USA',       wx:{ic:'☀️',desc:'Caluroso',t:'35°C'},           odds:[1.5,3.8,7.0]},
+  {id:27,home:'Francia',       away:'Playoff AFC/OFC',  isoDate:'2026-06-23',date:'Jun 23',time:'16:00',phase:'Grupo I · J2',venue:'Lincoln Financial Field',city:'Filadelfia, USA',    wx:{ic:'⛅',desc:'Parcialmente nublado',t:'26°C'},odds:[1.2,6.5,22.0]},
+  {id:28,home:'Inglaterra',    away:'Ghana',            isoDate:'2026-06-23',date:'Jun 23',time:'19:00',phase:'Grupo L · J2',venue:'Gillette Stadium',       city:'Boston, USA',        wx:{ic:'🌤️',desc:'Agradable',t:'21°C'},         odds:[1.4,4.2,8.5]},
 ];
 
 const GROUPS=[
-  // Standings update automatically via API when matches are played
-  {name:'Grupo A',teams:[{n:'Brasil',pj:0,g:0,e:0,p:0,gf:0,gc:0,pts:0},{n:'Argentina',pj:0,g:0,e:0,p:0,gf:0,gc:0,pts:0},{n:'Colombia',pj:0,g:0,e:0,p:0,gf:0,gc:0,pts:0},{n:'Ecuador',pj:0,g:0,e:0,p:0,gf:0,gc:0,pts:0}]},
-  {name:'Grupo B',teams:[{n:'España',pj:0,g:0,e:0,p:0,gf:0,gc:0,pts:0},{n:'Francia',pj:0,g:0,e:0,p:0,gf:0,gc:0,pts:0},{n:'Países Bajos',pj:0,g:0,e:0,p:0,gf:0,gc:0,pts:0},{n:'Polonia',pj:0,g:0,e:0,p:0,gf:0,gc:0,pts:0}]},
-  {name:'Grupo C',teams:[{n:'México',pj:0,g:0,e:0,p:0,gf:0,gc:0,pts:0},{n:'USA',pj:0,g:0,e:0,p:0,gf:0,gc:0,pts:0},{n:'Canadá',pj:0,g:0,e:0,p:0,gf:0,gc:0,pts:0},{n:'Jamaica',pj:0,g:0,e:0,p:0,gf:0,gc:0,pts:0}]},
-  {name:'Grupo D',teams:[{n:'Alemania',pj:0,g:0,e:0,p:0,gf:0,gc:0,pts:0},{n:'Inglaterra',pj:0,g:0,e:0,p:0,gf:0,gc:0,pts:0},{n:'Croacia',pj:0,g:0,e:0,p:0,gf:0,gc:0,pts:0},{n:'Ghana',pj:0,g:0,e:0,p:0,gf:0,gc:0,pts:0}]},
+  // 12 grupos reales FIFA World Cup 2026 — datos vía API cuando inicien partidos
+  {name:'Grupo A',teams:[{n:'México',pj:0,g:0,e:0,p:0,gf:0,gc:0,pts:0},{n:'Corea del Sur',pj:0,g:0,e:0,p:0,gf:0,gc:0,pts:0},{n:'Sudáfrica',pj:0,g:0,e:0,p:0,gf:0,gc:0,pts:0},{n:'Playoff UEFA B',pj:0,g:0,e:0,p:0,gf:0,gc:0,pts:0}]},
+  {name:'Grupo B',teams:[{n:'Canadá',pj:0,g:0,e:0,p:0,gf:0,gc:0,pts:0},{n:'Suiza',pj:0,g:0,e:0,p:0,gf:0,gc:0,pts:0},{n:'Qatar',pj:0,g:0,e:0,p:0,gf:0,gc:0,pts:0},{n:'Bosnia-Herzegovina',pj:0,g:0,e:0,p:0,gf:0,gc:0,pts:0}]},
+  {name:'Grupo C',teams:[{n:'Brasil',pj:0,g:0,e:0,p:0,gf:0,gc:0,pts:0},{n:'Marruecos',pj:0,g:0,e:0,p:0,gf:0,gc:0,pts:0},{n:'Escocia',pj:0,g:0,e:0,p:0,gf:0,gc:0,pts:0},{n:'Haití',pj:0,g:0,e:0,p:0,gf:0,gc:0,pts:0}]},
+  {name:'Grupo D',teams:[{n:'USA',pj:0,g:0,e:0,p:0,gf:0,gc:0,pts:0},{n:'Australia',pj:0,g:0,e:0,p:0,gf:0,gc:0,pts:0},{n:'Paraguay',pj:0,g:0,e:0,p:0,gf:0,gc:0,pts:0},{n:'Türkiye',pj:0,g:0,e:0,p:0,gf:0,gc:0,pts:0}]},
+  {name:'Grupo E',teams:[{n:'Alemania',pj:0,g:0,e:0,p:0,gf:0,gc:0,pts:0},{n:'Ecuador',pj:0,g:0,e:0,p:0,gf:0,gc:0,pts:0},{n:'Costa de Marfil',pj:0,g:0,e:0,p:0,gf:0,gc:0,pts:0},{n:'Curazao',pj:0,g:0,e:0,p:0,gf:0,gc:0,pts:0}]},
+  {name:'Grupo F',teams:[{n:'Países Bajos',pj:0,g:0,e:0,p:0,gf:0,gc:0,pts:0},{n:'Japón',pj:0,g:0,e:0,p:0,gf:0,gc:0,pts:0},{n:'Túnez',pj:0,g:0,e:0,p:0,gf:0,gc:0,pts:0},{n:'Playoff UEFA A',pj:0,g:0,e:0,p:0,gf:0,gc:0,pts:0}]},
+  {name:'Grupo G',teams:[{n:'Bélgica',pj:0,g:0,e:0,p:0,gf:0,gc:0,pts:0},{n:'Irán',pj:0,g:0,e:0,p:0,gf:0,gc:0,pts:0},{n:'Egipto',pj:0,g:0,e:0,p:0,gf:0,gc:0,pts:0},{n:'Nueva Zelanda',pj:0,g:0,e:0,p:0,gf:0,gc:0,pts:0}]},
+  {name:'Grupo H',teams:[{n:'España',pj:0,g:0,e:0,p:0,gf:0,gc:0,pts:0},{n:'Uruguay',pj:0,g:0,e:0,p:0,gf:0,gc:0,pts:0},{n:'Arabia Saudita',pj:0,g:0,e:0,p:0,gf:0,gc:0,pts:0},{n:'Cabo Verde',pj:0,g:0,e:0,p:0,gf:0,gc:0,pts:0}]},
+  {name:'Grupo I',teams:[{n:'Francia',pj:0,g:0,e:0,p:0,gf:0,gc:0,pts:0},{n:'Senegal',pj:0,g:0,e:0,p:0,gf:0,gc:0,pts:0},{n:'Noruega',pj:0,g:0,e:0,p:0,gf:0,gc:0,pts:0},{n:'Playoff AFC',pj:0,g:0,e:0,p:0,gf:0,gc:0,pts:0}]},
+  {name:'Grupo J',teams:[{n:'Argentina',pj:0,g:0,e:0,p:0,gf:0,gc:0,pts:0},{n:'Austria',pj:0,g:0,e:0,p:0,gf:0,gc:0,pts:0},{n:'Argelia',pj:0,g:0,e:0,p:0,gf:0,gc:0,pts:0},{n:'Jordania',pj:0,g:0,e:0,p:0,gf:0,gc:0,pts:0}]},
+  {name:'Grupo K',teams:[{n:'Portugal',pj:0,g:0,e:0,p:0,gf:0,gc:0,pts:0},{n:'Colombia',pj:0,g:0,e:0,p:0,gf:0,gc:0,pts:0},{n:'Uzbekistán',pj:0,g:0,e:0,p:0,gf:0,gc:0,pts:0},{n:'Playoff Concacaf',pj:0,g:0,e:0,p:0,gf:0,gc:0,pts:0}]},
+  {name:'Grupo L',teams:[{n:'Inglaterra',pj:0,g:0,e:0,p:0,gf:0,gc:0,pts:0},{n:'Croacia',pj:0,g:0,e:0,p:0,gf:0,gc:0,pts:0},{n:'Panamá',pj:0,g:0,e:0,p:0,gf:0,gc:0,pts:0},{n:'Ghana',pj:0,g:0,e:0,p:0,gf:0,gc:0,pts:0}]},
 ];
 
 const SCORERS=[
-  {n:'Kylian Mbappé',team:'Francia',g:0,a:0,debut:'PSG · 2016',ori:'Bondy, Francia',bio:'Capitán de la selección. Campeón del mundo 2018 con 19 años. Actualmente en el Real Madrid.',wiki:'Kylian_Mbappé'},
-  {n:'Lionel Messi',team:'Argentina',g:0,a:0,debut:'FC Barcelona · 2004',ori:'Rosario, Argentina',bio:'El GOAT del fútbol. 8 Balones de Oro. Campeón del mundo en Qatar 2022. Juega en el Inter Miami.',wiki:'Lionel_Messi'},
-  {n:'Vinicius Jr.',team:'Brasil',g:0,a:0,debut:'Flamengo · 2017',ori:'São Gonçalo, Brasil',bio:'Balón de Oro 2024. Extremo derecho del Real Madrid. Nombrado el mejor jugador del mundo.',wiki:'Vinícius_Júnior'},
-  {n:'Lamine Yamal',team:'España',g:0,a:0,debut:'FC Barcelona · 2023',ori:'Mataró, España',bio:'Prodigio español. El más joven en anotar en una Eurocopa (17 años, 2024). Promesa mundial.',wiki:'Lamine_Yamal'},
-  {n:'Rodrygo',team:'Brasil',g:0,a:0,debut:'Santos FC · 2018',ori:'Osasco, Brasil',bio:'Extremo versátil del Real Madrid. Decisivo en noches de Champions. Debutó a los 17 años.',wiki:'Rodrygo'},
-  {n:'L.Martínez',team:'Argentina',g:0,a:0,debut:'Racing Club · 2015',ori:'Bahía Blanca, Argentina',bio:'Goleador del Inter de Milán. Campeón de la Copa América 2024. Rápido y técnico.',wiki:'Lautaro_Martínez'},
-  {n:'Morata',team:'España',g:0,a:0,debut:'Real Madrid · 2010',ori:'Madrid, España',bio:'Capitán de la selección española. Campeón de la Eurocopa 2024 celebrada en Berlín.',wiki:'Álvaro_Morata'},
-  {n:'Erling Haaland',team:'Noruega',g:0,a:0,debut:'Bryne FK · 2016',ori:'Leeds, Inglaterra',bio:'La máquina goleadora del Man. City. Primer Mundial de Noruega desde 1998. 50+ goles por temporada.',wiki:'Erling_Haaland'},
+  // Candidatos al Trofeo de Bota de Oro FIFA World Cup 2026
+  {n:'Kylian Mbappé',   team:'Francia',   g:0,a:0,debut:'AS Monaco · 2015',  ori:'Bondy, Francia',            bio:'Máximo favorito a la Bota de Oro. 8 goles en Qatar 2022. Capitán de Francia, crack del Real Madrid. Mejor jugador del mundo.',       wiki:'Kylian_Mbappé'},
+  {n:'Harry Kane',      team:'Inglaterra',g:0,a:0,debut:'Tottenham · 2011',   ori:'Walthamstow, Inglaterra',   bio:'78 goles con la selección inglesa — récord histórico. Ganador de la Bota de Oro de la Bundesliga. Máximo favorito de Inglaterra.',  wiki:'Harry_Kane'},
+  {n:'Erling Haaland',  team:'Noruega',   g:0,a:0,debut:'Bryne FK · 2016',   ori:'Leeds, Inglaterra',          bio:'Máquina goleadora del Man. City. 50+ goles por temporada en Premier League. Primer Mundial de Noruega desde 1998. Récords mundiales.', wiki:'Erling_Haaland'},
+  {n:'Lamine Yamal',    team:'España',    g:0,a:0,debut:'FC Barcelona · 2023',ori:'Mataró, España',            bio:'El más joven en anotar en una Eurocopa. Campeón de la Euro 2024. La gran joya del fútbol mundial con solo 18 años.',               wiki:'Lamine_Yamal'},
+  {n:'Lionel Messi',    team:'Argentina', g:0,a:0,debut:'FC Barcelona · 2004',ori:'Rosario, Argentina',        bio:'El GOAT. 8 Balones de Oro. Campeón del mundo Qatar 2022 con 7 goles. Su posible último Mundial con 38 años en Inter Miami.',       wiki:'Lionel_Messi'},
+  {n:'Vinicius Jr.',    team:'Brasil',    g:0,a:0,debut:'Flamengo · 2017',   ori:'São Gonçalo, Brasil',        bio:'Balón de Oro 2024. Extremo del Real Madrid, imparable en velocidad y regate. Lidera el ataque de una Brasil renovada.',            wiki:'Vinícius_Júnior'},
+  {n:'Cristiano Ronaldo',team:'Portugal',g:0,a:0,debut:'Sporting CP · 2002', ori:'Madeira, Portugal',          bio:'CR7 con 41 años, posiblemente su última Copa del Mundo. 134 goles internacionales — récord mundial. Aún peligroso en el área.',    wiki:'Cristiano_Ronaldo'},
+  {n:'Lautaro Martínez',team:'Argentina',g:0,a:0,debut:'Racing Club · 2015', ori:'Bahía Blanca, Argentina',   bio:'Goleador del Inter de Milán. Campeón Copa América 2024. Compañero de Messi, letal en el área pequeña.',                            wiki:'Lautaro_Martínez'},
+  {n:'Ousmane Dembélé', team:'Francia',  g:0,a:0,debut:'Rennes · 2015',     ori:'Vernon, Francia',            bio:'Ganador del Balón de Oro 2025 con el PSG. Rapidísimo por banda derecha. Peligroso compañero de Mbappé en Francia.',               wiki:'Ousmane_Dembélé'},
+  {n:'Bukayo Saka',     team:'Inglaterra',g:0,a:0,debut:'Arsenal · 2019',    ori:'Ealing, Inglaterra',         bio:'Figura del Arsenal campeón Premier League. Extremo con gol y asistencia fácil. Clave en el ataque inglés junto a Kane.',            wiki:'Bukayo_Saka'},
+  {n:'Rodrygo',         team:'Brasil',   g:0,a:0,debut:'Santos FC · 2018',   ori:'Osasco, Brasil',             bio:'Decisivo en Champions League con el Real Madrid. Rápido y técnico, un dolor de cabeza para cualquier defensa.',                     wiki:'Rodrygo'},
+  {n:'Jude Bellingham', team:'Inglaterra',g:0,a:0,debut:'Birmingham · 2019', ori:'Stourbridge, Inglaterra',    bio:'Mejor jugador joven del mundo. Goleador del Real Madrid desde el mediocampo. Solo tiene 22 años y ya es leyenda.',                 wiki:'Jude_Bellingham'},
 ];
 
 // Wikipedia article titles for photos
 const PLAYER_WIKI={
-  'Kylian Mbappé':'Kylian_Mbappé','Lionel Messi':'Lionel_Messi',
-  'Vinicius Jr.':'Vinícius_Júnior','Lamine Yamal':'Lamine_Yamal',
-  'Erling Haaland':'Erling_Haaland','Rodrygo':'Rodrygo',
-  'L.Martínez':'Lautaro_Martínez','Morata':'Álvaro_Morata',
-  'Alisson':'Alisson_Becker','Marquinhos':'Marquinhos_(footballer)',
-  'Casemiro':'Casemiro','Paquetá':'Lucas_Paquetá',
-  'Raphinha':'Raphinha','E.Martínez':'Emiliano_Martínez',
-  'Romero':'Cristian_Romero','De Paul':'Rodrigo_De_Paul',
-  'Mac Allister':'Alexis_Mac_Allister','Di María':'Ángel_Di_María',
-  'L.Martínez':'Lautaro_Martínez','Pedri':'Pedri',
-  'Yamal':'Lamine_Yamal','Rodri':'Rodri_(footballer)',
-  'N.Williams':'Nico_Williams','D.Olmo':'Dani_Olmo',
-  'Maignan':'Mike_Maignan','Tchouaméni':'Aurélien_Tchouaméni',
-  'Camavinga':'Eduardo_Camavinga','Griezmann':'Antoine_Griezmann',
-  'Mbappé':'Kylian_Mbappé','Dembélé':'Ousmane_Dembélé',
-  'Thuram':'Marcus_Thuram',
+  'Kylian Mbappé':'Kylian_Mbappé','Harry Kane':'Harry_Kane',
+  'Erling Haaland':'Erling_Haaland','Lamine Yamal':'Lamine_Yamal',
+  'Lionel Messi':'Lionel_Messi','Vinicius Jr.':'Vinícius_Júnior',
+  'Cristiano Ronaldo':'Cristiano_Ronaldo',
+  'Lautaro Martínez':'Lautaro_Martínez','Ousmane Dembélé':'Ousmane_Dembélé',
+  'Bukayo Saka':'Bukayo_Saka','Rodrygo':'Rodrygo',
+  'Jude Bellingham':'Jude_Bellingham',
+  'Pedri':'Pedri','Rodri':'Rodri_(footballer)',
+  'N.Williams':'Nico_Williams','Raphinha':'Raphinha',
+  'Griezmann':'Antoine_Griezmann','Thuram':'Marcus_Thuram',
 };
 const VENUE_WIKI={
   'MetLife Stadium':'MetLife_Stadium',
-  'SoFi Stadium':'SoFi_Stadium',
-  'Estadio Azteca':'Estadio_Azteca',
-  'BC Place':'BC_Place',
   'AT&T Stadium':'AT&T_Stadium',
-  'Rose Bowl':'Rose_Bowl_stadium',
+  'Mercedes-Benz Stadium':'Mercedes-Benz_Stadium',
+  'SoFi Stadium':'SoFi_Stadium',
+  'NRG Stadium':'NRG_Stadium',
+  'Arrowhead Stadium':'Arrowhead_Stadium',
+  "Levi's Stadium":'Levi's_Stadium',
+  'Lincoln Financial Field':'Lincoln_Financial_Field',
+  'Gillette Stadium':'Gillette_Stadium',
+  'Lumen Field':'Lumen_Field',
+  'Hard Rock Stadium':'Hard_Rock_Stadium',
+  'Estadio Azteca':'Estadio_Azteca',
+  'Estadio BBVA':'Estadio_BBVA_(Monterrey)',
+  'Estadio Akron':'Estadio_Akron',
+  'BC Place':'BC_Place',
+  'BMO Field':'BMO_Field',
 };
 
 const VENUES=[
-  {n:'MetLife Stadium',c:'Nueva York, USA',cap:'82,500',f:'🇺🇸',phase:'Final',wk:'MetLife Stadium'},
-  {n:'SoFi Stadium',c:'Los Ángeles, USA',cap:'70,000',f:'🇺🇸',phase:'Semifinal',wk:'SoFi Stadium'},
-  {n:'Estadio Azteca',c:'CDMX, México',cap:'87,500',f:'🇲🇽',phase:'Cuartos',wk:'Estadio Azteca'},
-  {n:'BC Place',c:'Vancouver, Canadá',cap:'54,500',f:'🇨🇦',phase:'Grupos',wk:'BC Place'},
-  {n:'AT&T Stadium',c:'Dallas, USA',cap:'80,000',f:'🇺🇸',phase:'Grupos',wk:'AT&T_Stadium'},
-  {n:'Rose Bowl',c:'Pasadena, USA',cap:'88,565',f:'🇺🇸',phase:'Grupos',wk:'Rose Bowl stadium'},
+  // 16 sedes oficiales FIFA World Cup 2026
+  // USA — 11 sedes
+  {n:'MetLife Stadium',          c:'Nueva York/NJ, USA',  cap:'82,500',f:'🇺🇸',phase:'Final',      wk:'MetLife_Stadium'},
+  {n:'AT&T Stadium',             c:'Dallas, USA',          cap:'80,000',f:'🇺🇸',phase:'Semifinal',  wk:'AT&T_Stadium'},
+  {n:'Mercedes-Benz Stadium',    c:'Atlanta, USA',         cap:'71,000',f:'🇺🇸',phase:'Semifinal',  wk:'Mercedes-Benz_Stadium'},
+  {n:'SoFi Stadium',             c:'Los Ángeles, USA',     cap:'70,240',f:'🇺🇸',phase:'Cuartos',    wk:'SoFi_Stadium'},
+  {n:'NRG Stadium',              c:'Houston, USA',         cap:'72,220',f:'🇺🇸',phase:'Cuartos',    wk:'NRG_Stadium'},
+  {n:'Arrowhead Stadium',        c:'Kansas City, USA',     cap:'76,416',f:'🇺🇸',phase:'Octavos',    wk:'Arrowhead_Stadium'},
+  {n:'Levi's Stadium',          c:'San Francisco, USA',   cap:'68,500',f:'🇺🇸',phase:'Octavos',    wk:'Levi's_Stadium'},
+  {n:'Lincoln Financial Field',  c:'Filadelfia, USA',      cap:'69,328',f:'🇺🇸',phase:'Octavos',    wk:'Lincoln_Financial_Field'},
+  {n:'Gillette Stadium',         c:'Boston, USA',          cap:'65,878',f:'🇺🇸',phase:'Octavos',    wk:'Gillette_Stadium'},
+  {n:'Lumen Field',              c:'Seattle, USA',         cap:'68,740',f:'🇺🇸',phase:'Octavos',    wk:'Lumen_Field'},
+  {n:'Hard Rock Stadium',        c:'Miami, USA',           cap:'64,767',f:'🇺🇸',phase:'3er Lugar',  wk:'Hard_Rock_Stadium'},
+  // México — 3 sedes
+  {n:'Estadio Azteca',           c:'CDMX, México',         cap:'87,523',f:'🇲🇽',phase:'Inauguración',wk:'Estadio_Azteca'},
+  {n:'Estadio BBVA',             c:'Monterrey, México',    cap:'53,500',f:'🇲🇽',phase:'Grupos',      wk:'Estadio_BBVA_(Monterrey)'},
+  {n:'Estadio Akron',            c:'Guadalajara, México',  cap:'49,850',f:'🇲🇽',phase:'Grupos',      wk:'Estadio_Akron'},
+  // Canadá — 2 sedes
+  {n:'BC Place',                 c:'Vancouver, Canadá',    cap:'54,500',f:'🇨🇦',phase:'Grupos',      wk:'BC_Place'},
+  {n:'BMO Field',                c:'Toronto, Canadá',      cap:'45,736',f:'🇨🇦',phase:'Grupos',      wk:'BMO_Field'},
 ];
 
 // ── Bet Options Data ──────────────────────────────
 const CAMPEON_OPTS=[
-  {v:'Argentina',odds:3.2},{v:'Brasil',odds:3.5},{v:'Francia',odds:4.0},
-  {v:'España',odds:4.5},{v:'Portugal',odds:6.0},{v:'Alemania',odds:7.0},
-  {v:'Inglaterra',odds:7.5},{v:'Países Bajos',odds:9.0},
-  {v:'México',odds:18.0},{v:'USA',odds:22.0},{v:'Canadá',odds:28.0},{v:'Uruguay',odds:30.0},
+  {v:'Francia',odds:3.5},{v:'España',odds:4.0},{v:'Argentina',odds:4.5},
+  {v:'Brasil',odds:5.0},{v:'Inglaterra',odds:5.5},{v:'Portugal',odds:6.0},
+  {v:'Alemania',odds:7.0},{v:'Países Bajos',odds:9.0},{v:'Bélgica',odds:10.0},
+  {v:'Uruguay',odds:15.0},{v:'México',odds:20.0},{v:'USA',odds:22.0},
+  {v:'Noruega',odds:25.0},{v:'Japón',odds:28.0},{v:'Canadá',odds:30.0},
+  {v:'Marruecos',odds:35.0},{v:'Senegal',odds:40.0},{v:'Ecuador',odds:45.0},
 ];
 const BOTA_ORO_OPTS=[
   {v:'Kylian Mbappé',team:'Francia',odds:3.8},
-  {v:'Erling Haaland',team:'Noruega',odds:4.5},
-  {v:'Vinicius Jr.',team:'Brasil',odds:5.0},
+  {v:'Harry Kane',team:'Inglaterra',odds:4.5},
+  {v:'Erling Haaland',team:'Noruega',odds:5.0},
   {v:'Lamine Yamal',team:'España',odds:5.5},
   {v:'Lionel Messi',team:'Argentina',odds:6.5},
-  {v:'L. Martínez',team:'Argentina',odds:7.0},
-  {v:'Morata',team:'España',odds:9.0},
-  {v:'Rodrygo',team:'Brasil',odds:9.5},
+  {v:'Vinicius Jr.',team:'Brasil',odds:7.0},
+  {v:'Cristiano Ronaldo',team:'Portugal',odds:8.5},
+  {v:'Lautaro Martínez',team:'Argentina',odds:9.0},
+  {v:'Ousmane Dembélé',team:'Francia',odds:10.0},
+  {v:'Bukayo Saka',team:'Inglaterra',odds:12.0},
+  {v:'Rodrygo',team:'Brasil',odds:13.0},
+  {v:'Jude Bellingham',team:'Inglaterra',odds:14.0},
 ];
 const BALON_ORO_OPTS=[
   {v:'Kylian Mbappé',team:'Francia',odds:3.2},
   {v:'Lamine Yamal',team:'España',odds:3.8},
+  {v:'Jude Bellingham',team:'Inglaterra',odds:4.2},
   {v:'Vinicius Jr.',team:'Brasil',odds:4.5},
-  {v:'Lionel Messi',team:'Argentina',odds:5.0},
-  {v:'Erling Haaland',team:'Noruega',odds:6.0},
-  {v:'Rodri',team:'España',odds:7.0},
+  {v:'Erling Haaland',team:'Noruega',odds:5.5},
+  {v:'Lionel Messi',team:'Argentina',odds:6.0},
+  {v:'Ousmane Dembélé',team:'Francia',odds:7.0},
+  {v:'Rodri',team:'España',odds:8.0},
 ];
 const GRP_WIN=[
-  {g:'Grupo A',teams:[{v:'Brasil',odds:1.5},{v:'Argentina',odds:2.2},{v:'Colombia',odds:6.0},{v:'Ecuador',odds:15.0}]},
-  {g:'Grupo B',teams:[{v:'España',odds:1.3},{v:'Francia',odds:2.5},{v:'Países Bajos',odds:5.0},{v:'Polonia',odds:18.0}]},
-  {g:'Grupo C',teams:[{v:'México',odds:2.0},{v:'USA',odds:2.2},{v:'Canadá',odds:7.0},{v:'Senegal',odds:12.0}]},
-  {g:'Grupo D',teams:[{v:'Alemania',odds:1.6},{v:'Inglaterra',odds:2.0},{v:'Croacia',odds:8.0},{v:'Ghana',odds:15.0}]},
+  {g:'Grupo A',teams:[{v:'México',odds:1.8},{v:'Corea del Sur',odds:3.5},{v:'Sudáfrica',odds:6.0},{v:'Playoff UEFA B',odds:8.0}]},
+  {g:'Grupo B',teams:[{v:'Suiza',odds:2.0},{v:'Canadá',odds:2.2},{v:'Bosnia-Herzegovina',odds:4.0},{v:'Qatar',odds:9.0}]},
+  {g:'Grupo C',teams:[{v:'Brasil',odds:1.3},{v:'Marruecos',odds:4.5},{v:'Escocia',odds:6.0},{v:'Haití',odds:18.0}]},
+  {g:'Grupo D',teams:[{v:'USA',odds:1.7},{v:'Paraguay',odds:3.8},{v:'Australia',odds:5.0},{v:'Türkiye',odds:6.5}]},
+  {g:'Grupo E',teams:[{v:'Alemania',odds:1.3},{v:'Ecuador',odds:3.5},{v:'Costa de Marfil',odds:5.5},{v:'Curazao',odds:25.0}]},
+  {g:'Grupo F',teams:[{v:'Países Bajos',odds:1.4},{v:'Japón',odds:3.8},{v:'Túnez',odds:6.0},{v:'Playoff UEFA A',odds:7.0}]},
+  {g:'Grupo G',teams:[{v:'Bélgica',odds:1.5},{v:'Egipto',odds:4.0},{v:'Irán',odds:5.0},{v:'Nueva Zelanda',odds:12.0}]},
+  {g:'Grupo H',teams:[{v:'España',odds:1.2},{v:'Uruguay',odds:4.0},{v:'Arabia Saudita',odds:8.0},{v:'Cabo Verde',odds:20.0}]},
+  {g:'Grupo I',teams:[{v:'Francia',odds:1.3},{v:'Senegal',odds:4.2},{v:'Noruega',odds:3.8},{v:'Playoff AFC',odds:12.0}]},
+  {g:'Grupo J',teams:[{v:'Argentina',odds:1.2},{v:'Austria',odds:5.0},{v:'Argelia',odds:6.5},{v:'Jordania',odds:15.0}]},
+  {g:'Grupo K',teams:[{v:'Portugal',odds:1.2},{v:'Colombia',odds:3.5},{v:'Uzbekistán',odds:9.0},{v:'Playoff Concacaf',odds:12.0}]},
+  {g:'Grupo L',teams:[{v:'Inglaterra',odds:1.4},{v:'Croacia',odds:4.5},{v:'Panamá',odds:8.0},{v:'Ghana',odds:7.5}]},
 ];
 
 // ── Demo Group Members (example group participants) ──────────────────────────
@@ -294,6 +361,34 @@ const dbUpdatePaquetes=async email=>{
     );
     await dbSave(updated);
   }catch(e){console.warn('dbUpdatePaquetes error:',e);}
+};
+
+// Gift 1000 coins to a user (admin only) — marks gifted:true in DB
+const dbGiftCoins=async email=>{
+  try{
+    const users=await dbLoad();
+    const updated=users.map(u=>
+      u.email.toLowerCase()===email.toLowerCase().trim()
+        ?{...u,gifted:true,giftedAt:new Date().toISOString()}
+        :u
+    );
+    await dbSave(updated);
+    return true;
+  }catch(e){console.warn('dbGiftCoins error:',e);return false;}
+};
+
+// Revoke gifted coins from a user (admin only)
+const dbRevokeGift=async email=>{
+  try{
+    const users=await dbLoad();
+    const updated=users.map(u=>
+      u.email.toLowerCase()===email.toLowerCase().trim()
+        ?{...u,gifted:false,giftedAt:null}
+        :u
+    );
+    await dbSave(updated);
+    return true;
+  }catch(e){console.warn('dbRevokeGift error:',e);return false;}
 };
 
 // ── Trophy SVG ──────────────────────────────────
@@ -804,6 +899,37 @@ function NextCard({m}){
 function MatchDetail({m,onBack}){
   const [tab,setTab]=useState('eventos');
   const [lmin,setLmin]=useState(m.min);
+  const [events,setEvents]=useState(m.events||[]);
+  const [loadingEv,setLoadingEv]=useState(false);
+
+  // ── Fetch live events: goles, tarjetas, cambios ──
+  useEffect(()=>{
+    const fetch_ev=async()=>{
+      if(!AF_ON||!m.id)return;
+      setLoadingEv(true);
+      const data=await afFetch(`/fixtures/events?fixture=${m.id}`);
+      if(data&&data.length>0){
+        const mapped=data.map(ev=>({
+          min:ev.time?.elapsed||0,
+          type:ev.type==='Goal'?'goal':
+               ev.detail==='Yellow Card'?'yellow':
+               ev.detail==='Red Card'?'red':'sub',
+          team:ev.team?.name||'',
+          player:ev.player?.name||'',
+          assist:ev.assist?.name||null,
+          detail:ev.detail||'',
+          isHome:ev.team?.name===m.home,
+        }));
+        setEvents(mapped.sort((a,b)=>b.min-a.min));
+      }
+      setLoadingEv(false);
+    };
+    fetch_ev();
+    // Refresca eventos cada 45 segundos durante el partido
+    const id=setInterval(fetch_ev,45000);
+    return()=>clearInterval(id);
+  },[m.id]);
+
   useEffect(()=>{const t=setInterval(()=>setLmin(v=>Math.min(v+1,90)),30000);return()=>clearInterval(t);},[]);
 
   const es={
@@ -892,7 +1018,7 @@ function MatchDetail({m,onBack}){
       <div style={{flex:1,overflowY:'auto'}}>
         {tab==='eventos'&&(
           <div>
-            {[...m.events].reverse().map((ev,i)=>{
+            {[...events].reverse().map((ev,i)=>{
               const e=es[ev.t]||{ic:'📋',bg:'rgba(255,255,255,.05)',col:'#fff'};
               return(
                 <div key={i} style={{display:'flex',gap:12,padding:'13px 16px',
@@ -1530,7 +1656,8 @@ function PerfilScreen({user,onLogout}){
               {[
                 ['👤','Registrados',dbUsers.length,'var(--txt)'],
                 ['🔮','Con paquete',dbUsers.filter(u=>u.paquetes>0).length,'var(--gold)'],
-                ['⏳','Sin paquete',dbUsers.filter(u=>!u.paquetes||u.paquetes===0).length,'var(--muted)'],
+                ['⏳','Sin paquete',dbUsers.filter(u=>!u.paquetes&&!u.gifted).length,'var(--muted)'],
+                ['🎁','Monedas regalo',dbUsers.filter(u=>u.gifted).length,'var(--gold)'],
                 ['💰','Ingresos MXN','$'+(dbUsers.reduce((s,u)=>s+(u.totalPagado||0),0)).toLocaleString(),'var(--grn)'],
               ].map(([ic,lb,val,col])=>(
                 <div key={lb} style={{background:'var(--surf)',borderRadius:11,
@@ -1629,6 +1756,8 @@ function PerfilScreen({user,onLogout}){
                       textOverflow:'ellipsis',whiteSpace:'nowrap'}}>
                       {u.name||'Sin nombre'}
                       {u.google&&<span style={{marginLeft:4,fontSize:8,color:'var(--acc)',fontWeight:700}}>G</span>}
+                      {u.gifted&&<span style={{marginLeft:4,fontSize:8,background:'rgba(246,201,14,.2)',
+                        color:'var(--gold)',padding:'1px 4px',borderRadius:4,fontWeight:700}}>🎁GRATIS</span>}
                     </div>
                     <div style={{fontSize:9,color:'var(--muted)',overflow:'hidden',
                       textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{u.email}</div>
@@ -1657,6 +1786,26 @@ function PerfilScreen({user,onLogout}){
                         :'—'}
                     </div>
                   </div>
+                  {/* Gift / Revoke coins button */}
+                  <button
+                    onClick={async()=>{
+                      if(u.gifted){
+                        const ok=await dbRevokeGift(u.email);
+                        if(ok){const updated=await dbLoad();setDbUsers(updated);}
+                      } else {
+                        const ok=await dbGiftCoins(u.email);
+                        if(ok){const updated=await dbLoad();setDbUsers(updated);}
+                      }
+                    }}
+                    title={u.gifted?'Quitar monedas gratis':'Dar 1000 monedas gratis'}
+                    style={{width:28,flexShrink:0,
+                      background:u.gifted?'rgba(30,198,108,.15)':'rgba(246,201,14,.12)',
+                      border:`1px solid ${u.gifted?'rgba(30,198,108,.3)':'rgba(246,201,14,.3)'}`,
+                      color:u.gifted?'var(--grn)':'var(--gold)',
+                      borderRadius:5,padding:'3px 4px',
+                      fontSize:11,cursor:'pointer',fontFamily:'var(--fb)'}}>
+                    {u.gifted?'🎁':'🎁'}
+                  </button>
                   {/* Delete */}
                   <button onClick={()=>deleteUser(u.id)}
                     style={{width:24,flexShrink:0,background:'rgba(229,62,62,.1)',
@@ -1961,17 +2110,39 @@ function GruposScreen({user,userBets}){
               </div>
             </div>
             <div style={{padding:'8px 14px',borderTop:'1px solid var(--br)',
-              display:'flex',gap:10,alignItems:'center',overflow:'hidden'}}>
-              {allM.slice(0,4).map((m,i)=>(
-                <div key={m.id} style={{display:'flex',alignItems:'center',gap:4,flexShrink:0}}>
-                  <span style={{fontSize:12}}>{i===0?'🥇':i===1?'🥈':i===2?'🥉':''}</span>
-                  <div style={{width:22,height:22,borderRadius:'50%',background:m.col+'30',
-                    border:`1.5px solid ${m.col}55`,display:'flex',alignItems:'center',
-                    justifyContent:'center',fontSize:9,fontWeight:700,color:'#fff'}}>{m.ini}</div>
-                  <span style={{fontSize:10,color:'var(--dim)'}}>{m.pts}p</span>
-                </div>
-              ))}
-              {allM.length>4&&<span style={{fontSize:10,color:'var(--muted)',flexShrink:0}}>+{allM.length-4}</span>}
+              display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+              {/* Stacked avatars */}
+              <div style={{display:'flex',alignItems:'center'}}>
+                {allM.slice(0,5).map((m,i)=>(
+                  <div key={m.id} title={m.name}
+                    style={{width:28,height:28,borderRadius:'50%',
+                      background:`linear-gradient(135deg,${m.col}55,${m.col}22)`,
+                      border:`2px solid var(--surf)`,
+                      display:'flex',alignItems:'center',justifyContent:'center',
+                      fontSize:9,fontWeight:800,color:'#fff',
+                      marginLeft:i>0?-8:0,zIndex:5-i,flexShrink:0,
+                      boxShadow:`0 0 0 1px ${m.col}44`}}>
+                    {(m.ini||'?').slice(0,2)}
+                  </div>
+                ))}
+                {allM.length>5&&(
+                  <div style={{width:28,height:28,borderRadius:'50%',
+                    background:'var(--surf2)',border:'2px solid var(--surf)',
+                    display:'flex',alignItems:'center',justifyContent:'center',
+                    fontSize:8,fontWeight:700,color:'var(--muted)',marginLeft:-8,flexShrink:0}}>
+                    +{allM.length-5}
+                  </div>
+                )}
+              </div>
+              {/* Member count + top scorer */}
+              <div style={{textAlign:'right'}}>
+                <div style={{fontSize:10,color:'var(--muted)'}}>{allM.length} miembro{allM.length!==1?'s':''}</div>
+                {allM[0]&&allM[0].pts>0&&(
+                  <div style={{fontSize:10,color:'var(--gold)',fontWeight:600}}>
+                    🥇 {allM[0].name?.split(' ')[0]} · {allM[0].pts}pts
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         );
@@ -2501,12 +2672,36 @@ function PagoScreen({onExito,onCancelar,esReset=false}){
   const [metodo,setMetodo]=useState('card');
   const [loading,setLoading]=useState(false);
   const [exito,setExito]=useState(false);
-  const [card,setCard]=useState({num:'',venc:'',cvv:'',nom:''});
-  const [oxxoRef]=useState('WC26-'+Math.floor(Math.random()*900000+100000));
+  const [esperandoPago,setEsperandoPago]=useState(false);
+
+  // ══════════════════════════════════════════════════
+  // 🔑 CONFIGURACIÓN DE PAGOS — REEMPLAZA ESTAS URLS
+  // ══════════════════════════════════════════════════
+  // Crea tu link de pago en mercadopago.com.mx:
+  // Dashboard → Cobrar → Link de pago → $20 MXN → Copiar link
+  const MP_LINK = 'https://mpago.la/TU_LINK_AQUI'; // ← Reemplaza con tu link real
+
+  // Referencia única por usuario (para identificar el pago en el dashboard de MP)
+  const REF = `WC26_${Date.now()}_${Math.random().toString(36).slice(2,7).toUpperCase()}`;
 
   const pagar=()=>{
+    // Si ya está configurado el link real de MercadoPago
+    if(MP_LINK !== 'https://mpago.la/TU_LINK_AQUI'){
+      setEsperandoPago(true);
+      // Abrir MercadoPago en nueva pestaña con referencia única
+      const url = `${MP_LINK}?external_reference=${REF}`;
+      window.open(url, '_blank');
+      return;
+    }
+    // Modo demo (sin link configurado) — simula el pago
     setLoading(true);
     setTimeout(()=>{setLoading(false);setExito(true);setTimeout(onExito,1800);},1600);
+  };
+
+  const confirmarPagoManual=()=>{
+    // El usuario ya pagó en MercadoPago → acreditar monedas
+    setExito(true);
+    setTimeout(onExito,1800);
   };
 
   if(exito)return(
@@ -2531,6 +2726,40 @@ function PagoScreen({onExito,onCancelar,esReset=false}){
         🔄 Pronósticos anteriores eliminados
       </div>}
       <div style={{fontSize:12,color:'var(--muted)',marginTop:4}}>Redirigiendo a Mi Pronóstico…</div>
+    </div>
+  );
+
+  // ── Pantalla "Esperando confirmación de pago" ──
+  if(esperandoPago)return(
+    <div style={{display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',
+      height:'100%',gap:16,textAlign:'center',padding:'32px'}}>
+      <div style={{fontSize:48}}>💳</div>
+      <div style={{fontFamily:'var(--ff)',fontSize:24,letterSpacing:2}}>PAGO EN PROCESO</div>
+      <div style={{fontSize:13,color:'var(--muted)',lineHeight:1.7,maxWidth:280}}>
+        Se abrió MercadoPago en una nueva pestaña.<br/>
+        Completa el pago de <strong style={{color:'var(--gold)'}}>$20 MXN</strong> y regresa aquí.
+      </div>
+      <div style={{fontSize:11,color:'var(--dim)',background:'rgba(255,255,255,.04)',
+        borderRadius:8,padding:'8px 14px'}}>
+        Ref: <strong style={{color:'var(--acc)',fontFamily:'monospace'}}>{REF}</strong>
+      </div>
+      <button onClick={confirmarPagoManual}
+        style={{background:'var(--gold)',color:'#000',border:'none',borderRadius:12,
+          padding:'14px 28px',fontFamily:'var(--ff)',fontSize:18,letterSpacing:1,
+          cursor:'pointer',width:'100%',maxWidth:300}}>
+        ✅ Ya pagué — Activar mis monedas
+      </button>
+      <button onClick={()=>setEsperandoPago(false)}
+        style={{background:'transparent',border:'1px solid var(--br)',color:'var(--muted)',
+          borderRadius:10,padding:'10px 20px',cursor:'pointer',fontSize:13}}>
+        ← Volver al pago
+      </button>
+      <div style={{fontSize:11,color:'var(--dim)',lineHeight:1.6}}>
+        ¿No se abrió MercadoPago?{' '}
+        <span onClick={pagar} style={{color:'var(--acc)',cursor:'pointer',textDecoration:'underline'}}>
+          Intentar de nuevo
+        </span>
+      </div>
     </div>
   );
 
@@ -2627,67 +2856,56 @@ function PagoScreen({onExito,onCancelar,esReset=false}){
             ))}
           </div>
 
-          {/* Card form */}
+          {/* Card form — vía MercadoPago Checkout */}
           {metodo==='card'&&(
-            <div style={{display:'flex',flexDirection:'column',gap:9}}>
-              <input className="inp" placeholder="Número de tarjeta (16 dígitos)" maxLength={19}
-                value={card.num}
-                onChange={e=>setCard(p=>({...p,num:e.target.value.replace(/\D/g,'').replace(/(\d{4})(?=\d)/g,'$1 ').substring(0,19)}))}
-                style={{letterSpacing:2,fontFamily:'monospace,sans-serif'}}/>
-              <div style={{display:'flex',gap:9}}>
-                <input className="inp" placeholder="MM/AA" maxLength={5}
-                  value={card.venc}
-                  onChange={e=>{
-                    let v=e.target.value.replace(/\D/g,'');
-                    if(v.length>=2)v=v.substring(0,2)+'/'+v.substring(2);
-                    setCard(p=>({...p,venc:v.substring(0,5)}));
-                  }}
-                  style={{flex:1}}/>
-                <input className="inp" placeholder="CVV" maxLength={4}
-                  value={card.cvv}
-                  onChange={e=>setCard(p=>({...p,cvv:e.target.value.replace(/\D/g,'').substring(0,4)}))}
-                  style={{flex:1}}/>
+            <div style={{background:'var(--surf)',borderRadius:12,padding:16,
+              border:'1px solid rgba(246,201,14,.2)',textAlign:'center'}}>
+              <div style={{fontSize:32,marginBottom:8}}>💳</div>
+              <div style={{fontSize:14,fontWeight:700,marginBottom:6,color:'var(--gold)'}}>
+                Pago Seguro con Tarjeta
               </div>
-              <input className="inp" placeholder="Nombre en la tarjeta"
-                value={card.nom}
-                onChange={e=>setCard(p=>({...p,nom:e.target.value.toUpperCase()}))}/>
+              <div style={{fontSize:12,color:'var(--muted)',lineHeight:1.6,marginBottom:10}}>
+                Visa · Mastercard · American Express<br/>
+                Proceso seguro vía <strong style={{color:'var(--txt)'}}>MercadoPago</strong>
+              </div>
+              <div style={{fontSize:12,color:'var(--dim)',background:'rgba(255,255,255,.04)',
+                borderRadius:8,padding:'8px 12px',marginBottom:4}}>
+                🔒 Tu tarjeta NO se almacena en la app.<br/>
+                Pago cifrado SSL/TLS
+              </div>
             </div>
           )}
 
-          {/* OXXO */}
+          {/* OXXO — vía MercadoPago */}
           {metodo==='oxxo'&&(
             <div style={{background:'var(--surf)',borderRadius:12,padding:16,
               border:'1px solid var(--br)',textAlign:'center'}}>
               <div style={{fontSize:30,marginBottom:8}}>🏪</div>
-              <div style={{fontSize:13,fontWeight:700,marginBottom:6}}>Referencia OXXO Pay</div>
-              <div style={{fontFamily:'var(--ff)',fontSize:26,letterSpacing:4,color:'var(--gold)',
-                padding:'12px',background:'var(--surf2)',borderRadius:10,marginBottom:8}}>
-                {oxxoRef}
-              </div>
+              <div style={{fontSize:13,fontWeight:700,marginBottom:6}}>Pago en efectivo OXXO</div>
               <div style={{fontSize:11,color:'var(--muted)',lineHeight:1.6}}>
-                Presenta esta referencia en cualquier tienda OXXO y paga <strong style={{color:'var(--gold)'}}>$20.00 MXN</strong> en efectivo.<br/>
-                Referencia válida por 24 horas.
+                Al hacer clic en <strong style={{color:'var(--gold)'}}>Pagar $20 MXN</strong>,
+                MercadoPago generará tu referencia OXXO.<br/>
+                Válida 24 horas en cualquier tienda OXXO del país.
+              </div>
+              <div style={{marginTop:10,fontSize:11,color:'var(--dim)',
+                background:'rgba(246,201,14,.05)',borderRadius:8,padding:'8px'}}>
+                💡 Comisión OXXO: $13 MXN adicionales (total $33 MXN)
               </div>
             </div>
           )}
 
-          {/* Transfer */}
+          {/* Transfer — SPEI */}
           {metodo==='transfer'&&(
             <div style={{background:'var(--surf)',borderRadius:12,padding:14,border:'1px solid var(--br)'}}>
               <div style={{fontSize:11,fontWeight:700,color:'var(--muted)',marginBottom:9,letterSpacing:.5}}>
-                DATOS BANCARIOS
+                TRANSFERENCIA SPEI — VÍA MERCADOPAGO
               </div>
-              {[['Banco','BBVA Bancomer'],['CLABE','012 180 000 123 456 7'],
-                ['Beneficiario','Mundial 2026 App S.A.'],['Monto','$20.00 MXN'],
-                ['Concepto','WC26-PRONO']].map(([k,v])=>(
-                <div key={k} style={{display:'flex',justifyContent:'space-between',
-                  padding:'7px 0',borderBottom:'1px solid rgba(255,255,255,.04)',fontSize:12}}>
-                  <span style={{color:'var(--muted)'}}>{k}</span>
-                  <span style={{fontWeight:700,fontFamily:k==='CLABE'?'monospace':'inherit'}}>{v}</span>
-                </div>
-              ))}
-              <div style={{marginTop:9,fontSize:11,color:'var(--muted)',lineHeight:1.5}}>
-                📧 Envía tu comprobante a: <strong style={{color:'var(--acc)'}}>pagos@mundial2026app.mx</strong>
+              <div style={{fontSize:12,color:'var(--muted)',lineHeight:1.7}}>
+                Al hacer clic en <strong style={{color:'var(--gold)'}}>Pagar</strong>, 
+                MercadoPago te asignará una CLABE interbancaria única para este pago.<br/><br/>
+                ✅ Se acredita en minutos<br/>
+                ✅ Sin comisión adicional<br/>
+                ✅ Funciona con cualquier banco de México
               </div>
             </div>
           )}
@@ -3264,13 +3482,24 @@ export default function App(){
   const [credito,setCredito]=useState(null);
   // credito = {coins:1000, paquetes:N, paidAt:timestamp} | null
 
-  const login=u=>{
+  const login=async u=>{
     setUser(u);
     setScreen('app');
-    // Admin gets unlimited coins automatically — no payment needed
+    // Admin gets unlimited coins automatically
     if(u.isAdmin){
       setCredito({coins:999999,paquetes:999,paidAt:Date.now(),isAdmin:true});
+      return;
     }
+    // Check if user has gifted coins from admin
+    try{
+      const users=await dbLoad();
+      const dbUser=users.find(x=>x.email.toLowerCase()===u.email.toLowerCase());
+      if(dbUser?.gifted){
+        setCredito({coins:1000,paquetes:1,paidAt:Date.now(),gifted:true});
+      } else if(dbUser?.paquetes>0){
+        setCredito({coins:1000,paquetes:dbUser.paquetes,paidAt:Date.now()});
+      }
+    }catch(e){console.warn('login check error:',e);}
   };
   const logout=()=>{
     setUser(null);setScreen('auth');setMatch(null);
