@@ -34,11 +34,12 @@ export async function saveUserToFirestore(user) {
   if(!user?.id) return;
   try {
     await setDoc(doc(db,'users', user.id), {
-      name:      user.name   || '',
-      email:     user.email  || '',
-      paquetes:  user.paquetes || 0,
-      gifted:    user.gifted   || false,
-      isAdmin:   user.isAdmin  || false,
+      name:      user.name      || '',
+      email:     user.email     || '',
+      paquetes:  user.paquetes  || 0,
+      gifted:    user.gifted    || false,
+      isAdmin:   user.isAdmin   || false,
+      sessionId: user.sessionId || '',   // ← tracks active device
       updatedAt: new Date().toISOString(),
     }, { merge: true });
   } catch(e) { console.warn('saveUser error:', e); }

@@ -796,15 +796,25 @@ function Auth({onLogin}){
 
   const googleLogin=async()=>{
     setLoading(true);
-    const gEmail='fan.google@gmail.com';
+    // Prompt for name since we don't have real Google OAuth yet
+    const name = prompt('¿Cuál es tu nombre completo?','');
+    if(!name?.trim()){setLoading(false);return;}
     const users=await dbLoad();
-    let gUser=dbFind(users,gEmail);
-    if(!gUser){
-      gUser={id:'u_google_'+Date.now(),email:gEmail,name:'Fan del Mundial',
-             google:true,nat:'México',gen:'Prefiero no decir',
-             createdAt:new Date().toISOString(),paquetes:0,isAdmin:false};
-      await dbSave([...users,gUser]);
-    }
+    // Use a device-unique ID based on timestamp
+    const gId='u_g_'+Date.now();
+    const gEmail=`google_${gId}@mundial2026.app`;
+    const gUser={
+      id:gId,
+      email:gEmail,
+      name:name.trim(),
+      google:true,
+      nat:'México',
+      gen:'Prefiero no decir',
+      createdAt:new Date().toISOString(),
+      paquetes:0,
+      isAdmin:false
+    };
+    await dbSave([...users,gUser]);
     setLoading(false);
     onLogin(gUser);
   };
@@ -1833,6 +1843,12 @@ function PerfilScreen({user,onLogout}){
               </div>
 
               {/* Table header */}
+              {dbLoaded&&dbUsers.length===0&&(
+                <div style={{textAlign:'center',padding:'20px',color:'var(--muted)',fontSize:13}}>
+                  Ningún usuario registrado aún.<br/>
+                  <span style={{fontSize:11,opacity:.7}}>Los usuarios aparecen aquí cuando inician sesión desde cualquier dispositivo.</span>
+                </div>
+              )}
               {dbLoaded&&dbUsers.length>0&&(
                 <div style={{display:'flex',padding:'6px 14px',
                   background:'rgba(255,255,255,.03)',
@@ -3638,8 +3654,18 @@ export default function App(){
     setScreen('app');
     // Pedir permiso de notificaciones al login
     setTimeout(requestPush, 2000);
-    // Guardar usuario en Firestore (para que admin lo vea)
-    if(fbSaveUser) setTimeout(()=>fbSaveUser(u), 1000);
+    // Generar sessionId único para este dispositivo
+    const sessionId = 'sess_'+Date.now()+'_'+Math.random().toString(36).slice(2,8);
+    localStorage.setItem('wc2026_session_'+u.id, sessionId);
+    // Guardar en Firestore — con reintentos si Firebase aún carga
+    const saveToFirestore = async(attempts=0) => {
+      if(fbSaveUser){
+        await fbSaveUser({...u, sessionId});
+      } else if(attempts < 8){
+        setTimeout(()=>saveToFirestore(attempts+1), 800);
+      }
+    };
+    saveToFirestore();
     // Admin gets unlimited coins automatically
     if(u.isAdmin){
       setCredito({coins:999999,paquetes:999,paidAt:Date.now(),isAdmin:true});
@@ -3656,10 +3682,29 @@ export default function App(){
       }
     }catch(e){console.warn('login check error:',e);}
   };
-  const logout=()=>{
+  const logout=(reason='')=>{
+    if(reason) alert('⚠️ '+reason);
     setUser(null);setScreen('auth');setMatch(null);
     setTab('home');setUserBets([]);setCredito(null);
   };
+
+  // Check session validity every 30s — detect if logged in from another device
+  useEffect(()=>{
+    if(!user||user.isAdmin||!fbGetAllUsers) return;
+    const checkSession=async()=>{
+      try{
+        const localSession=localStorage.getItem('wc2026_session_'+user.id);
+        if(!localSession) return;
+        const allUsers=await fbGetAllUsers();
+        const fsUser=allUsers.find(u=>u.id===user.id);
+        if(fsUser?.sessionId && fsUser.sessionId!==localSession){
+          logout('Tu cuenta fue abierta en otro dispositivo. Se cerró esta sesión.');
+        }
+      }catch(e){/* silent */}
+    };
+    const id=setInterval(checkSession,30000);
+    return()=>clearInterval(id);
+  },[user]);
   const placeBet=bet=>setUserBets(prev=>[...prev.filter(b=>b.id!==bet.id),bet]);
 
   // Called after successful $20 payment (first time)
