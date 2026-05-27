@@ -672,20 +672,21 @@ const DEMO_MEMBERS=[
   {id:'m5',name:'Roberto V.',ini:'RV',col:'#A855F7',locked:false,lockedAt:null,pts:0,bets:[]},
 ];
 // ── Coin System ───────────────────────────────────
-const COINS_PER_PAGO=5000; // 1 pago de $20 MXN = 5000 monedas
-const COIN_COSTS={campeon:150,'bota-oro':100,'balon-oro':100};
+const COINS_PER_PAGO=1000; // 1 pago de $20 MXN = 1000 monedas
+const COIN_COSTS={campeon:10,'bota-oro':10,'balon-oro':10};
 const getBetCost=id=>{
   if(COIN_COSTS[id]!==undefined)return COIN_COSTS[id];
-  if(id.startsWith('grp-'))return 40;
-  if(id.endsWith('-exacto'))return 80;      // especial premium
-  if(id.endsWith('-jugador'))return 50;     // especial
-  if(id.endsWith('-handicap'))return 40;   // especial
-  if(id.endsWith('-1x2'))return 30;
-  if(id.endsWith('-total')||id.endsWith('-btts')||id.endsWith('-dc'))return 20;
-  return 15;
+  if(id.startsWith('grp-'))return 3;
+  if(id.endsWith('-exacto'))return 5;
+  if(id.endsWith('-jugador'))return 3;
+  if(id.endsWith('-handicap'))return 3;
+  if(id.endsWith('-1x2'))return 3;
+  if(id.endsWith('-total')||id.endsWith('-btts')||id.endsWith('-dc'))return 2;
+  return 1;
 };
-// 5000 monedas: campeon150+bota100+balon100+grp40x12(480)+1x2 30x28(840)+
-// otras28x2(1120)+especiales80+50+40x28(4760) → usuario elige sus favoritas
+// 1000 monedas alcanza para TODO: campeon10+bota10+balon10+grp3x12(36)+
+// 1x2 3x28(84)+total/btts/dc 2x3x28(168)+exacto5x28(140)+jugador3x28(84)+handicap3x28(84)
+// Total máximo: ~626 < 1000 ✓ — usuario puede apostar en las 3 secciones completas
 
 // ── Admin & DB Config ─────────────────────────────
 const ADMIN_EMAIL='luis.gomezs@yahoo.com.mx';
@@ -3801,7 +3802,6 @@ function BetsScreen({bets,placeBet,credito,onPagar,onReset}){
   const t=useLang();
   const [tab,setTab]=useState('largo');
   const [exact,setExact]=useState({});
-  const [toast,setToast]=useState('');
   const [showReset,setShowReset]=useState(false);
   const [confirmReset,setConfirmReset]=useState(false);
 
@@ -3825,8 +3825,6 @@ function BetsScreen({bets,placeBet,credito,onPagar,onReset}){
 
   const place=(id,category,selection,odds)=>{
     placeBet({id,category,selection,odds,status:'pendiente',ts:Date.now()});
-    setToast(`✓ ${selection}`);
-    setTimeout(()=>setToast(''),2200);
   };
 
   // Reusable option button — tamaño FIJO, solo cambia color al seleccionar
@@ -3868,6 +3866,26 @@ function BetsScreen({bets,placeBet,credito,onPagar,onReset}){
     );
   };
 
+  // Botón compacto para Partidos del Mundial — varios por fila, tamaño fijo sin toast
+  const SmBtn=({id,category,val,odds,display})=>{
+    const sel=isSel(id,val);
+    return(
+      <button type="button" onClick={e=>{e.preventDefault();place(id,category,val,odds);}}
+        style={{background:sel?'rgba(246,201,14,.18)':'var(--surf2)',
+          border:`1.5px solid ${sel?'var(--gold)':'var(--br)'}`,
+          borderRadius:8,padding:'5px 8px',cursor:'pointer',
+          transition:'background .15s,border-color .15s,color .15s',
+          display:'inline-flex',flexDirection:'column',alignItems:'center',gap:1,
+          fontFamily:'var(--fb)',boxSizing:'border-box',flexShrink:0}}>
+        <span style={{fontSize:11,color:sel?'var(--gold)':'var(--txt)',fontWeight:700,
+          textAlign:'center',lineHeight:1.3,whiteSpace:'nowrap'}}>{display||val}</span>
+        <span style={{fontSize:10,color:sel?'var(--gold)':'#6B82AF',fontWeight:600}}>{odds}x</span>
+        {/* espacio reservado siempre para que no cambie de tamaño */}
+        <span style={{fontSize:8,fontWeight:700,color:sel?'var(--grn)':'transparent',userSelect:'none'}}>✓</span>
+      </button>
+    );
+  };
+
   // ── Tab: Partidos Mundial ──
   const LargoPlazo=()=>(
     <div>
@@ -3876,9 +3894,9 @@ function BetsScreen({bets,placeBet,credito,onPagar,onReset}){
         <SecHead icon="🏆" title="CAMPEÓN DEL MUNDO" betId="campeon"/>
         <div style={{padding:'10px 14px'}}>
           <div style={{fontSize:12,color:'var(--muted)',marginBottom:8}}>¿Qué selección levantará la Copa?</div>
-          <div style={{display:'flex',flexWrap:'wrap',gap:7}}>
+          <div style={{display:'flex',flexWrap:'wrap',gap:5}}>
             {CAMPEON_OPTS.map(o=>(
-              <OBtn key={o.v} id="campeon" category="Campeón del Mundo" val={o.v} odds={o.odds}
+              <SmBtn key={o.v} id="campeon" category="Campeón del Mundo" val={o.v} odds={o.odds}
                 display={`${FLAGS[o.v]||'🏴'} ${o.v}`}/>
             ))}
           </div>
@@ -3891,9 +3909,9 @@ function BetsScreen({bets,placeBet,credito,onPagar,onReset}){
         <SecHead icon="⚽" title="BOTA DE ORO" betId="bota-oro"/>
         <div style={{padding:'10px 14px'}}>
           <div style={{fontSize:12,color:'var(--muted)',marginBottom:8}}>Máximo goleador del torneo</div>
-          <div style={{display:'flex',flexWrap:'wrap',gap:7}}>
+          <div style={{display:'flex',flexWrap:'wrap',gap:5}}>
             {BOTA_ORO_OPTS.map(o=>(
-              <OBtn key={o.v} id="bota-oro" category="Bota de Oro" val={o.v} odds={o.odds}
+              <SmBtn key={o.v} id="bota-oro" category="Bota de Oro" val={o.v} odds={o.odds}
                 display={`${FLAGS[o.team]||'🏴'} ${o.v.split(' ').slice(-1)[0]}`}/>
             ))}
           </div>
@@ -3906,9 +3924,9 @@ function BetsScreen({bets,placeBet,credito,onPagar,onReset}){
         <SecHead icon="🌟" title="BALÓN DE ORO" betId="balon-oro"/>
         <div style={{padding:'10px 14px'}}>
           <div style={{fontSize:12,color:'var(--muted)',marginBottom:8}}>Mejor jugador del Mundial</div>
-          <div style={{display:'flex',flexWrap:'wrap',gap:7}}>
+          <div style={{display:'flex',flexWrap:'wrap',gap:5}}>
             {BALON_ORO_OPTS.map(o=>(
-              <OBtn key={o.v} id="balon-oro" category="Balón de Oro" val={o.v} odds={o.odds}
+              <SmBtn key={o.v} id="balon-oro" category="Balón de Oro" val={o.v} odds={o.odds}
                 display={`${FLAGS[o.team]||'🏴'} ${o.v.split(' ').slice(-1)[0]}`}/>
             ))}
           </div>
@@ -3927,9 +3945,9 @@ function BetsScreen({bets,placeBet,credito,onPagar,onReset}){
               <span style={{fontSize:12,fontWeight:700,color:'var(--muted)',letterSpacing:.8}}>{grp.g}</span>
               {gb&&<span style={{fontSize:10,background:'rgba(30,198,108,.15)',color:'var(--grn)',padding:'2px 7px',borderRadius:20,fontWeight:700}}>✓ {gb.selection}</span>}
             </div>
-            <div style={{padding:'10px 12px',display:'flex',gap:6,flexWrap:'wrap'}}>
+            <div style={{padding:'10px 12px',display:'flex',gap:5,flexWrap:'wrap'}}>
               {grp.teams.map(t=>(
-                <OBtn key={t.v} id={gid} category={`Ganador ${grp.g}`} val={t.v} odds={t.odds}
+                <SmBtn key={t.v} id={gid} category={`Ganador ${grp.g}`} val={t.v} odds={t.odds}
                   display={`${FLAGS[t.v]||'🏴'} ${t.v}`}/>
               ))}
             </div>
@@ -4111,15 +4129,6 @@ function BetsScreen({bets,placeBet,credito,onPagar,onReset}){
 
   return(
     <div className="scr fin">
-      {/* Toast */}
-      {toast&&(
-        <div style={{position:'sticky',top:0,zIndex:10,margin:'0 16px 8px',
-          background:'rgba(30,198,108,.15)',border:'1px solid rgba(30,198,108,.35)',
-          borderRadius:10,padding:'9px 14px',fontSize:13,color:'var(--grn)',
-          fontWeight:700,textAlign:'center',animation:'fin .3s ease'}}>
-          🔮 Pronóstico registrado: {toast}
-        </div>
-      )}
       {/* Header */}
       <div style={{padding:'14px 16px 10px',borderBottom:'1px solid rgba(255,255,255,.04)'}}>
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:10}}>
