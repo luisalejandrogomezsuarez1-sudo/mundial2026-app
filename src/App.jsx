@@ -966,6 +966,34 @@ function PlayerPhoto({name,team,g=0,a=0,sz=120}){
 // Embedded stadium images (base64) — only BBVA has one
 const STADIUM_IMGS={'Estadio BBVA':APP_LOGO};
 
+// Stadium color themes — accent colors per venue
+const STADIUM_THEMES={
+  'MetLife Stadium':      {bg1:'#0B1A2E',bg2:'#102A4A',ac:'#0053A0',lc:'#4D9FDC'},
+  'AT&T Stadium':         {bg1:'#0D0D0D',bg2:'#1A1A2E',ac:'#003594',lc:'#6699CC'},
+  'SoFi Stadium':         {bg1:'#0A1628',bg2:'#0D2040',ac:'#003594',lc:'#87CEEB'},
+  'Rose Bowl':            {bg1:'#1A2408',bg2:'#2D4010',ac:'#4CAF50',lc:'#90EE90'},
+  'Levi Stadium':         {bg1:'#0A1020',bg2:'#142030',ac:'#AA0000',lc:'#CC4444'},
+  "Levi's Stadium":       {bg1:'#0A1020',bg2:'#142030',ac:'#AA0000',lc:'#CC4444'},
+  'Estadio Azteca':       {bg1:'#1A0808',bg2:'#2E1010',ac:'#006847',lc:'#CE1126'},
+  'Estadio BBVA':         {bg1:'#0A1628',bg2:'#0D2040',ac:'#004A97',lc:'#6699CC'},
+  'Estadio Akron':        {bg1:'#0A1020',bg2:'#0D1830',ac:'#1B5EA6',lc:'#87CEEB'},
+  'Estadio Monterrey':    {bg1:'#0A1020',bg2:'#0D1830',ac:'#1B5EA6',lc:'#87CEEB'},
+  'BC Place':             {bg1:'#0D1A30',bg2:'#132440',ac:'#0066CC',lc:'#4DA6FF'},
+  'Commonwealth Stadium': {bg1:'#0D1A30',bg2:'#142440',ac:'#005C38',lc:'#4DA67A'},
+  'BMO Field':            {bg1:'#0D1A30',bg2:'#142440',ac:'#EF3E42',lc:'#FF8080'},
+  'Gillette Stadium':     {bg1:'#0A1020',bg2:'#142030',ac:'#002244',lc:'#4D7AB5'},
+  'Lincoln Financial Field':{bg1:'#0A1020',bg2:'#142030',ac:'#004953',lc:'#A5ACAF'},
+  'NRG Stadium':          {bg1:'#1A1008',bg2:'#2E2010',ac:'#03202F',lc:'#8DC3E3'},
+  'Arrowhead Stadium':    {bg1:'#1A0808',bg2:'#2E1010',ac:'#E31837',lc:'#FFB81C'},
+  'Lumen Field':          {bg1:'#0A1020',bg2:'#0D1830',ac:'#002244',lc:'#69BE28'},
+  'Bank of America Stadium':{bg1:'#0A1020',bg2:'#0D1830',ac:'#0085CA',lc:'#BFC0BF'},
+  'Mercedes-Benz Stadium':{bg1:'#0A1020',bg2:'#0D1830',ac:'#A71930',lc:'#C6C7C7'},
+  'Hard Rock Stadium':    {bg1:'#0A1020',bg2:'#0D1830',ac:'#F26522',lc:'#005778'},
+  'Allegiant Stadium':    {bg1:'#050505',bg2:'#0A0A0A',ac:'#A5ACAF',lc:'#000000'},
+  'Q2 Stadium':           {bg1:'#0A1020',bg2:'#0D1830',ac:'#00B140',lc:'#FFFFFF'},
+  "Estadio Ciudad de México":{bg1:'#0A1628',bg2:'#0D2040',ac:'#006847',lc:'#CE1126'},
+};
+
 function StadiumCard({v,height=150}){
   const t=STADIUM_THEMES[v.n]||{bg1:'#040E24',bg2:'#0C2660',ac:'#60A5FA',lc:'#93C5FD'};
   const wiki=VENUE_WIKI[v.n]||v.wk;
