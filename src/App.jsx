@@ -672,17 +672,20 @@ const DEMO_MEMBERS=[
   {id:'m5',name:'Roberto V.',ini:'RV',col:'#A855F7',locked:false,lockedAt:null,pts:0,bets:[]},
 ];
 // ── Coin System ───────────────────────────────────
-const COINS_PER_PAGO=1000; // 1 pago de $20 MXN = 1000 monedas
-const COIN_COSTS={campeon:80,'bota-oro':60,'balon-oro':60};
+const COINS_PER_PAGO=5000; // 1 pago de $20 MXN = 5000 monedas
+const COIN_COSTS={campeon:150,'bota-oro':100,'balon-oro':100};
 const getBetCost=id=>{
   if(COIN_COSTS[id]!==undefined)return COIN_COSTS[id];
-  if(id.startsWith('grp-'))return 25;
-  if(id.endsWith('-exacto'))return 15;
-  if(id.endsWith('-1x2')||id.endsWith('-total')||id.endsWith('-btts')||
-     id.endsWith('-dc')||id.endsWith('-jugador')||id.endsWith('-handicap'))return 10;
-  return 5;
+  if(id.startsWith('grp-'))return 40;
+  if(id.endsWith('-exacto'))return 80;      // especial premium
+  if(id.endsWith('-jugador'))return 50;     // especial
+  if(id.endsWith('-handicap'))return 40;   // especial
+  if(id.endsWith('-1x2'))return 30;
+  if(id.endsWith('-total')||id.endsWith('-btts')||id.endsWith('-dc'))return 20;
+  return 15;
 };
-// Max possible: campeon80+bota60+balon60+grpx4(100)+partidox7x4(280)+especialesx7x3(175) = 755 < 1000 ✓
+// 5000 monedas: campeon150+bota100+balon100+grp40x12(480)+1x2 30x28(840)+
+// otras28x2(1120)+especiales80+50+40x28(4760) → usuario elige sus favoritas
 
 // ── Admin & DB Config ─────────────────────────────
 const ADMIN_EMAIL='luis.gomezs@yahoo.com.mx';
@@ -3830,16 +3833,17 @@ function BetsScreen({bets,placeBet,credito,onPagar,onReset}){
   const OBtn=({id,category,val,odds,display})=>{
     const sel=isSel(id,val);
     return(
-      <button onClick={()=>place(id,category,val,odds)}
+      <button type="button" onClick={e=>{e.preventDefault();place(id,category,val,odds);}}
         style={{background:sel?'rgba(246,201,14,.18)':'var(--surf2)',
           border:`1.5px solid ${sel?'var(--gold)':'var(--br)'}`,
-          borderRadius:10,padding:'8px 10px',cursor:'pointer',transition:'background .15s,border-color .15s',
+          borderRadius:10,padding:'8px 6px',cursor:'pointer',
+          transition:'background .15s,border-color .15s,color .15s',
           display:'flex',flexDirection:'column',alignItems:'center',gap:2,
-          fontFamily:'var(--fb)',minWidth:70,flexShrink:0,
-          boxSizing:'border-box'}}>
-        <span style={{fontSize:12,color:sel?'var(--gold)':'var(--txt)',fontWeight:700,textAlign:'center',lineHeight:1.3}}>{display||val}</span>
-        <span style={{fontSize:11,color:sel?'var(--gold)':'#6B82AF',fontWeight:700}}>{odds}x</span>
-        {/* siempre reserva el espacio del ✓ para que el tamaño no cambie */}
+          fontFamily:'var(--fb)',width:'100%',boxSizing:'border-box'}}>
+        <span style={{fontSize:11,color:sel?'var(--gold)':'var(--txt)',fontWeight:700,
+          textAlign:'center',lineHeight:1.3,whiteSpace:'nowrap',overflow:'hidden',
+          textOverflow:'ellipsis',width:'100%'}}>{display||val}</span>
+        <span style={{fontSize:10,color:sel?'var(--gold)':'#6B82AF',fontWeight:700}}>{odds}x</span>
         <span style={{fontSize:9,fontWeight:700,color:sel?'var(--grn)':'transparent',userSelect:'none'}}>✓</span>
       </button>
     );
@@ -3946,60 +3950,60 @@ function BetsScreen({bets,placeBet,credito,onPagar,onReset}){
           <div key={mid} style={{margin:'0 16px 13px',background:'var(--surf)',borderRadius:14,border:'1px solid var(--br)',overflow:'hidden'}}>
             {/* Header */}
             <div style={{padding:'9px 14px 7px',background:'rgba(255,255,255,.02)',borderBottom:'1px solid var(--br)',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
-              <div style={{display:'flex',alignItems:'center',gap:7}}>
-                <span style={{fontSize:16}}>{FLAGS[m.home]||'🏴'}</span>
-                <span style={{fontSize:13,fontWeight:700}}>{m.home}</span>
-                <span style={{fontSize:11,color:'var(--muted)'}}>vs</span>
-                <span style={{fontSize:13,fontWeight:700}}>{m.away}</span>
-                <span style={{fontSize:16}}>{FLAGS[m.away]||'🏴'}</span>
+              <div style={{display:'flex',alignItems:'center',gap:7,minWidth:0}}>
+                <span style={{fontSize:16,flexShrink:0}}>{FLAGS[m.home]||'🏴'}</span>
+                <span style={{fontSize:12,fontWeight:700,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',maxWidth:80}}>{m.home}</span>
+                <span style={{fontSize:11,color:'var(--muted)',flexShrink:0}}>vs</span>
+                <span style={{fontSize:12,fontWeight:700,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',maxWidth:80}}>{m.away}</span>
+                <span style={{fontSize:16,flexShrink:0}}>{FLAGS[m.away]||'🏴'}</span>
               </div>
               {isLive
-                ?<span className="live" style={{fontSize:9}}><span className="ldot"/>{m.min}'</span>
-                :<span style={{fontSize:11,color:'var(--muted)'}}>{m.date||''} {m.time||''}</span>}
+                ?<span className="live" style={{fontSize:9,flexShrink:0}}><span className="ldot"/>{m.min}'</span>
+                :<span style={{fontSize:10,color:'var(--muted)',flexShrink:0}}>{m.time||''}</span>}
             </div>
-            <div style={{padding:'10px 14px',display:'flex',flexDirection:'column',gap:12}}>
-              {/* 1X2 */}
+            <div style={{padding:'10px 14px',display:'flex',flexDirection:'column',gap:10}}>
+              {/* 1X2 — 3 columnas fijas */}
               <div>
-                <div style={{fontSize:10,color:'var(--muted)',fontWeight:700,marginBottom:6,letterSpacing:.8}}>RESULTADO FINAL (1X2)</div>
-                <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
+                <div style={{fontSize:10,color:'var(--muted)',fontWeight:700,marginBottom:6,letterSpacing:.8}}>1X2</div>
+                <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:5}}>
                   <OBtn id={`m${mid}-1x2`} category="1X2" val="1" odds={o[0]}
-                    display={`① ${m.home.substring(0,7)}`}/>
+                    display={`① ${m.home.substring(0,6)}`}/>
                   <OBtn id={`m${mid}-1x2`} category="1X2" val="X" odds={o[1]}
                     display="✕ Empate"/>
                   <OBtn id={`m${mid}-1x2`} category="1X2" val="2" odds={o[2]}
-                    display={`② ${m.away.substring(0,7)}`}/>
+                    display={`② ${m.away.substring(0,6)}`}/>
                 </div>
               </div>
-              {/* Total Goles */}
+              {/* Total — 2 columnas fijas */}
               <div>
-                <div style={{fontSize:10,color:'var(--muted)',fontWeight:700,marginBottom:6,letterSpacing:.8}}>TOTAL DE GOLES</div>
-                <div style={{display:'flex',gap:6}}>
+                <div style={{fontSize:10,color:'var(--muted)',fontWeight:700,marginBottom:6,letterSpacing:.8}}>GOLES</div>
+                <div style={{display:'grid',gridTemplateColumns:'repeat(2,1fr)',gap:5}}>
                   <OBtn id={`m${mid}-total`} category="Total Goles" val="over" odds={1.85}
                     display="Más +2.5"/>
                   <OBtn id={`m${mid}-total`} category="Total Goles" val="under" odds={1.95}
                     display="Menos -2.5"/>
                 </div>
               </div>
-              {/* BTTS */}
+              {/* BTTS — 2 columnas fijas */}
               <div>
-                <div style={{fontSize:10,color:'var(--muted)',fontWeight:700,marginBottom:6,letterSpacing:.8}}>AMBOS ANOTAN (BTTS)</div>
-                <div style={{display:'flex',gap:6}}>
+                <div style={{fontSize:10,color:'var(--muted)',fontWeight:700,marginBottom:6,letterSpacing:.8}}>BTTS</div>
+                <div style={{display:'grid',gridTemplateColumns:'repeat(2,1fr)',gap:5}}>
                   <OBtn id={`m${mid}-btts`} category="BTTS" val="si" odds={1.75}
                     display="✓ Sí anotan"/>
                   <OBtn id={`m${mid}-btts`} category="BTTS" val="no" odds={2.05}
                     display="✗ No anotan"/>
                 </div>
               </div>
-              {/* Doble Oportunidad */}
+              {/* Doble Oportunidad — 3 columnas fijas */}
               <div>
-                <div style={{fontSize:10,color:'var(--muted)',fontWeight:700,marginBottom:6,letterSpacing:.8}}>DOBLE OPORTUNIDAD</div>
-                <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
+                <div style={{fontSize:10,color:'var(--muted)',fontWeight:700,marginBottom:6,letterSpacing:.8}}>DOBLE OPORT.</div>
+                <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:5}}>
                   <OBtn id={`m${mid}-dc`} category="Doble Oportunidad" val="1X" odds={1.4}
-                    display="1X Local/Emp."/>
+                    display="1X L/Emp"/>
                   <OBtn id={`m${mid}-dc`} category="Doble Oportunidad" val="X2" odds={1.5}
-                    display="X2 Emp./Visit."/>
+                    display="X2 E/Vis"/>
                   <OBtn id={`m${mid}-dc`} category="Doble Oportunidad" val="12" odds={1.25}
-                    display="12 Sin Empate"/>
+                    display="12 S/Emp"/>
                 </div>
               </div>
             </div>
@@ -4035,17 +4039,21 @@ function BetsScreen({bets,placeBet,credito,onPagar,onReset}){
               <div style={{display:'flex',alignItems:'center',gap:8}}>
                 <input type="number" min="0" max="9" placeholder="0" value={ex.h}
                   onChange={e=>setExact(p=>({...p,[mid]:{...ex,h:e.target.value}}))}
+                  onFocus={e=>e.target.select()}
                   style={{width:50,padding:'9px 6px',background:'var(--surf2)',border:'1.5px solid var(--br)',
                     borderRadius:10,color:'var(--txt)',fontSize:22,fontFamily:'var(--ff)',
                     textAlign:'center',outline:'none'}}/>
                 <span style={{fontFamily:'var(--ff)',fontSize:24,color:'var(--muted)'}}>–</span>
                 <input type="number" min="0" max="9" placeholder="0" value={ex.a}
                   onChange={e=>setExact(p=>({...p,[mid]:{...ex,a:e.target.value}}))}
+                  onFocus={e=>e.target.select()}
                   style={{width:50,padding:'9px 6px',background:'var(--surf2)',border:'1.5px solid var(--br)',
                     borderRadius:10,color:'var(--txt)',fontSize:22,fontFamily:'var(--ff)',
                     textAlign:'center',outline:'none'}}/>
                 <button
-                  onClick={()=>{
+                  type="button"
+                  onClick={e=>{
+                    e.preventDefault();
                     if(ex.h===''||ex.a==='') return;
                     place(exKey,'Marcador Exacto',`${m.home} ${ex.h}-${ex.a} ${m.away}`,8.5);
                   }}
@@ -4066,31 +4074,33 @@ function BetsScreen({bets,placeBet,credito,onPagar,onReset}){
                 {players.slice(0,10).map(p=>{
                   const sel=getBet(jugKey)?.selection===p.n;
                   return(
-                    <button key={p.n} onClick={()=>place(jugKey,'Jugador que Anotará',p.n,3.5)}
+                    <button type="button" key={p.n}
+                      onClick={e=>{e.preventDefault();place(jugKey,'Jugador que Anotará',p.n,3.5);}}
                       style={{background:sel?'rgba(246,201,14,.18)':'var(--surf2)',
                         border:`1px solid ${sel?'var(--gold)':'var(--br)'}`,
                         borderRadius:8,padding:'5px 10px',cursor:'pointer',
                         fontSize:11,color:sel?'var(--gold)':'var(--txt)',
-                        fontWeight:600,fontFamily:'var(--fb)',transition:'all .15s'}}>
+                        fontWeight:600,fontFamily:'var(--fb)',
+                        transition:'background .15s,border-color .15s,color .15s'}}>
                       {p.n.split(' ').slice(-1)[0]}
                     </button>
                   );
                 })}
               </div>
             </div>
-            {/* Hándicap */}
+            {/* Hándicap — 3 columnas fijas */}
             <div style={{padding:'12px 14px'}}>
               <div style={{fontSize:10,color:'var(--muted)',fontWeight:700,marginBottom:8,letterSpacing:.8,display:'flex',alignItems:'center',gap:8}}>
                 ⚖️ HÁNDICAP
                 {getBet(hdKey)&&<span style={{color:'var(--grn)',fontWeight:700}}>✓ {getBet(hdKey).selection}</span>}
               </div>
-              <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
+              <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:5}}>
                 <OBtn id={hdKey} category="Hándicap" val={`${m.home} -1.5`} odds={2.1}
-                  display={`${m.home.substring(0,8)} -1.5`}/>
+                  display={`${m.home.substring(0,7)} -1.5`}/>
                 <OBtn id={hdKey} category="Hándicap" val="Empate HC" odds={3.4}
                   display="Empate HC"/>
                 <OBtn id={hdKey} category="Hándicap" val={`${m.away} +1.5`} odds={1.9}
-                  display={`${m.away.substring(0,8)} +1.5`}/>
+                  display={`${m.away.substring(0,7)} +1.5`}/>
               </div>
             </div>
           </div>
