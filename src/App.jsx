@@ -11,6 +11,9 @@ import('./firebase.js').then(fb => {
   fbSaveUser      = fb.saveUserToFirestore;
   fbGetAllUsers   = fb.getAllUsersFromFirestore;
   fbGiftCoins     = fb.giftCoinsInFirestore;
+  // Expose globally so admin panel can always access
+  window._fbGetAllUsers = fb.getAllUsersFromFirestore;
+  window._fbSaveUser    = fb.saveUserToFirestore;
   console.log('🔥 Firebase conectado — mundial2026-15686');
 }).catch(e => console.warn('Firebase error:', e));
 
@@ -1548,7 +1551,7 @@ function Countdown(){
 }
 
 // ── Home Screen ──────────────────────────────────
-function HomeScreen({onMatch}){
+function HomeScreen({onMatch,onGoToCal}){
   const [ref,setRef]=useState(false);
   const [upd,setUpd]=useState(new Date());
   // API-Football live data
@@ -1644,7 +1647,7 @@ function HomeScreen({onMatch}){
 
       <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'6px 16px 8px'}}>
         <div style={{fontFamily:'var(--ff)',fontSize:22,letterSpacing:1}}>Próximos Partidos</div>
-        <span style={{fontSize:12,color:'var(--gold)',fontWeight:600,cursor:'pointer'}}>Ver todos →</span>
+        <span onClick={onGoToCal} style={{fontSize:12,color:'var(--gold)',fontWeight:600,cursor:'pointer'}}>Ver todos →</span>
       </div>
       {NEXT_MATCHES.slice(0,4).map(m=><NextCard key={m.id} m={m}/>)}
     </div>
@@ -1994,7 +1997,7 @@ function TablaScreen(){
                     background:i===0?'var(--gold)':i===1?'rgba(246,201,14,.22)':'rgba(255,255,255,.08)',
                     display:'flex',alignItems:'center',justifyContent:'center',
                     fontSize:10,fontWeight:800,color:i===0?'#000':'#fff'}}>{i+1}</div>
-                  <span style={{fontSize:17}}>{FLAGS[t.n]||'🏴'}</span>
+                  <span style={{fontSize:17}}>{FLAGS[t.n]||'🏳️'}</span>
                   <span style={{fontSize:12,fontWeight:600}}>{t.n}</span>
                   {i<2&&<span style={{fontSize:9,background:'rgba(30,198,108,.15)',color:'var(--grn)',
                     padding:'1px 5px',borderRadius:4,fontWeight:700,flexShrink:0}}>ADV</span>}
@@ -2161,31 +2164,47 @@ function PerfilScreen({user,onLogout,lang='es'}){
   const [dbLoaded,setDbLoaded]=useState(false);
   const [shareMsg,setShareMsg]=useState('');
 
-  // Load from BOTH localStorage AND Firestore
+  // Load from BOTH localStorage AND Firestore — waits for Firebase
   useEffect(()=>{
     if(!user.isAdmin)return;
-    const reload=async()=>{
-      // Load local users
-      const localUsers = await dbLoad();
-      // Load Firestore users (from ALL devices)
-      let fsUsers = [];
-      if(fbGetAllUsers) {
-        try{ fsUsers = await fbGetAllUsers(); }
-        catch(e){ console.warn('Firestore users error:', e); }
-      }
-      // Merge: Firestore users override local for same email
-      const merged = [...localUsers];
-      fsUsers.forEach(fu=>{
-        const idx = merged.findIndex(lu=>lu.email?.toLowerCase()===fu.email?.toLowerCase());
-        if(idx>=0) merged[idx]={...merged[idx],...fu};
+
+    const mergeUsers=(local,fs)=>{
+      const merged=[...local];
+      fs.forEach(fu=>{
+        const idx=merged.findIndex(lu=>
+          lu.email?.toLowerCase()===fu.email?.toLowerCase());
+        if(idx>=0)merged[idx]={...merged[idx],...fu};
         else merged.push(fu);
       });
+      return merged;
+    };
+
+    const doLoad=async()=>{
+      const localUsers=await dbLoad();
+      let fsUsers=[];
+      const getAllFn=fbGetAllUsers||window._fbGetAllUsers;
+      if(getAllFn){
+        try{ fsUsers=await getAllFn(); }
+        catch(e){ console.warn('Firestore read error:',e); }
+      }
+      const merged=mergeUsers(localUsers,fsUsers);
+      // Always show at least local users
       setDbUsers(merged);
       setDbLoaded(true);
+      return merged;
     };
-    reload();
-    const id=setInterval(reload,8000);
-    return()=>clearInterval(id);
+
+    // Load immediately with local data first
+    doLoad();
+
+    // Then keep polling every 6s to catch new Firestore users
+    const id=setInterval(doLoad,6000);
+
+    // Also try once more after 2s in case Firebase just loaded
+    const t1=setTimeout(doLoad,2000);
+    const t2=setTimeout(doLoad,5000);
+
+    return()=>{clearInterval(id);clearTimeout(t1);clearTimeout(t2);};
   },[user.isAdmin]);
 
   const deleteUser=async id=>{
@@ -2306,9 +2325,18 @@ function PerfilScreen({user,onLogout,lang='es'}){
                     Local · Producción: Firebase Firestore
                   </div>
                 </div>
-                <button onClick={()=>{
+                <button onClick={async()=>{
                   setDbLoaded(false);
-                  dbLoad().then(u=>{setDbUsers(u);setDbLoaded(true);});
+                  const localUsers = await dbLoad();
+                  let fsUsers = [];
+                  const fn=fbGetAllUsers||window._fbGetAllUsers;if(fn){try{fsUsers=await fn();}catch(e){}}
+                  const merged=[...localUsers];
+                  fsUsers.forEach(fu=>{
+                    const idx=merged.findIndex(lu=>lu.email?.toLowerCase()===fu.email?.toLowerCase());
+                    if(idx>=0)merged[idx]={...merged[idx],...fu};
+                    else merged.push(fu);
+                  });
+                  setDbUsers(merged);setDbLoaded(true);
                 }}
                   style={{background:'rgba(79,142,247,.12)',border:'none',color:'var(--acc)',
                     borderRadius:8,padding:'5px 10px',fontSize:11,fontWeight:700,
@@ -2720,13 +2748,7 @@ function GruposScreen({user,userBets,credito,onPagar}){
     if(!code)return;
     const found=groups.find(g=>g.code===code);
     if(found){setJoinErr('');goDetail(found);setJoinCode('');return;}
-    if(code==='WC26-AMIGOS'){
-      const g={id:'g_amigos',name:'Amigos Pro ⚽',code:'WC26-AMIGOS',
-        desc:'Grupo de amigos del futbol',created:Date.now()-7200000,
-        members:DEMO_MEMBERS.slice(0,3)};
-      setGroups(p=>[...p.filter(x=>x.id!=='g_amigos'),g]);
-      setJoinErr('');goDetail(g);setJoinCode('');return;
-    }
+
     setJoinErr('Código no encontrado. Pide a tu amigo que lo verifique.');
   };
 
@@ -2740,7 +2762,7 @@ function GruposScreen({user,userBets,credito,onPagar}){
   const getUserEntry=gid=>{
     const l=locks[gid];
     if(!l)return null;
-    return{id:'user',name:user?.name||'Tú',ini:(user?.name||'YO')[0].toUpperCase(),
+    return{id:'user',name:user?.name||'Tú',ini:(user?.name||'U')[0].toUpperCase(),
       col:'var(--gold)',locked:true,lockedAt:l.lockedAt,pts:0,
       bets:l.bets.map(b=>({id:b.id,cat:b.category,sel:b.selection,odds:b.odds}))};
   };
@@ -3948,7 +3970,7 @@ function BetsScreen({bets,placeBet,credito,onPagar,onReset}){
           <div>
             <div style={{fontFamily:'var(--ff)',fontSize:26,letterSpacing:2}}>MI PRONÓSTICO</div>
             <div style={{fontSize:11,color:'var(--muted)',marginTop:1}}>
-              Paquete #{credito.paquetes} · {new Date(credito.paidAt).toLocaleDateString('es',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}
+              Paquete #{credito?.paquetes||0} · {new Date(credito.paidAt).toLocaleDateString('es',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}
             </div>
           </div>
           <button onClick={()=>setConfirmReset(true)}
@@ -4205,10 +4227,12 @@ export default function App(){
     localStorage.setItem('wc2026_session_'+u.id, sessionId);
     // Guardar en Firestore — con reintentos si Firebase aún carga
     const saveToFirestore = async(attempts=0) => {
-      if(fbSaveUser){
-        await fbSaveUser({...u, sessionId});
-      } else if(attempts < 8){
-        setTimeout(()=>saveToFirestore(attempts+1), 800);
+      const saveFn=fbSaveUser||window._fbSaveUser;
+      if(saveFn){
+        try{ await saveFn({...u, sessionId}); }
+        catch(e){ console.warn('saveUser error:',e); }
+      } else if(attempts < 10){
+        setTimeout(()=>saveToFirestore(attempts+1), 600);
       }
     };
     saveToFirestore();
@@ -4292,6 +4316,7 @@ export default function App(){
   ];
 
   return(
+    <LangCtx.Provider value={t}>
     <div>
       <style>{css}</style>
       <div className="app">
@@ -4304,7 +4329,7 @@ export default function App(){
               <MatchDetail m={match} onBack={()=>setMatch(null)}/>
             </div>
           )}
-          {tab==='home'       &&<HomeScreen onMatch={setMatch}/>}
+          {tab==='home'       &&<HomeScreen onMatch={setMatch} onGoToCal={()=>setTab('cal')}/>}
           {tab==='cal'        &&<CalScreen/>}
           {tab==='tabla'      &&<TablaScreen/>}
           {tab==='goles'      &&<GolesScreen/>}
@@ -4383,5 +4408,6 @@ export default function App(){
         </>}
       </div>
     </div>
+    </LangCtx.Provider>
   );
 }
