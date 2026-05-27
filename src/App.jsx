@@ -2162,49 +2162,64 @@ function PerfilScreen({user,onLogout,lang='es'}){
   const [saved,setSaved]=useState(false);
   const [dbUsers,setDbUsers]=useState([]);
   const [dbLoaded,setDbLoaded]=useState(false);
+  const [fbStatus,setFbStatus]=useState('waiting'); // waiting | ready | error
   const [shareMsg,setShareMsg]=useState('');
 
-  // Load from BOTH localStorage AND Firestore — waits for Firebase
   useEffect(()=>{
-    if(!user.isAdmin)return;
+    if(!user.isAdmin) return;
 
     const mergeUsers=(local,fs)=>{
       const merged=[...local];
       fs.forEach(fu=>{
-        const idx=merged.findIndex(lu=>
-          lu.email?.toLowerCase()===fu.email?.toLowerCase());
-        if(idx>=0)merged[idx]={...merged[idx],...fu};
+        const idx=merged.findIndex(lu=>lu.email?.toLowerCase()===fu.email?.toLowerCase());
+        if(idx>=0) merged[idx]={...merged[idx],...fu};
         else merged.push(fu);
       });
       return merged;
     };
 
-    const doLoad=async()=>{
-      const localUsers=await dbLoad();
-      let fsUsers=[];
-      const getAllFn=fbGetAllUsers||window._fbGetAllUsers;
-      if(getAllFn){
-        try{ fsUsers=await getAllFn(); }
-        catch(e){ console.warn('Firestore read error:',e); }
-      }
-      const merged=mergeUsers(localUsers,fsUsers);
-      // Always show at least local users
-      setDbUsers(merged);
+    // Step 1: Load local users immediately so panel isn't empty
+    dbLoad().then(local=>{
+      setDbUsers(local);
       setDbLoaded(true);
-      return merged;
-    };
+    });
 
-    // Load immediately with local data first
-    doLoad();
+    // Step 2: Poll every 400ms until Firebase is ready, then load Firestore users
+    let pollCount=0;
+    const pollFirebase=setInterval(async()=>{
+      pollCount++;
+      const fn=fbGetAllUsers||window._fbGetAllUsers;
+      if(fn){
+        clearInterval(pollFirebase);
+        setFbStatus('ready');
+        try{
+          const local=await dbLoad();
+          const fs=await fn();
+          setDbUsers(mergeUsers(local,fs));
+          setDbLoaded(true);
+        }catch(e){
+          console.warn('Firestore load error:',e);
+          setFbStatus('error');
+        }
+      } else if(pollCount>30){ // 30 × 400ms = 12s timeout
+        clearInterval(pollFirebase);
+        setFbStatus('error');
+        setDbLoaded(true);
+      }
+    },400);
 
-    // Then keep polling every 6s to catch new Firestore users
-    const id=setInterval(doLoad,6000);
+    // Step 3: Keep refreshing every 8s once Firebase is ready
+    const refresh=setInterval(async()=>{
+      const fn=fbGetAllUsers||window._fbGetAllUsers;
+      if(!fn) return;
+      try{
+        const local=await dbLoad();
+        const fs=await fn();
+        setDbUsers(mergeUsers(local,fs));
+      }catch(e){}
+    },8000);
 
-    // Also try once more after 2s in case Firebase just loaded
-    const t1=setTimeout(doLoad,2000);
-    const t2=setTimeout(doLoad,5000);
-
-    return()=>{clearInterval(id);clearTimeout(t1);clearTimeout(t2);};
+    return()=>{clearInterval(pollFirebase);clearInterval(refresh);};
   },[user.isAdmin]);
 
   const deleteUser=async id=>{
@@ -2321,8 +2336,13 @@ function PerfilScreen({user,onLogout,lang='es'}){
                   <div style={{fontSize:12,fontWeight:700,color:'var(--muted)',letterSpacing:.5}}>
                     🗃️ BASE DE DATOS · USUARIOS
                   </div>
-                  <div style={{fontSize:10,color:'var(--dim)',marginTop:1}}>
-                    Local · Producción: Firebase Firestore
+                  <div style={{fontSize:10,color:'var(--dim)',marginTop:1,display:'flex',alignItems:'center',gap:4}}>
+                    <span style={{
+                      width:6,height:6,borderRadius:'50%',display:'inline-block',
+                      background:fbStatus==='ready'?'var(--grn)':fbStatus==='error'?'var(--red)':'var(--ylw)',
+                      animation:fbStatus==='waiting'?'blink 1s infinite':'none'
+                    }}/>
+                    {fbStatus==='ready'?'Firebase ✓':fbStatus==='error'?'Solo local':'Conectando Firebase...'}
                   </div>
                 </div>
                 <button onClick={async()=>{
@@ -2346,8 +2366,13 @@ function PerfilScreen({user,onLogout,lang='es'}){
               {/* Table header */}
               {dbLoaded&&dbUsers.length===0&&(
                 <div style={{textAlign:'center',padding:'20px',color:'var(--muted)',fontSize:13}}>
-                  Ningún usuario registrado aún.<br/>
-                  <span style={{fontSize:11,opacity:.7}}>Los usuarios aparecen aquí cuando inician sesión desde cualquier dispositivo.</span>
+                  {fbStatus==='waiting'
+                    ? <><div style={{fontSize:20,marginBottom:6}}>🔄</div>Conectando a Firebase...</>
+                    : <><div>Ningún usuario registrado aún.</div>
+                       <span style={{fontSize:11,opacity:.7}}>
+                         Los usuarios aparecen cuando inician sesión desde cualquier dispositivo.
+                       </span></>
+                  }
                 </div>
               )}
               {dbLoaded&&dbUsers.length>0&&(
