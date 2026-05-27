@@ -2158,6 +2158,7 @@ function GolesScreen(){
 
 // ── Profile Screen ───────────────────────────────
 function PerfilScreen({user,onLogout,lang='es'}){
+  const t = useLang(); // ← translations
   const ini=(user.name||user.email||'U')[0].toUpperCase();
   const [saved,setSaved]=useState(false);
   const [dbUsers,setDbUsers]=useState([]);
