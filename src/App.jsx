@@ -3826,19 +3826,21 @@ function BetsScreen({bets,placeBet,credito,onPagar,onReset}){
     setTimeout(()=>setToast(''),2200);
   };
 
-  // Reusable option button
+  // Reusable option button — tamaño FIJO, solo cambia color al seleccionar
   const OBtn=({id,category,val,odds,display})=>{
     const sel=isSel(id,val);
     return(
       <button onClick={()=>place(id,category,val,odds)}
         style={{background:sel?'rgba(246,201,14,.18)':'var(--surf2)',
           border:`1.5px solid ${sel?'var(--gold)':'var(--br)'}`,
-          borderRadius:10,padding:'8px 10px',cursor:'pointer',transition:'all .15s',
+          borderRadius:10,padding:'8px 10px',cursor:'pointer',transition:'background .15s,border-color .15s',
           display:'flex',flexDirection:'column',alignItems:'center',gap:2,
-          fontFamily:'var(--fb)',minWidth:70,flexShrink:0}}>
+          fontFamily:'var(--fb)',minWidth:70,flexShrink:0,
+          boxSizing:'border-box'}}>
         <span style={{fontSize:12,color:sel?'var(--gold)':'var(--txt)',fontWeight:700,textAlign:'center',lineHeight:1.3}}>{display||val}</span>
         <span style={{fontSize:11,color:sel?'var(--gold)':'#6B82AF',fontWeight:700}}>{odds}x</span>
-        {sel&&<span style={{fontSize:9,color:'var(--grn)',fontWeight:700}}>✓</span>}
+        {/* siempre reserva el espacio del ✓ para que el tamaño no cambie */}
+        <span style={{fontSize:9,fontWeight:700,color:sel?'var(--grn)':'transparent',userSelect:'none'}}>✓</span>
       </button>
     );
   };
