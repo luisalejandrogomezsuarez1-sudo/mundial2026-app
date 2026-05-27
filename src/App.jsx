@@ -963,6 +963,9 @@ function PlayerPhoto({name,team,g=0,a=0,sz=120}){
 }
 
 
+// Embedded stadium images (base64) — only BBVA has one
+const STADIUM_IMGS={'Estadio BBVA':APP_LOGO};
+
 function StadiumCard({v,height=150}){
   const t=STADIUM_THEMES[v.n]||{bg1:'#040E24',bg2:'#0C2660',ac:'#60A5FA',lc:'#93C5FD'};
   const wiki=VENUE_WIKI[v.n]||v.wk;
