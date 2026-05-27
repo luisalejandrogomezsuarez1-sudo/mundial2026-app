@@ -541,6 +541,22 @@ const SCORERS=[
 ];
 
 // Wikipedia article titles for photos
+// Official World Cup squad numbers
+const PLAYER_NUMBERS={
+  'Kylian Mbappé':'10','Harry Kane':'9','Erling Haaland':'9',
+  'Lamine Yamal':'19','Lionel Messi':'10','Vinicius Jr.':'7',
+  'Cristiano Ronaldo':'7','Lautaro Martínez':'22','Ousmane Dembélé':'11',
+  'Bukayo Saka':'7','Rodrygo':'19','Jude Bellingham':'10',
+};
+
+// Secondary (accent) color per team for jersey details
+const COLS2={
+  'Francia':'#FFFFFF','Inglaterra':'#CC0000','Noruega':'#FFFFFF',
+  'España':'#F1BF00','Argentina':'#FFFFFF','Brasil':'#009C3B',
+  'Portugal':'#006600','México':'#CE1126','USA':'#FFFFFF',
+  'Alemania':'#000000','Países Bajos':'#FFFFFF','Japón':'#FFFFFF',
+};
+
 const PLAYER_WIKI={
   'Kylian Mbappé':'Kylian_Mbappé','Harry Kane':'Harry_Kane',
   'Erling Haaland':'Erling_Haaland','Lamine Yamal':'Lamine_Yamal',
@@ -809,75 +825,139 @@ function WikiPhoto({wiki, sz=52, style={}, fallback=null, radius='50%'}){
 }
 
 // ── PlayerPhoto: WikiPhoto with SVG Avatar fallback ──
-function PlayerPhoto({name,team,g=0,a=0,sz=80}){
-  // Generic football silhouette — no real player likeness (copyright safe)
-  const col = COLS[team]||'#4F8EF7';
-  const flag = FLAGS[team]||'🏳️';
-  // Darker version of team color for shorts
-  const darker = col+'99';
+function PlayerPhoto({name,team,g=0,a=0,sz=120}){
+  const col   = COLS[team]  || '#4F8EF7';
+  const col2  = COLS2[team] || '#FFFFFF';
+  const flag  = FLAGS[team] || '🏳️';
+  const num   = PLAYER_NUMBERS[name] || '10';
+  // Last name for jersey (like MESSI, KANE, MBAPPÉ)
+  const parts = (name||'').split(' ');
+  const jersey_name = parts.length>1 ? parts[parts.length-1].toUpperCase() : (name||'').toUpperCase();
+
+  // Contrast text color based on jersey brightness
+  const r=parseInt(col.slice(1,3),16),g2=parseInt(col.slice(3,5),16),b=parseInt(col.slice(5,7),16);
+  const brightness=(r*299+g2*587+b*114)/1000;
+  const textCol = brightness>128 ? '#1a1a1a' : '#FFFFFF';
+  const nameSize = jersey_name.length>7 ? 7 : jersey_name.length>5 ? 8.5 : 10;
+
   return(
-    <div style={{
-      width:sz, height:sz*1.15,
-      borderRadius:12,
-      overflow:'hidden',
-      position:'relative',
-      flexShrink:0,
-      background:`linear-gradient(160deg,#0a2a0a 0%,#1a4a1a 50%,#0a2a0a 100%)`,
-      border:`2px solid ${col}55`,
-      boxShadow:`0 4px 16px ${col}33`,
-    }}>
-      {/* Mini football pitch lines */}
-      <svg width="100%" height="100%" viewBox="0 0 80 92" style={{position:'absolute',inset:0}}>
-        {/* Grass */}
-        <rect width="80" height="92" fill="#1a4a1a"/>
-        {/* Pitch stripes */}
-        {[0,1,2,3,4,5].map(i=>(
-          <rect key={i} x={i*14} width="7" height="92" fill="rgba(255,255,255,.03)"/>
+    <div style={{width:sz,height:Math.round(sz*1.25),borderRadius:14,overflow:'hidden',
+      flexShrink:0,boxShadow:`0 8px 24px ${col}44, 0 2px 8px rgba(0,0,0,.4)`,
+      border:`2px solid ${col}66`, cursor:'pointer', position:'relative'}}>
+      <svg viewBox="0 0 120 150" width="100%" height="100%"
+        xmlns="http://www.w3.org/2000/svg">
+
+        {/* ── GRASS BACKGROUND ── */}
+        <defs>
+          <linearGradient id={`grass_${num}`} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#1a5c1a"/>
+            <stop offset="100%" stopColor="#0f3d0f"/>
+          </linearGradient>
+        </defs>
+        <rect width="120" height="150" fill={`url(#grass_${num})`}/>
+        {/* Grass stripes */}
+        {[0,1,2,3,4,5,6,7,8].map(i=>(
+          <rect key={i} x="0" y={i*18} width="120" height="9"
+            fill="rgba(255,255,255,.03)"/>
         ))}
-        {/* Center circle */}
-        <circle cx="40" cy="46" r="14" fill="none" stroke="rgba(255,255,255,.15)" strokeWidth="1"/>
-        {/* Center line */}
-        <line x1="0" y1="46" x2="80" y2="46" stroke="rgba(255,255,255,.12)" strokeWidth="1"/>
-        {/* Penalty area top */}
-        <rect x="20" y="2" width="40" height="16" fill="none" stroke="rgba(255,255,255,.12)" strokeWidth="1"/>
-        {/* Goal top */}
-        <rect x="30" y="2" width="20" height="5" fill="rgba(255,255,255,.08)" stroke="rgba(255,255,255,.15)" strokeWidth="1"/>
+        {/* Grass texture lines */}
+        {[0,1,2,3,4,5,6,7,8,9,10,11].map(i=>(
+          <line key={i} x1={i*12} y1="0" x2={i*12} y2="150"
+            stroke="rgba(255,255,255,.02)" strokeWidth="1"/>
+        ))}
 
-        {/* ── GENERIC PLAYER SILHOUETTE ── */}
-        {/* Head */}
-        <circle cx="40" cy="22" r="5.5" fill={col}/>
-        {/* Body/Jersey */}
-        <path d="M32 30 Q40 27 48 30 L50 50 Q40 53 30 50 Z" fill={col}/>
-        {/* Jersey number */}
-        <text x="40" y="44" textAnchor="middle" fontSize="7" fontWeight="bold"
-          fill="rgba(255,255,255,.9)" fontFamily="Arial,sans-serif">
-          {(name||'').split(' ').pop()?.[0]||'?'}
+        {/* ── JERSEY SHADOW ── */}
+        <ellipse cx="60" cy="135" rx="38" ry="5"
+          fill="rgba(0,0,0,.35)"/>
+
+        {/* ── JERSEY BODY (back view) ── */}
+        {/* Main body */}
+        <path d="M 26 44 
+          C 26 42 32 37 40 35
+          Q 60 31 80 35
+          C 88 37 94 42 94 44
+          L 90 118
+          C 60 124 60 124 30 118
+          Z"
+          fill={col} stroke={col2} strokeWidth="1.5" strokeOpacity="0.4"/>
+
+        {/* Left sleeve */}
+        <path d="M 26 44
+          C 20 46 12 52 8 68
+          Q 6 76 11 78
+          L 14 76
+          Q 11 70 13 64
+          C 17 52 24 48 28 46
+          Z"
+          fill={col} stroke={col2} strokeWidth="1.5" strokeOpacity="0.4"/>
+
+        {/* Right sleeve */}
+        <path d="M 94 44
+          C 100 46 108 52 112 68
+          Q 114 76 109 78
+          L 106 76
+          Q 109 70 107 64
+          C 103 52 96 48 92 46
+          Z"
+          fill={col} stroke={col2} strokeWidth="1.5" strokeOpacity="0.4"/>
+
+        {/* Collar (back neck) */}
+        <path d="M 44 35 Q 60 30 76 35 Q 60 39 44 35 Z"
+          fill={col} stroke={col2} strokeWidth="1.5"/>
+        <path d="M 46 35 Q 60 32 74 35"
+          fill="none" stroke={col2} strokeWidth="1.5" strokeOpacity="0.7"/>
+
+        {/* Subtle jersey fold/shadow */}
+        <path d="M 60 55 L 60 115" stroke="rgba(0,0,0,.12)" strokeWidth="2"/>
+        <path d="M 26 44 C 35 80 35 100 30 118" stroke="rgba(0,0,0,.08)" strokeWidth="1.5" fill="none"/>
+        <path d="M 94 44 C 85 80 85 100 90 118" stroke="rgba(0,0,0,.08)" strokeWidth="1.5" fill="none"/>
+
+        {/* ── PLAYER NAME ── */}
+        <text x="60" y="64"
+          textAnchor="middle"
+          fontSize={nameSize}
+          fontWeight="900"
+          fontFamily="'Arial Black',Arial,sans-serif"
+          fill={textCol}
+          letterSpacing="1.5">
+          {jersey_name}
         </text>
-        {/* Shorts */}
-        <path d="M32 50 L30 62 L38 62 L40 56 L42 62 L50 62 L48 50 Z" fill={darker}/>
-        {/* Left leg */}
-        <rect x="30" y="62" width="8" height="14" rx="3" fill={col} opacity="0.8"/>
-        {/* Right leg (kicking) */}
-        <path d="M42 62 L48 62 L52 70 L46 72 Z" fill={col} opacity="0.8"/>
-        {/* Left arm */}
-        <path d="M32 32 L24 44 L28 46 L35 36 Z" fill={col}/>
-        {/* Right arm (raised) */}
-        <path d="M48 32 L56 28 L57 32 L50 38 Z" fill={col}/>
-      </svg>
 
-      {/* Team flag + name overlay */}
-      <div style={{
-        position:'absolute',bottom:0,left:0,right:0,
-        background:`linear-gradient(0deg,${col}ee 0%,transparent 100%)`,
-        padding:'4px 4px 3px',
-        textAlign:'center',
-      }}>
-        <div style={{fontSize:9,fontWeight:800,color:'#fff',
-          letterSpacing:.3,lineHeight:1.2,
-          textShadow:'0 1px 3px rgba(0,0,0,.8)'}}>
+        {/* ── JERSEY NUMBER ── */}
+        <text x="60" y="105"
+          textAnchor="middle"
+          fontSize="34"
+          fontWeight="900"
+          fontFamily="'Arial Black',Arial,sans-serif"
+          fill={textCol}
+          opacity="0.95">
+          {num}
+        </text>
+        {/* Number outline for visibility */}
+        <text x="60" y="105"
+          textAnchor="middle"
+          fontSize="34"
+          fontWeight="900"
+          fontFamily="'Arial Black',Arial,sans-serif"
+          fill="none"
+          stroke={brightness>128?'rgba(255,255,255,.4)':'rgba(0,0,0,.2)'}
+          strokeWidth="1.5">
+          {num}
+        </text>
+
+        {/* ── TEAM FLAG (bottom strip) ── */}
+        <rect x="0" y="138" width="120" height="12"
+          fill={`${col}cc`}/>
+        <text x="60" y="147"
+          textAnchor="middle"
+          fontSize="7"
+          fontWeight="700"
+          fontFamily="Arial,sans-serif"
+          fill={textCol}
+          letterSpacing=".5">
           {flag} {team}
-        </div>
-      </div>
+        </text>
+      </svg>
     </div>
   );
 }
@@ -2079,7 +2159,6 @@ function GolesScreen(){
   const [loading,setLoading]=useState(false);
 
   useEffect(()=>{
-    // Read scorers from Firestore (server keeps these updated)
     if(!window._fbDB) return;
     try{
       const {doc,getDoc,getFirestore}=window._fbFirestore||{};
@@ -2091,72 +2170,72 @@ function GolesScreen(){
       }).finally(()=>setLoading(false));
     }catch(e){setLoading(false);}
   },[]);
+
   return(
     <div className="scr fin">
       <div style={{padding:'18px 16px 8px'}}>
         <div style={{fontFamily:'var(--ff)',fontSize:28,letterSpacing:2}}>GOLEADORES</div>
-        <div style={{fontSize:12,color:'var(--muted)'}}>Máximos anotadores · FIFA World Cup 2026</div>
+        <div style={{fontSize:12,color:'var(--muted)'}}>
+          Candidatos a la Bota de Oro · FIFA World Cup 2026
+        </div>
       </div>
-      {/* Top 3 podium */}
-      <div style={{display:'flex',gap:6,padding:'4px 16px 14px',alignItems:'flex-end',justifyContent:'center'}}>
-        {[SCORERS[1],SCORERS[0],SCORERS[2]].map((p,i)=>{
-          const rank=[2,1,3][i];
-          const h=[100,118,90][i];
-          const clr=rank===1?'#F6C90E':rank===2?'#C0C0C0':'#CD7F32';
+
+      {/* Jersey grid — 2 columns */}
+      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:14,padding:'8px 16px 16px'}}>
+        {scorers.map((p,i)=>{
+          const rank=i+1;
+          const rankColor=rank===1?'#F6C90E':rank===2?'#C0C0C0':rank===3?'#CD7F32':'var(--muted)';
+          const isOpen=sel===i;
           return(
-            <div key={p.n} style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:5}}>
-              <PlayerPhoto name={p.n} team={p.team} sz={rank===1?62:50}/>
-              <div style={{fontSize:10,fontWeight:700,textAlign:'center',maxWidth:70,
-                overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{p.n.split(' ').slice(-1)[0]}</div>
-              <div style={{width:'100%',height:h,background:`${clr}18`,
-                borderRadius:'8px 8px 0 0',border:`1.5px solid ${clr}44`,
-                display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:2}}>
-                <div style={{fontFamily:'var(--ff)',fontSize:28,color:clr}}>{p.g}</div>
-                <div style={{fontSize:9,color:'var(--muted)',fontWeight:600}}>GOLES</div>
-                <div style={{fontSize:18}}>{rank===1?'🥇':rank===2?'🥈':'🥉'}</div>
+            <div key={p.n} onClick={()=>setSel(isOpen?null:i)}
+              style={{display:'flex',flexDirection:'column',alignItems:'center',
+                cursor:'pointer',position:'relative'}}>
+
+              {/* Rank badge */}
+              <div style={{position:'absolute',top:-6,left:'50%',transform:'translateX(-50%)',
+                zIndex:2,background:rank<=3?rankColor:'var(--surf2)',
+                color:rank<=3&&rank!==2?'#000':'var(--txt)',
+                fontFamily:'var(--ff)',fontSize:11,letterSpacing:.5,
+                padding:'2px 10px',borderRadius:10,
+                boxShadow:'0 2px 8px rgba(0,0,0,.3)'}}>
+                {rank===1?'🥇':rank===2?'🥈':rank===3?'🥉':`#${rank}`}
               </div>
+
+              {/* Jersey card */}
+              <PlayerPhoto name={p.n} team={p.team} g={p.g} a={p.a} sz={144}/>
+
+              {/* Goals counter */}
+              <div style={{width:'100%',background:'var(--surf)',borderRadius:'0 0 12px 12px',
+                border:`1px solid ${(COLS[p.team]||'var(--br)')}44`,borderTop:'none',
+                padding:'6px 8px 8px',marginTop:-2}}>
+                <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+                  <div style={{textAlign:'center',flex:1}}>
+                    <div style={{fontFamily:'var(--ff)',fontSize:28,
+                      color:p.g>0?'var(--gold)':'var(--muted)',lineHeight:1}}>{p.g}</div>
+                    <div style={{fontSize:8,color:'var(--muted)',fontWeight:700,letterSpacing:.5}}>GOLES</div>
+                  </div>
+                  <div style={{width:1,height:30,background:'var(--br)'}}/>
+                  <div style={{textAlign:'center',flex:1}}>
+                    <div style={{fontFamily:'var(--ff)',fontSize:22,
+                      color:p.a>0?'var(--acc)':'var(--muted)',lineHeight:1}}>{p.a}</div>
+                    <div style={{fontSize:8,color:'var(--muted)',fontWeight:700,letterSpacing:.5}}>ASIST.</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Bio expandible */}
+              {isOpen&&(
+                <div style={{width:'100%',background:'var(--surf2)',borderRadius:10,
+                  padding:'10px 10px',marginTop:6,fontSize:11,color:'var(--dim)',
+                  lineHeight:1.6,animation:'fin .2s ease',border:'1px solid var(--br)'}}>
+                  <div style={{fontWeight:700,color:'var(--txt)',marginBottom:4}}>{p.n}</div>
+                  {p.bio}
+                </div>
+              )}
             </div>
           );
         })}
       </div>
-      {/* Full list */}
-      {SCORERS.map((p,i)=>(
-        <div key={p.n} onClick={()=>setSel(sel===i?null:i)}
-          style={{margin:'0 16px 9px',background:'var(--surf)',borderRadius:14,
-            border:`1px solid ${sel===i?'rgba(246,201,14,.35)':'var(--br)'}`,
-            padding:'13px 14px',cursor:'pointer',transition:'border-color .2s',
-            position:'relative',overflow:'hidden'}}>
-          {i<3&&<div style={{position:'absolute',top:0,right:0,width:40,height:40,
-            background:i===0?'rgba(246,201,14,.08)':i===1?'rgba(192,192,192,.08)':'rgba(205,127,50,.08)',
-            borderRadius:'0 14px 0 100%',display:'flex',alignItems:'flex-start',
-            justifyContent:'flex-end',padding:'4px 6px',fontSize:16,pointerEvents:'none'}}>
-            {i===0?'🥇':i===1?'🥈':'🥉'}</div>}
-          <div style={{display:'flex',gap:11,alignItems:'center'}}>
-            <div style={{position:'relative'}}>
-              <PlayerPhoto name={p.n} team={p.team} sz={56}/>
-              <div style={{position:'absolute',bottom:-2,left:'50%',transform:'translateX(-50%)',
-                background:'var(--gold)',color:'#000',fontSize:9,fontWeight:800,
-                padding:'1px 5px',borderRadius:6,whiteSpace:'nowrap'}}>#{i+1}</div>
-            </div>
-            <div style={{flex:1,minWidth:0}}>
-              <div style={{fontWeight:700,fontSize:14}}>{p.n}</div>
-              <div style={{fontSize:12,color:'var(--muted)',marginTop:1}}>{FLAGS[p.team]||'🏴'} {p.team}</div>
-              <div style={{fontSize:11,color:'#6B82AF',marginTop:2}}>🏙️ {p.ori} · {p.debut}</div>
-            </div>
-            <div style={{textAlign:'center',flexShrink:0}}>
-              <div style={{fontFamily:'var(--ff)',fontSize:36,color:'var(--gold)',lineHeight:1}}>{p.g}</div>
-              <div style={{fontSize:9,color:'var(--muted)',fontWeight:600}}>GOLES</div>
-              <div style={{fontFamily:'var(--ff)',fontSize:20,color:'var(--acc)',marginTop:3}}>{p.a}</div>
-              <div style={{fontSize:9,color:'var(--muted)',fontWeight:600}}>ASIST.</div>
-            </div>
-          </div>
-          {sel===i&&
-            <div style={{marginTop:10,paddingTop:10,borderTop:'1px solid rgba(255,255,255,.07)',
-              fontSize:13,color:'#C8D8F0',lineHeight:1.55,animation:'fin .25s ease'}}>
-              {p.bio}
-            </div>}
-        </div>
-      ))}
     </div>
   );
 }
