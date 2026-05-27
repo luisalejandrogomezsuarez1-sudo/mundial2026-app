@@ -1,8 +1,7 @@
 import { useState, useEffect, useCallback, useRef, createContext, useContext } from "react";
 
 // ── Firebase ACTIVO ─────────────────────────────────────────────
-let fbSendMsg = null, fbSubscribeChat = null, fbSaveUser = null;
-let fbGetAllUsers = null, fbGiftCoins = null;
+let fbSendMsg = null, fbSubscribeChat = null, fbSaveUser = null, fbGetAllUsers = null, fbGiftCoins = null, fbSaveGroup = null, fbGetGroupByCode = null;
 const FB_ACTIVE = true;
 
 import('./firebase.js').then(fb => {
@@ -10,10 +9,14 @@ import('./firebase.js').then(fb => {
   fbSubscribeChat = fb.subscribeToChatMessages;
   fbSaveUser      = fb.saveUserToFirestore;
   fbGetAllUsers   = fb.getAllUsersFromFirestore;
-  fbGiftCoins     = fb.giftCoinsInFirestore;
-  // Expose globally so admin panel can always access
-  window._fbGetAllUsers = fb.getAllUsersFromFirestore;
-  window._fbSaveUser    = fb.saveUserToFirestore;
+  fbGiftCoins      = fb.giftCoinsInFirestore;
+  fbSaveGroup      = fb.saveGroupToFirestore;
+  fbGetGroupByCode = fb.getGroupByCode;
+  // Expose globally
+  window._fbGetAllUsers    = fb.getAllUsersFromFirestore;
+  window._fbSaveUser       = fb.saveUserToFirestore;
+  window._fbSaveGroup      = fb.saveGroupToFirestore;
+  window._fbGetGroupByCode = fb.getGroupByCode;
   console.log('🔥 Firebase conectado — mundial2026-15686');
 }).catch(e => console.warn('Firebase error:', e));
 
@@ -673,20 +676,19 @@ const DEMO_MEMBERS=[
 ];
 // ── Coin System ───────────────────────────────────
 const COINS_PER_PAGO=1000; // 1 pago de $20 MXN = 1000 monedas
-const COIN_COSTS={campeon:10,'bota-oro':10,'balon-oro':10};
+// Costos EXACTOS: 24 partidos × (4 tipos×6 + 3 especiales×4) + 3 mundiales + 12 grupos×8 = 1000
+const COIN_COSTS={campeon:16,'bota-oro':12,'balon-oro':12};
 const getBetCost=id=>{
   if(COIN_COSTS[id]!==undefined)return COIN_COSTS[id];
-  if(id.startsWith('grp-'))return 3;
-  if(id.endsWith('-exacto'))return 5;
-  if(id.endsWith('-jugador'))return 3;
-  if(id.endsWith('-handicap'))return 3;
-  if(id.endsWith('-1x2'))return 3;
-  if(id.endsWith('-total')||id.endsWith('-btts')||id.endsWith('-dc'))return 2;
-  return 1;
+  if(id.startsWith('grp-'))return 8;          // 12×8=96
+  if(id.endsWith('-exacto'))return 4;          // 24×4=96
+  if(id.endsWith('-jugador'))return 4;         // 24×4=96
+  if(id.endsWith('-handicap'))return 4;        // 24×4=96
+  if(id.endsWith('-1x2'))return 6;             // 24×6=144
+  if(id.endsWith('-total')||id.endsWith('-btts')||id.endsWith('-dc'))return 6; // 72×6=432
+  return 4;
 };
-// 1000 monedas alcanza para TODO: campeon10+bota10+balon10+grp3x12(36)+
-// 1x2 3x28(84)+total/btts/dc 2x3x28(168)+exacto5x28(140)+jugador3x28(84)+handicap3x28(84)
-// Total máximo: ~626 < 1000 ✓ — usuario puede apostar en las 3 secciones completas
+// VERIFICADO: 16+12+12 + 12×8 + 24×4×6 + 24×3×4 = 40+96+576+288 = 1000 EXACTO ✓
 
 // ── Admin & DB Config ─────────────────────────────
 const ADMIN_EMAIL='luis.gomezs@yahoo.com.mx';
@@ -2885,17 +2887,33 @@ function GruposScreen({user,userBets,credito,onPagar}){
   const createGroup=()=>{
     if(!newName.trim())return;
     const g={id:'g_'+Date.now(),name:newName.trim(),desc:newDesc.trim(),
-      code:genCode(),created:Date.now(),members:[]};
-    setGroups(p=>[...p,g]);goDetail(g);setNewName('');setNewDesc('');
+      code:genCode(),created:Date.now(),members:[],ownerId:user?.id};
+    setGroups(p=>[...p,g]);
+    // Save to Firestore so other users can find it by code
+    const fn=fbSaveGroup||window._fbSaveGroup;
+    if(fn) fn(g, user?.id).catch(e=>console.warn('saveGroup error:',e));
+    goDetail(g);setNewName('');setNewDesc('');
   };
 
-  const joinGroup=()=>{
+  const joinGroup=async()=>{
     const code=joinCode.trim().toUpperCase();
     if(!code)return;
+    // 1. Search local first (fast)
     const found=groups.find(g=>g.code===code);
     if(found){setJoinErr('');goDetail(found);setJoinCode('');return;}
-
-    setJoinErr('Código no encontrado. Pide a tu amigo que lo verifique.');
+    // 2. Search Firestore (groups created on other devices)
+    setJoinErr('Buscando grupo...');
+    try{
+      const fn=fbGetGroupByCode||window._fbGetGroupByCode;
+      if(fn){
+        const fsGroup=await fn(code);
+        if(fsGroup){
+          setGroups(p=>[...p,fsGroup]); // add to local list
+          setJoinErr('');goDetail(fsGroup);setJoinCode('');return;
+        }
+      }
+    }catch(e){console.warn('getGroup error:',e);}
+    setJoinErr('Código no encontrado. Verifica con tu amigo.');
   };
 
   const lockBets=gid=>{
@@ -4360,6 +4378,12 @@ export default function App(){
   const [tab,setTab]=useState('home');
   const [match,setMatch]=useState(null);
   const [userBets,setUserBets]=useState([]);
+  // Save bets to localStorage whenever they change (so they survive logout)
+  const saveBets=(u,bets)=>{
+    if(!u?.id)return;
+    try{localStorage.setItem('wc2026_bets_'+u.id,JSON.stringify(bets));}
+    catch(e){}
+  };
   const [credito,setCredito]=useState(null);
   // credito = {coins:1000, paquetes:N, paidAt:timestamp} | null
 
@@ -4383,6 +4407,11 @@ export default function App(){
   const login=async u=>{
     setUser(u);
     setScreen('app');
+    // Restore saved bets from localStorage (survive logout)
+    try{
+      const saved=localStorage.getItem('wc2026_bets_'+u.id);
+      if(saved){const parsed=JSON.parse(saved);if(Array.isArray(parsed))setUserBets(parsed);}
+    }catch(e){}
     // Apply user language preference
     if(u.lang && TRANSLATIONS[u.lang]) setLang(u.lang);
     // Pedir permiso de notificaciones al login
@@ -4447,7 +4476,13 @@ export default function App(){
     const id=setInterval(checkSession,30000);
     return()=>clearInterval(id);
   },[user]);
-  const placeBet=bet=>setUserBets(prev=>[...prev.filter(b=>b.id!==bet.id),bet]);
+  const placeBet=bet=>{
+    setUserBets(prev=>{
+      const next=[...prev.filter(b=>b.id!==bet.id),bet];
+      saveBets(user,next); // persist so bets survive logout
+      return next;
+    });
+  };
 
   // Called after successful $20 payment (first time)
   const onPagar=async()=>{
