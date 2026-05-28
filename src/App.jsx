@@ -750,20 +750,20 @@ const DEMO_MEMBERS=[
 ];
 // ── Coin System ───────────────────────────────────
 const COINS_PER_PAGO=1000; // 1 pago de $20 MXN = 1000 monedas
-// Costos EXACTOS: 24 partidos × (4 tipos×6 + 3 especiales×4) + 3 mundiales + 12 grupos×8 = 1000
-const COIN_COSTS={campeon:16,'bota-oro':12,'balon-oro':12,
-  'goleador-1':32,'goleador-2':32,'goleador-3':32};
+// Costos recalculados para 72 partidos (fase de grupos completa):
+// 72×(3+2+2+2+1+1+1) + (10+8+8+24) + 12×4 = 864 + 50 + 48 = 962 ≤ 1000 ✓
+const COIN_COSTS={campeon:10,'bota-oro':8,'balon-oro':8,
+  'goleador-1':8,'goleador-2':8,'goleador-3':8};
 const getBetCost=id=>{
   if(COIN_COSTS[id]!==undefined)return COIN_COSTS[id];
-  if(id.startsWith('grp-'))return 8;          // 12×8=96
-  if(id.endsWith('-exacto'))return 4;          // 24×4=96
-  if(id.endsWith('-jugador'))return 4;         // 24×4=96
-  if(id.endsWith('-handicap'))return 4;        // 24×4=96
-  if(id.endsWith('-1x2'))return 6;             // 24×6=144
-  if(id.endsWith('-total')||id.endsWith('-btts')||id.endsWith('-dc'))return 6; // 72×6=432
-  return 4;
+  if(id.startsWith('grp-'))return 4;           // 12×4=48
+  if(id.endsWith('-exacto'))return 1;          // 72×1=72
+  if(id.endsWith('-jugador'))return 1;         // 72×1=72
+  if(id.endsWith('-handicap'))return 1;        // 72×1=72
+  if(id.endsWith('-1x2'))return 3;             // 72×3=216
+  if(id.endsWith('-total')||id.endsWith('-btts')||id.endsWith('-dc'))return 2; // 72×3×2=432
+  return 2;
 };
-// VERIFICADO: 16+12+12 + 12×8 + 24×4×6 + 24×3×4 = 40+96+576+288 = 1000 EXACTO ✓
 
 // ── Admin & DB Config ─────────────────────────────
 const ADMIN_EMAIL='luis.gomezs@yahoo.com.mx';
@@ -3981,18 +3981,18 @@ function PagoScreen({onExito,onCancelar,esReset=false}){
             <div style={{fontSize:11,fontWeight:700,color:'var(--muted)',marginBottom:8,letterSpacing:.5}}>
               ✅ INCLUYE TODO EN MI PRONÓSTICO
             </div>
-            {['🏆 Campeón del Mundo (80🪙)',
-              '⚽ Bota de Oro y Balón de Oro (60🪙 c/u)',
-              '🏅 Ganadores de todos los grupos (25🪙 c/u)',
-              '📊 1X2 · Total Goles · BTTS · Doble Oportunidad (10🪙 c/u)',
-              '🎯 Marcadores exactos (15🪙 c/u)',
-              '👤 Jugador que anotará · Hándicap (10🪙 c/u)',
+            {['🏆 Campeón del Mundo (10🪙)',
+              '⚽ Bota de Oro y Balón de Oro (8🪙 c/u)',
+              '🏅 Ganadores de los 12 grupos (4🪙 c/u)',
+              '📊 1X2 (3🪙) · Total Goles / BTTS / DC (2🪙 c/u)',
+              '🎯 Marcador exacto · Primer goleador · Hándicap (1🪙 c/u)',
+              '⚽ 72 partidos de fase de grupos completa',
               '📈 Estadísticas personales en tiempo real'].map(i=>(
               <div key={i} style={{fontSize:11,color:'var(--dim)',padding:'3px 0',
                 borderBottom:'1px solid rgba(255,255,255,.04)',lineHeight:1.4}}>{i}</div>
             ))}
             <div style={{fontSize:11,color:'var(--grn)',fontWeight:700,marginTop:7}}>
-              Total máximo: ~755🪙 · Siempre te alcanza con 1,000🪙
+              Total máximo: ~962🪙 si apuestas todo · Con 1,000🪙 siempre te alcanza ✓
             </div>
           </div>
         )}
@@ -4338,7 +4338,7 @@ function BetsScreen({bets,placeBet,credito,onPagar,onReset,betsSaved=false,onSav
   // ── Tab: Especiales ──
   const Especiales=()=>(
     <div>
-      {/* ── MEJORES GOLEADORES DEL MUNDIAL — 3 × 32 = 96 monedas ── */}
+      {/* ── MEJORES GOLEADORES DEL MUNDIAL — 3 × 8 = 24 monedas ── */}
       <div style={{margin:'0 16px 16px',background:'var(--surf)',borderRadius:14,
         border:'2px solid rgba(246,201,14,.3)',overflow:'hidden'}}>
         <div style={{padding:'11px 14px',background:'rgba(246,201,14,.06)',
@@ -4349,7 +4349,7 @@ function BetsScreen({bets,placeBet,credito,onPagar,onReset,betsSaved=false,onSav
               MEJORES GOLEADORES DEL MUNDIAL
             </div>
             <div style={{fontSize:10,color:'var(--muted)'}}>
-              Selecciona al 1°, 2° y 3° goleador · 32🪙 cada uno · Total: 96🪙
+              Selecciona al 1°, 2° y 3° goleador · 8🪙 cada uno · Total: 24🪙
             </div>
           </div>
         </div>
@@ -4364,7 +4364,7 @@ function BetsScreen({bets,placeBet,credito,onPagar,onReset,betsSaved=false,onSav
               borderBottom:'1px solid rgba(255,255,255,.04)'}}>
               <div style={{fontSize:10,color:'var(--muted)',fontWeight:700,
                 marginBottom:8,letterSpacing:.8,display:'flex',alignItems:'center',gap:8}}>
-                {label} · 32🪙
+                {label} · 8🪙
                 {picked&&<span style={{color:'var(--grn)',fontWeight:700}}>✓ {picked.selection}</span>}
               </div>
               <div style={{display:'flex',flexWrap:'wrap',gap:5}}>
@@ -4585,9 +4585,9 @@ function BetsScreen({bets,placeBet,credito,onPagar,onReset,betsSaved=false,onSav
         ))}
       </div>
       <div style={{height:10}}/>
-      {tab==='largo'&&<LargoPlazo/>}
-      {tab==='partido'&&<PorPartido/>}
-      {tab==='especiales'&&<Especiales/>}
+      {tab==='largo'&&LargoPlazo()}
+      {tab==='partido'&&PorPartido()}
+      {tab==='especiales'&&Especiales()}
       {tab==='stats'&&<StatsScreen bets={bets} noWrapper={true}/>}
 
       {/* ── BOTÓN GUARDAR PRONÓSTICO ── */}
