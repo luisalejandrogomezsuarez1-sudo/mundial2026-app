@@ -2873,11 +2873,12 @@ function GruposScreen({user,userBets,credito,onPagar}){
   // Subscribe to Firestore chat in real-time when viewing a group (like WhatsApp)
   // Placed here AFTER all state/ref declarations to avoid TDZ crash
   useEffect(()=>{
-    if(!selGroup?.id) return;
-    const gid=selGroup.id;
+    if(!selGroup?.code) return;
+    const gid=selGroup.id;           // local state key
+    const grpCode=selGroup.code;     // Firestore path key
     const subscribeFn=fbSubscribeChat||window._fbSubscribeChat;
     if(!subscribeFn) return;
-    const unsubscribe=subscribeFn(gid,(messages)=>{
+    const unsubscribe=subscribeFn(grpCode,(messages)=>{
       setChats(prev=>{
         const local=(prev[gid]||[]).filter(m=>m.id.startsWith('cm_'));
         const fsIds=new Set(messages.map(m=>m.id));
@@ -2888,7 +2889,7 @@ function GruposScreen({user,userBets,credito,onPagar}){
       setTimeout(()=>chatEndRef.current?.scrollIntoView({behavior:'smooth'}),80);
     });
     return()=>{if(typeof unsubscribe==='function')unsubscribe();};
-  },[selGroup?.id]);
+  },[selGroup?.code]);
 
   // ── Helper functions ──────────────────────────────────────────
   // Generate unique group code
@@ -2909,15 +2910,16 @@ function GruposScreen({user,userBets,credito,onPagar}){
     const msgId='cm_'+Date.now()+'_'+Math.random().toString(36).slice(2,6);
     const msg={id:msgId,uid:user?.id||'user',name:myName,ini:myIni,
       col:'var(--gold)',text:txt,ts:Date.now()};
-    // 1. Optimistic update — show immediately like WhatsApp
+    // 1. Optimistic update — show immediately
     setChats(prev=>({...prev,[gid]:[...(prev[gid]||[]),msg]}));
     setChatInput('');
     setTimeout(()=>chatEndRef.current?.scrollIntoView({behavior:'smooth'}),50);
-    // 2. Persist to Firestore — all group members will receive it
+    // 2. Save to Firestore — use group CODE as path (groups/{code}/messages)
     const fn=fbSendMsg||window._fbSendMsg;
+    const grpCode=selGroup?.code||gid; // code is the Firestore document ID
     if(fn){
-      fn(gid, user?.id||'anon', myName, txt)
-        .catch(e=>console.warn('sendMsg Firestore error:',e));
+      fn(grpCode, user?.id||'anon', myName, txt)
+        .catch(e=>console.warn('sendMsg error:',e));
     }
   };
 

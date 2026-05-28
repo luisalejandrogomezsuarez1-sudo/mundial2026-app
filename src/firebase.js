@@ -29,7 +29,7 @@ export const db  = getFirestore(app);
 export const auth= getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
 
-// ── USUARIOS EN FIRESTORE ───────────────────────────────────────
+// ── USUARIOS ────────────────────────────────────────────────────
 export async function saveUserToFirestore(user) {
   if(!user?.id) return;
   try {
@@ -39,7 +39,7 @@ export async function saveUserToFirestore(user) {
       paquetes:  user.paquetes  || 0,
       gifted:    user.gifted    || false,
       isAdmin:   user.isAdmin   || false,
-      sessionId: user.sessionId || '',   // ← tracks active device
+      sessionId: user.sessionId || '',
       updatedAt: new Date().toISOString(),
     }, { merge: true });
   } catch(e) { console.warn('saveUser error:', e); }
@@ -60,25 +60,55 @@ export async function giftCoinsInFirestore(userId, gifted) {
   } catch(e) { console.warn('giftCoins error:', e); }
 }
 
+// ── GRUPOS — usa el CÓDIGO como ID del documento ─────────────────
+// Estructura: groups/{CODE}            → datos del grupo
+//             groups/{CODE}/messages   → chat del grupo
+//
+// Usar el CÓDIGO como ID permite lookup directo sin índice:
+//   getDoc(doc(db,'groups','WC26-ABCDE')) ← siempre funciona
+
+export async function saveGroupToFirestore(group, userId) {
+  // ONE single write — code is the document ID
+  await setDoc(doc(db, 'groups', group.code), {
+    id:        group.id,
+    name:      group.name,
+    desc:      group.desc      || '',
+    code:      group.code,
+    created:   group.created   || Date.now(),
+    members:   group.members   || [],
+    ownerId:   userId          || '',
+    createdAt: new Date().toISOString(),
+  });
+  // No try/catch — let errors propagate so createGroup can show them
+}
+
+export async function getGroupByCode(code) {
+  // Direct document read — no query, no index, always works
+  const snap = await getDoc(doc(db, 'groups', code));
+  if (!snap.exists()) return null;
+  return { ...snap.data(), id: snap.data().id || snap.id };
+}
+
 // ── CHAT EN TIEMPO REAL ─────────────────────────────────────────
-export async function sendChatMessage(groupId, userId, userName, text) {
+// groupCode = the group's WC26-XXXXX code (same as Firestore document ID)
+
+export async function sendChatMessage(groupCode, userId, userName, text) {
   try {
-    // groupId can be either group.id or group.code — use groupData for messages
-    await addDoc(collection(db,'groupData', groupId, 'messages'), {
+    await addDoc(collection(db, 'groups', groupCode, 'messages'), {
       userId,
       userName,
       text,
-      ini: (userName||'?')[0].toUpperCase(),
+      ini:       (userName || '?')[0].toUpperCase(),
       timestamp: serverTimestamp(),
-      ts: Date.now(), // fallback numeric timestamp
+      ts:        Date.now(),
     });
   } catch(e) { console.warn('sendMsg error:', e); }
 }
 
-export function subscribeToChatMessages(groupId, callback) {
+export function subscribeToChatMessages(groupCode, callback) {
   const q = query(
-    collection(db,'groupData', groupId, 'messages'),
-    orderBy('timestamp','asc'),
+    collection(db, 'groups', groupCode, 'messages'),
+    orderBy('timestamp', 'asc'),
     limit(500)
   );
   return onSnapshot(q, snap => {
@@ -88,7 +118,7 @@ export function subscribeToChatMessages(groupId, callback) {
         id:   d.id,
         uid:  data.userId   || 'anon',
         name: data.userName || 'Usuario',
-        ini:  data.ini      || (data.userName||'?')[0].toUpperCase(),
+        ini:  data.ini      || (data.userName || '?')[0].toUpperCase(),
         col:  'var(--acc)',
         text: data.text     || '',
         ts:   data.timestamp?.toMillis() || data.ts || Date.now(),
@@ -98,38 +128,4 @@ export function subscribeToChatMessages(groupId, callback) {
   }, err => console.warn('chat snapshot error:', err));
 }
 
-// ── GRUPOS EN FIRESTORE ─────────────────────────────────────────
-export async function saveGroupToFirestore(group, userId) {
-  const data = {
-    ...group,
-    ownerId:   userId,
-    createdAt: new Date().toISOString(),
-  };
-  // Save TWICE: by code (for lookup) AND by id (for chat subcollections)
-  await Promise.all([
-    setDoc(doc(db,'groups', group.code), data),      // Lookup by code — direct getDoc
-    setDoc(doc(db,'groupData', group.id), data),      // Chat messages use group.id
-  ]);
-  console.log('✅ Group saved to Firestore:', group.code);
-}
-
-export async function getGroupByCode(code) {
-  try {
-    // Direct document read by code (no query, no index needed — always works)
-    const snap = await getDoc(doc(db,'groups', code));
-    if(!snap.exists()) {
-      console.log('Group not found in Firestore:', code);
-      return null;
-    }
-    console.log('✅ Group found:', code);
-    return { id: snap.id, ...snap.data() };
-  } catch(e) { console.warn('getGroup error:', e); return null; }
-}
-
 export default app;
-
-// Make Firestore available globally for App.jsx dynamic access
-if(typeof window !== 'undefined'){
-  window._fbDB = db;
-  window._fbFirestore = { doc, onSnapshot, getDoc, getDocs, getFirestore: ()=>db };
-}
