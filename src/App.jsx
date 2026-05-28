@@ -4324,23 +4324,21 @@ function BetsScreen({bets,placeBet,credito,onPagar,onReset,betsSaved=false,onSav
                 {getBet(exKey)&&<span style={{color:'var(--grn)',fontWeight:700}}>✓ {getBet(exKey).selection}</span>}
               </div>
               <div style={{display:'flex',alignItems:'center',gap:8}}>
-                <input type="number" inputMode="numeric" pattern="[0-9]*"
-                  min="0" max="9" placeholder="0" value={ex.h}
-                  onChange={e=>setExact(p=>({...p,[mid]:{...ex,h:e.target.value}}))}
-                  onFocus={e=>{e.target.select();e.preventDefault();}}
-                  onTouchStart={e=>e.stopPropagation()}
+                <input type="text" inputMode="numeric" pattern="[0-9]"
+                  maxLength={1} placeholder="0" value={ex.h}
+                  onChange={e=>{const v=e.target.value.replace(/[^0-9]/g,'').slice(-1);setExact(p=>({...p,[mid]:{...ex,h:v}}));}}
+                  onFocus={e=>{e.target.select();e.target.scrollIntoView({block:'nearest',behavior:'smooth'});}}
                   style={{width:50,padding:'9px 6px',background:'var(--surf2)',border:'1.5px solid var(--br)',
                     borderRadius:10,color:'var(--txt)',fontSize:22,fontFamily:'var(--ff)',
-                    textAlign:'center',outline:'none',WebkitAppearance:'none',MozAppearance:'textfield'}}/>
+                    textAlign:'center',outline:'none'}}/>
                 <span style={{fontFamily:'var(--ff)',fontSize:24,color:'var(--muted)'}}>–</span>
-                <input type="number" inputMode="numeric" pattern="[0-9]*"
-                  min="0" max="9" placeholder="0" value={ex.a}
-                  onChange={e=>setExact(p=>({...p,[mid]:{...ex,a:e.target.value}}))}
-                  onFocus={e=>{e.target.select();e.preventDefault();}}
-                  onTouchStart={e=>e.stopPropagation()}
+                <input type="text" inputMode="numeric" pattern="[0-9]"
+                  maxLength={1} placeholder="0" value={ex.a}
+                  onChange={e=>{const v=e.target.value.replace(/[^0-9]/g,'').slice(-1);setExact(p=>({...p,[mid]:{...ex,a:v}}));}}
+                  onFocus={e=>{e.target.select();e.target.scrollIntoView({block:'nearest',behavior:'smooth'});}}
                   style={{width:50,padding:'9px 6px',background:'var(--surf2)',border:'1.5px solid var(--br)',
                     borderRadius:10,color:'var(--txt)',fontSize:22,fontFamily:'var(--ff)',
-                    textAlign:'center',outline:'none',WebkitAppearance:'none',MozAppearance:'textfield'}}/>
+                    textAlign:'center',outline:'none'}}/>
                 <button
                   type="button"
                   onClick={e=>{
