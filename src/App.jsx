@@ -19,10 +19,31 @@ import('./firebase.js').then(fb => {
   window._fbGetGroupByCode = fb.getGroupByCode;
   window._fbSendMsg        = fb.sendChatMessage;
   window._fbSubscribeChat  = fb.subscribeToChatMessages;
-  window._fbReady          = true; // Firebase fully loaded
+  window._fbReady          = true;
   window._fbSubscribeLive  = fb.subscribeToLiveDoc;
+  window._fbGetUser        = fb.getUserFromFirestore; // 1 lectura (no getAllUsers)
   console.log('🔥 Firebase conectado — mundial2026-15686');
 }).catch(e => console.warn('Firebase error:', e));
+
+// ── Caches globales para minimizar lecturas Firestore ────────────────────────
+// Cache de datos en vivo (onSnapshot): evita re-leer al cambiar de tab
+const _liveCache = {};
+const _liveTTL = { matches:60e3, standings:10*60e3, scorers:10*60e3, fixtures:30*60e3, bracket:10*60e3 };
+const getCachedLive = id => {
+  const e = _liveCache[id]; if(!e) return null;
+  return Date.now()-e.ts < (_liveTTL[id]||5*60e3) ? e.data : null;
+};
+const setCachedLive = (id,data) => { _liveCache[id]={data,ts:Date.now()}; };
+
+// Cache de allUsers: evita múltiples llamadas getAllUsers en el mismo login
+let _allUsersCache = null, _allUsersCacheTs = 0;
+const getAllUsersCached = async (getFn, maxAge=5*60e3) => {
+  if(_allUsersCache && Date.now()-_allUsersCacheTs < maxAge) return _allUsersCache;
+  const data = await getFn();
+  _allUsersCache = data; _allUsersCacheTs = Date.now();
+  return data;
+};
+
 
 
 // ── Multi-language support — lightweight, no external packages ──
@@ -1753,15 +1774,18 @@ function HomeScreen({onMatch,onGoToCal}){
   const [liveMatches,setLiveMatches]=useState(LIVE_MATCHES);
   const [apiStatus,setApiStatus]=useState(true?'connecting':'off');
 
-  // Firestore: lee marcadores en vivo que el servidor actualiza cada 60s
+  // Firestore: marcadores en vivo (con cache para evitar re-leer al volver al tab)
   useEffect(()=>{
     if(new Date()<new Date('2026-06-11')) return;
+    const cached=getCachedLive('matches');
+    if(cached?.matches?.length){ setLiveMatches(cached.matches); setApiStatus('live'); return; }
     let unsub;
     const trySubscribe=()=>{
       const fn=window._fbSubscribeLive;
       if(!fn){ setTimeout(trySubscribe,800); return; }
       try{
         unsub=fn('matches',data=>{
+          setCachedLive('matches',data);
           if(data.matches?.length) setLiveMatches(data.matches);
           setApiStatus('live');
         });
@@ -1854,14 +1878,17 @@ function CalScreen(){
   const [fil,setFil]=useState('todos');
   const [matches,setMatches]=useState(NEXT_MATCHES);
 
-  // Firestore: horarios confirmados que el servidor sincroniza desde la API
+  // Firestore: fixtures (con cache 30min — horarios no cambian frecuentemente)
   useEffect(()=>{
+    const cached=getCachedLive('fixtures');
+    if(cached?.fixtures?.length>0){ setMatches(cached.fixtures); return; }
     let unsub;
     const trySubscribe=()=>{
       const fn=window._fbSubscribeLive;
       if(!fn){ setTimeout(trySubscribe,800); return; }
       try{
         unsub=fn('fixtures',data=>{
+          setCachedLive('fixtures',data);
           if(data.fixtures?.length>0) setMatches(data.fixtures);
         });
       }catch(e){}
@@ -2162,17 +2189,23 @@ function TablaScreen(){
     final:   mkSlot('🏆 FINAL', 'Jul 19','MetLife Stadium, New Jersey'),
   });
 
-  // Firestore: clasificación y llave eliminatoria
+  // Firestore: clasificación y llave (con cache para evitar re-leer al volver al tab)
   useEffect(()=>{
+    const cs=getCachedLive('standings'), cb=getCachedLive('bracket');
+    if(cs?.groups?.length>0){ setGroups(cs.groups); setApiLoaded(true); }
+    if(cb?.r32) setBracket(cb);
+    if(cs && cb) return; // datos frescos en cache, no suscribir
     let u1,u2;
     const trySubscribe=()=>{
       const fn=window._fbSubscribeLive;
       if(!fn){ setTimeout(trySubscribe,800); return; }
       try{
-        u1=fn('standings',data=>{
+        if(!cs) u1=fn('standings',data=>{
+          setCachedLive('standings',data);
           if(data.groups?.length>0){ setGroups(data.groups); setApiLoaded(true); }
         });
-        u2=fn('bracket',data=>{
+        if(!cb) u2=fn('bracket',data=>{
+          setCachedLive('bracket',data);
           if(data.r32) setBracket(data);
         });
       }catch(e){ console.warn('standings error',e); }
@@ -2291,20 +2324,21 @@ function GolesScreen(){
   const [sel,setSel]=useState(null);
   const [scorers,setScorers]=useState(SCORERS);
 
-  // Firestore: goleadores actualizados por el servidor
+  // Firestore: goleadores (con cache para evitar re-leer al volver al tab)
   useEffect(()=>{
+    const cached=getCachedLive('scorers');
+    if(cached?.list?.length){
+      setScorers(prev=>cached.list.map(s=>({...( prev.find(p=>p.n===s.n)||{}),...s})));
+      return; // cache fresco, no suscribir
+    }
     let unsub;
     const trySubscribe=()=>{
       const fn=window._fbSubscribeLive;
       if(!fn){ setTimeout(trySubscribe,800); return; }
       try{
         unsub=fn('scorers',data=>{
-          if(data.list?.length){
-            setScorers(prev=>data.list.map(s=>{
-              const ex=prev.find(p=>p.n===s.n)||{};
-              return {...ex,...s};
-            }));
-          }
+          setCachedLive('scorers',data);
+          if(data.list?.length) setScorers(prev=>data.list.map(s=>({...(prev.find(p=>p.n===s.n)||{}),...s})));
         });
       }catch(e){}
     };
@@ -2490,20 +2524,19 @@ function PerfilScreen({user,onLogout,lang='es'}){
       }
     },400);
 
-    // Step 3: Keep refreshing every 8s once Firebase is ready
-    const refresh=setInterval(async()=>{
-      const fn=fbGetAllUsers||window._fbGetAllUsers;
-      if(!fn) return;
-      try{
-        const local=await dbLoad();
-        const fs=await fn();
-        setDbUsers(mergeUsers(local,fs));
-      }catch(e){}
-    },8000);
-
-    return()=>{clearInterval(pollFirebase);clearInterval(refresh);};
+    // Sin auto-refresh: el admin usa el botón "🔄 Actualizar" para recargar manualmente
+    return()=>{ clearInterval(pollFirebase); };
   },[user.isAdmin]);
 
+  const refreshAdminUsers=async()=>{
+    const fn=fbGetAllUsers||window._fbGetAllUsers;
+    if(!fn) return;
+    try{
+      const local=await dbLoad();
+      const fsData=await getAllUsersCached(fn,0); // forzar recarga
+      setDbUsers(mergeUsers(local,fsData));
+    }catch(e){}
+  };
   const deleteUser=async id=>{
     const updated=dbUsers.filter(u=>u.id!==id);
     await dbSave(updated);setDbUsers(updated);
@@ -3026,7 +3059,7 @@ function GruposScreen({user,userBets,credito,onPagar}){
     };
 
     fetchMsgs(); // immediate load
-    const interval=setInterval(fetchMsgs,3000); // poll every 3s
+    const interval=setInterval(fetchMsgs,15000); // poll every 15s (ahorra 80% lecturas)
     return()=>clearInterval(interval);
   },[selGroup?.code]);
   if(!credito) return(
@@ -4858,7 +4891,7 @@ export default function App(){
       const getFn=fbGetAllUsers||window._fbGetAllUsers;
       if(getFn){
         try{
-          const allUsers=await getFn();
+          const allUsers=await getAllUsersCached(getFn);
           const fsUser=allUsers.find(x=>x.id===u.id);
           // ── Borrar cuenta completa ──────────────────────────
           if(fsUser?.forceDelete){
@@ -4905,7 +4938,7 @@ export default function App(){
           const getFn=fbGetAllUsers||window._fbGetAllUsers;
           if(getFn){
             try{
-              const allUsers=await getFn();
+              const allUsers=await getAllUsersCached(getFn);
               const fsUser=allUsers.find(x=>x.id===u.id);
               if(fsUser?.gifted){
                 const gc=fsUser.giftedCoins||1000;
@@ -4941,21 +4974,23 @@ export default function App(){
     setTab('home');setUserBets([]);setCredito(null);setBetsSaved(false);
   };
 
-  // Check session validity every 30s — detect if logged in from another device
+  // Session check cada 5 min — usa 1 sola lectura (getUserFromFirestore) en vez de getAllUsers
   useEffect(()=>{
-    if(!user||user.isAdmin||!fbGetAllUsers) return;
+    if(!user||user.isAdmin) return;
     const checkSession=async()=>{
       try{
         const localSession=localStorage.getItem('wc2026_session_'+user.id);
         if(!localSession) return;
-        const allUsers=await fbGetAllUsers();
-        const fsUser=allUsers.find(u=>u.id===user.id);
+        // 1 lectura (doc del usuario) en vez de leer toda la colección
+        const getFn=window._fbGetUser;
+        if(!getFn) return;
+        const fsUser=await getFn(user.id);
         if(fsUser?.sessionId && fsUser.sessionId!==localSession){
           logout('Tu cuenta fue abierta en otro dispositivo. Se cerró esta sesión.');
         }
       }catch(e){/* silent */}
     };
-    const id=setInterval(checkSession,30000);
+    const id=setInterval(checkSession,5*60*1000); // 5 min (antes 30s)
     return()=>clearInterval(id);
   },[user]);
   const placeBet=bet=>{

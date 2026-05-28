@@ -52,6 +52,15 @@ export async function getAllUsersFromFirestore() {
   } catch(e) { console.warn('getUsers error:', e); return []; }
 }
 
+// Lee UN solo documento de usuario — 1 lectura en vez de N (usa para session check)
+export async function getUserFromFirestore(userId) {
+  try {
+    const snap = await getDoc(doc(db, 'users', userId));
+    if (snap.exists()) return { id: snap.id, ...snap.data() };
+    return null;
+  } catch(e) { console.warn('getUser error:', e); return null; }
+}
+
 export async function giftCoinsInFirestore(userId, gifted, giftedCoins=1000) {
   try {
     await updateDoc(doc(db,'users', userId), {
