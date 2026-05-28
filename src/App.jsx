@@ -2936,22 +2936,27 @@ function GruposScreen({user,userBets,credito,onPagar}){
         ini:(user?.name||'U')[0].toUpperCase(),joined:Date.now()}],
       ownerId:user?.id||''};
 
-    // Use Railway server API (Firebase Admin — no host restrictions)
+    // Use Railway server API with 10s timeout
     try{
+      const ctrl=new AbortController();
+      const timer=setTimeout(()=>ctrl.abort(),10000);
       const res=await fetch('/api/groups',{
         method:'POST',
         headers:{'Content-Type':'application/json'},
-        body:JSON.stringify(g)
+        body:JSON.stringify(g),
+        signal:ctrl.signal,
       });
+      clearTimeout(timer);
       const data=await res.json();
-      if(!res.ok) throw new Error(data.error||'Error del servidor');
+      if(!res.ok) throw new Error(data.error||'Error del servidor ('+res.status+')');
       setGroups(p=>[...p,g]);
       setNewName('');setNewDesc('');
       setCreatingGroup(false);
-      goDetail(g);  // show ONLY after server confirms save
+      goDetail(g);
     }catch(e){
       console.error('createGroup error:',e);
-      setCreateErr('Error al guardar: '+e.message);
+      const msg=e.name==='AbortError'?'Tiempo agotado. Verifica tu conexión.':e.message;
+      setCreateErr('❌ '+msg);
       setCreatingGroup(false);
     }
   };
@@ -2962,10 +2967,13 @@ function GruposScreen({user,userBets,credito,onPagar}){
     // Check local first (fast)
     const found=groups.find(g=>g.code===code);
     if(found){setJoinErr('');goDetail(found);setJoinCode('');return;}
-    // Search via Railway server API (Firebase Admin — no host restrictions)
+    // Search via Railway server API
     try{
       setJoinErr('🔍 Buscando grupo...');
-      const res=await fetch('/api/groups/'+encodeURIComponent(code));
+      const ctrl=new AbortController();
+      const timer=setTimeout(()=>ctrl.abort(),10000);
+      const res=await fetch('/api/groups/'+encodeURIComponent(code),{signal:ctrl.signal});
+      clearTimeout(timer);
       const data=await res.json();
       if(!res.ok) throw new Error(data.error||'Error del servidor');
       if(data.found&&data.group){
@@ -2976,8 +2984,8 @@ function GruposScreen({user,userBets,credito,onPagar}){
         setJoinErr('❌ Código no encontrado. Verifica que sea exacto.');
       }
     }catch(e){
-      console.error('joinGroup error:',e);
-      setJoinErr('⚠️ Error: '+e.message);
+      const msg=e.name==='AbortError'?'Tiempo agotado. Verifica tu conexión.':e.message;
+      setJoinErr('⚠️ '+msg);
     }
   };
 
