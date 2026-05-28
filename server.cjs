@@ -198,16 +198,17 @@ app.get('/api/groups/:code', (req,res)=>{
 // ── CHAT API — Firebase Admin for persistence + scalability ────
 app.post('/api/chat/:code', async(req,res)=>{
   const code = req.params.code.toUpperCase();
-  const {uid, name, text} = req.body||{};
+  const {id, uid, name, text, ts} = req.body||{};
   if(!text?.trim()) return res.status(400).json({error:'Empty message'});
 
+  // Use client-provided id+ts so polling doesn't create duplicates
   const msg = {
-    id:   'cm_'+Date.now()+'_'+Math.random().toString(36).slice(2,6),
+    id:   id   || 'cm_'+Date.now()+'_'+Math.random().toString(36).slice(2,5),
     uid:  uid  || 'anon',
     name: name || 'Usuario',
     ini:  (name||'?')[0].toUpperCase(),
     text: text.trim(),
-    ts:   Date.now(),
+    ts:   ts   || Date.now(),
   };
 
   // Save to Firestore via Admin (guaranteed to work)

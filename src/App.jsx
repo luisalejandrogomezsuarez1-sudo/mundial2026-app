@@ -2947,7 +2947,7 @@ function GruposScreen({user,userBets,credito,onPagar}){
     fetch('/api/chat/'+grpCode,{
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({uid:user?.id||'anon',name:myName,text:txt})
+      body:JSON.stringify({id:msg.id,uid:user?.id||'anon',name:myName,text:txt,ts:msg.ts})
     }).catch(e=>console.warn('sendMsg error:',e));
   };
 
@@ -3216,9 +3216,11 @@ function GruposScreen({user,userBets,credito,onPagar}){
       ['Marcador Exacto','10 pts'],['Jugador que Anota','5 pts'],['Hándicap','3 pts'],
     ];
 
-    const visibleTabs=[['ranking','🏆 Ranking'],['pronosticos','🔮 Mis Pronósticos'],
-      ...(locked?[['todos','👥 Ver Todos'],['reporte','📊 Reporte']]:[['info','ℹ️ Info']]),
+    const visibleTabs=[
+      ['ranking','🏆 Ranking'],
       ['chat','💬 Chat'],
+      ['pronosticos','🔮 Pronósticos'],
+      ...(locked?[['todos','👥 Ver Todos'],['reporte','📊 Reporte']]:[['info','ℹ️ Info']]),
     ];
 
     return(
