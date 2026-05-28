@@ -138,4 +138,14 @@ export function subscribeToChatMessages(groupCode, callback) {
   }, err => console.warn('chat snapshot error:', err));
 }
 
+// ── Suscripción a documentos en vivo (colección 'live') ─────────────────────
+// El servidor escribe aquí: live/matches, live/standings, live/scorers, live/fixtures
+export function subscribeToLiveDoc(docId, callback) {
+  return onSnapshot(
+    doc(db, 'live', docId),
+    snap => { if (snap.exists()) callback(snap.data()); },
+    err => console.warn(`live/${docId} snapshot error:`, err)
+  );
+}
+
 export default app;

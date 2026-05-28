@@ -20,6 +20,7 @@ import('./firebase.js').then(fb => {
   window._fbSendMsg        = fb.sendChatMessage;
   window._fbSubscribeChat  = fb.subscribeToChatMessages;
   window._fbReady          = true; // Firebase fully loaded
+  window._fbSubscribeLive  = fb.subscribeToLiveDoc;
   console.log('🔥 Firebase conectado — mundial2026-15686');
 }).catch(e => console.warn('Firebase error:', e));
 
@@ -285,27 +286,18 @@ const LANG_NAMES={'es':'Español','en':'English','pt':'Português','fr':'França
 const LangCtx=createContext((k)=>TRANSLATIONS.es[k]||k);
 const useLang=()=>useContext(LangCtx);
 
-// ═══════════════════════════════════════════════════════
-// 🔑 API-FOOTBALL CONFIG — Reemplaza con tu API Key
-// Consigue tu key gratis en: https://www.api-football.com
-// Plan gratuito: 100 peticiones/día (suficiente para pruebas)
-// ═══════════════════════════════════════════════════════
-const AF_KEY    = '4469df9c23e73da2c728be5b093c2464'; // API-Football key
-const AF_BASE   = 'https://v3.football.api-sports.io';
-const WC_ID     = 1;                              // FIFA World Cup league ID
+// API-Football: peticiones proxeadas por el backend (clave solo en servidor)
+const WC_ID     = 1;   // FIFA World Cup league ID
 const WC_SEASON = 2026;
-const AF_ON     = AF_KEY !== 'TU_API_KEY_AQUI';  // Se activa solo cuando pones la key
-const AF_HDR    = {'x-apisports-key': AF_KEY, 'Content-Type': 'application/json'};
 
-// ── API fetch helper ─────────────────────────────────
+// ── API fetch helper — usa proxy del servidor ─────────
 const afFetch = async (endpoint) => {
-  if (!AF_ON) return null;
   try {
-    const r = await fetch(`${AF_BASE}${endpoint}`, {headers: AF_HDR});
+    const r = await fetch(`/api/af${endpoint}`);
     if (!r.ok) throw new Error(`HTTP ${r.status}`);
     const d = await r.json();
     return d.response || null;
-  } catch(e) { console.warn('API-Football error:', e); return null; }
+  } catch(e) { console.warn('API-Football proxy error:', e); return null; }
 };
 
 // ── Transformers: API response → formato de la app ──
@@ -513,6 +505,86 @@ const NEXT_MATCHES=[
   {id:22, home:'Inglaterra',       away:'Croacia',          isoDate:'2026-06-17',date:'Jun 17',time:'15:00',phase:'Grupo L · J1 · P22', venue:'AT&T Stadium',           city:'Arlington, Texas',    wx:{ic:'☀️',desc:'Muy caluroso',t:'33°C'},       odds:[1.6,3.6,5.5]},
   {id:23, home:'Ghana',            away:'Panamá',           isoDate:'2026-06-17',date:'Jun 17',time:'16:00',phase:'Grupo L · J1 · P21', venue:'BMO Field',              city:'Toronto, Ontario',    wx:{ic:'🌤️',desc:'Agradable',t:'20°C'},         odds:[2.2,3.2,3.0]},
   {id:24, home:'Colombia',         away:'Uzbekistán',       isoDate:'2026-06-17',date:'Jun 17',time:'19:00',phase:'Grupo K · J1 · P24', venue:'Estadio Azteca',         city:'Tlalpan, CDMX',       wx:{ic:'⛅',desc:'Nublado',t:'19°C'},            odds:[1.4,4.0,7.5]},
+
+  // ══════════════════════════════════════════════════════════════
+  // JORNADA 2 — Jun 20–26 (horarios TBD hasta confirmación FIFA)
+  // ══════════════════════════════════════════════════════════════
+  // ── J2 Grupo A ──
+  {id:25,home:'México',        away:'Corea del Sur',          isoDate:'2026-06-20',date:'Jun 20',time:'TBD',phase:'Grupo A · J2',venue:'AT&T Stadium',            city:'Arlington, Texas',    wx:{ic:'☀️',desc:'Caluroso',t:'32°C'},       odds:[1.4,3.8,6.5]},
+  {id:26,home:'Sudáfrica',     away:'República Checa',        isoDate:'2026-06-20',date:'Jun 20',time:'TBD',phase:'Grupo A · J2',venue:'Lumen Field',              city:'Seattle, WA',         wx:{ic:'🌤️',desc:'Fresco',t:'19°C'},        odds:[3.0,3.2,2.2]},
+  // ── J2 Grupo B ──
+  {id:27,home:'Canadá',        away:'Qatar',                  isoDate:'2026-06-21',date:'Jun 21',time:'TBD',phase:'Grupo B · J2',venue:'BC Place',                 city:'Vancouver, BC',       wx:{ic:'🌧️',desc:'Lluvia',t:'16°C'},        odds:[1.8,3.4,4.5]},
+  {id:28,home:'Suiza',         away:'Bosnia y Herzegovina',   isoDate:'2026-06-21',date:'Jun 21',time:'TBD',phase:'Grupo B · J2',venue:'Estadio Azteca',           city:'Tlalpan, CDMX',       wx:{ic:'⛅',desc:'Nublado',t:'17°C'},        odds:[1.6,3.6,5.5]},
+  // ── J2 Grupo C ──
+  {id:29,home:'Brasil',        away:'Haití',                  isoDate:'2026-06-21',date:'Jun 21',time:'TBD',phase:'Grupo C · J2',venue:'MetLife Stadium',          city:'East Rutherford, NJ', wx:{ic:'🌤️',desc:'Agradable',t:'25°C'},    odds:[1.2,6.0,18.0]},
+  {id:30,home:'Escocia',       away:'Marruecos',              isoDate:'2026-06-21',date:'Jun 21',time:'TBD',phase:'Grupo C · J2',venue:'Gillette Stadium',         city:'Foxborough, MA',      wx:{ic:'🌥️',desc:'Nublado',t:'18°C'},      odds:[3.0,3.2,2.3]},
+  // ── J2 Grupo D ──
+  {id:31,home:'USA',           away:'Australia',              isoDate:'2026-06-22',date:'Jun 22',time:'TBD',phase:'Grupo D · J2',venue:'SoFi Stadium',             city:'Inglewood, CA',       wx:{ic:'☀️',desc:'Soleado',t:'27°C'},       odds:[1.6,3.5,5.0]},
+  {id:32,home:'Paraguay',      away:'Turquía',                isoDate:'2026-06-22',date:'Jun 22',time:'TBD',phase:'Grupo D · J2',venue:'Arrowhead Stadium',        city:'Kansas City, MO',     wx:{ic:'⛅',desc:'Nublado',t:'26°C'},       odds:[3.2,3.0,2.2]},
+  // ── J2 Grupo E ──
+  {id:33,home:'Alemania',      away:'Ecuador',                isoDate:'2026-06-22',date:'Jun 22',time:'TBD',phase:'Grupo E · J2',venue:'AT&T Stadium',             city:'Arlington, Texas',    wx:{ic:'☀️',desc:'Caluroso',t:'33°C'},      odds:[1.4,4.0,7.0]},
+  {id:34,home:'Costa de Marfil',away:'Curazao',               isoDate:'2026-06-22',date:'Jun 22',time:'TBD',phase:'Grupo E · J2',venue:'NRG Stadium',              city:'Houston, Texas',      wx:{ic:'☀️',desc:'Muy caluroso',t:'35°C'}, odds:[1.3,5.5,10.0]},
+  // ── J2 Grupo F ──
+  {id:35,home:'Países Bajos',  away:'Suecia',                 isoDate:'2026-06-23',date:'Jun 23',time:'TBD',phase:'Grupo F · J2',venue:'Levi Stadium',             city:'Santa Clara, CA',     wx:{ic:'🌫️',desc:'Neblina',t:'16°C'},     odds:[1.5,3.6,6.0]},
+  {id:36,home:'Japón',         away:'Túnez',                  isoDate:'2026-06-23',date:'Jun 23',time:'TBD',phase:'Grupo F · J2',venue:'Lincoln Financial Field',  city:'Filadelfia, PA',      wx:{ic:'🌤️',desc:'Agradable',t:'25°C'},   odds:[1.5,3.5,6.0]},
+  // ── J2 Grupo G ──
+  {id:37,home:'Bélgica',       away:'Irán',                   isoDate:'2026-06-23',date:'Jun 23',time:'TBD',phase:'Grupo G · J2',venue:'Mercedes-Benz Stadium',    city:'Atlanta, Georgia',    wx:{ic:'⛈️',desc:'Tormenta',t:'29°C'},    odds:[1.4,4.0,7.5]},
+  {id:38,home:'Egipto',        away:'Nueva Zelanda',          isoDate:'2026-06-23',date:'Jun 23',time:'TBD',phase:'Grupo G · J2',venue:'Hard Rock Stadium',        city:'Miami Gardens, FL',   wx:{ic:'🌤️',desc:'Caluroso',t:'30°C'},    odds:[1.4,3.8,7.0]},
+  // ── J2 Grupo H ──
+  {id:39,home:'España',        away:'Uruguay',                isoDate:'2026-06-24',date:'Jun 24',time:'TBD',phase:'Grupo H · J2',venue:'SoFi Stadium',             city:'Inglewood, CA',       wx:{ic:'☀️',desc:'Soleado',t:'27°C'},      odds:[1.5,3.8,6.0]},
+  {id:40,home:'Arabia Saudita',away:'Cabo Verde',             isoDate:'2026-06-24',date:'Jun 24',time:'TBD',phase:'Grupo H · J2',venue:'Lumen Field',              city:'Seattle, WA',         wx:{ic:'🌧️',desc:'Lluvia',t:'17°C'},      odds:[1.4,3.8,7.5]},
+  // ── J2 Grupo I ──
+  {id:41,home:'Francia',       away:'Irak',                   isoDate:'2026-06-24',date:'Jun 24',time:'TBD',phase:'Grupo I · J2',venue:'MetLife Stadium',          city:'East Rutherford, NJ', wx:{ic:'🌤️',desc:'Agradable',t:'24°C'},   odds:[1.2,6.0,18.0]},
+  {id:42,home:'Noruega',       away:'Senegal',                isoDate:'2026-06-25',date:'Jun 25',time:'TBD',phase:'Grupo I · J2',venue:'Arrowhead Stadium',        city:'Kansas City, MO',     wx:{ic:'⛅',desc:'Parcial',t:'27°C'},      odds:[1.5,3.5,6.0]},
+  // ── J2 Grupo J ──
+  {id:43,home:'Argentina',     away:'Austria',                isoDate:'2026-06-25',date:'Jun 25',time:'TBD',phase:'Grupo J · J2',venue:'NRG Stadium',              city:'Houston, Texas',      wx:{ic:'☀️',desc:'Caluroso',t:'34°C'},     odds:[1.4,4.0,7.0]},
+  {id:44,home:'Argelia',       away:'Jordania',               isoDate:'2026-06-25',date:'Jun 25',time:'TBD',phase:'Grupo J · J2',venue:'BMO Field',                city:'Toronto, Ontario',    wx:{ic:'🌤️',desc:'Fresco',t:'20°C'},      odds:[1.5,3.5,6.0]},
+  // ── J2 Grupo K ──
+  {id:45,home:'Portugal',      away:'Colombia',               isoDate:'2026-06-26',date:'Jun 26',time:'TBD',phase:'Grupo K · J2',venue:'AT&T Stadium',             city:'Arlington, Texas',    wx:{ic:'☀️',desc:'Muy caluroso',t:'34°C'},odds:[1.6,3.5,5.5]},
+  {id:46,home:'Uzbekistán',    away:'Congo DR',               isoDate:'2026-06-26',date:'Jun 26',time:'TBD',phase:'Grupo K · J2',venue:'Lincoln Financial Field',  city:'Filadelfia, PA',      wx:{ic:'🌤️',desc:'Agradable',t:'25°C'},   odds:[1.7,3.3,4.8]},
+  // ── J2 Grupo L ──
+  {id:47,home:'Inglaterra',    away:'Ghana',                  isoDate:'2026-06-26',date:'Jun 26',time:'TBD',phase:'Grupo L · J2',venue:'Mercedes-Benz Stadium',    city:'Atlanta, Georgia',    wx:{ic:'⛈️',desc:'Tormenta',t:'29°C'},    odds:[1.5,3.7,6.0]},
+  {id:48,home:'Croacia',       away:'Panamá',                 isoDate:'2026-06-26',date:'Jun 26',time:'TBD',phase:'Grupo L · J2',venue:'Hard Rock Stadium',        city:'Miami Gardens, FL',   wx:{ic:'🌤️',desc:'Caluroso',t:'30°C'},    odds:[1.4,3.8,7.0]},
+
+  // ══════════════════════════════════════════════════════════════
+  // JORNADA 3 — Partidos simultáneos por grupo (Jun 28 – Jul 2)
+  // ══════════════════════════════════════════════════════════════
+  // ── J3 Grupo A (simultáneos) ──
+  {id:49,home:'México',        away:'República Checa',        isoDate:'2026-06-28',date:'Jun 28',time:'17:00',phase:'Grupo A · J3 · SIM',venue:'Estadio Azteca',   city:'Tlalpan, CDMX',       wx:{ic:'⛅',desc:'Nublado',t:'17°C'},      odds:[1.3,5.0,10.0]},
+  {id:50,home:'Corea del Sur', away:'Sudáfrica',              isoDate:'2026-06-28',date:'Jun 28',time:'17:00',phase:'Grupo A · J3 · SIM',venue:'Estadio Akron',    city:'Zapopan, Jalisco',    wx:{ic:'☀️',desc:'Cálido',t:'27°C'},      odds:[1.6,3.5,5.5]},
+  // ── J3 Grupo B (simultáneos) ──
+  {id:51,home:'Canadá',        away:'Suiza',                  isoDate:'2026-06-28',date:'Jun 28',time:'20:00',phase:'Grupo B · J3 · SIM',venue:'BMO Field',        city:'Toronto, Ontario',    wx:{ic:'🌤️',desc:'Fresco',t:'21°C'},     odds:[2.0,3.3,3.5]},
+  {id:52,home:'Qatar',         away:'Bosnia y Herzegovina',   isoDate:'2026-06-28',date:'Jun 28',time:'20:00',phase:'Grupo B · J3 · SIM',venue:'BC Place',         city:'Vancouver, BC',       wx:{ic:'🌧️',desc:'Lluvia',t:'15°C'},     odds:[2.5,3.0,2.8]},
+  // ── J3 Grupo C (simultáneos) ──
+  {id:53,home:'Brasil',        away:'Escocia',                isoDate:'2026-06-29',date:'Jun 29',time:'17:00',phase:'Grupo C · J3 · SIM',venue:'MetLife Stadium',  city:'East Rutherford, NJ', wx:{ic:'🌤️',desc:'Agradable',t:'24°C'},  odds:[1.2,6.5,20.0]},
+  {id:54,home:'Haití',         away:'Marruecos',              isoDate:'2026-06-29',date:'Jun 29',time:'17:00',phase:'Grupo C · J3 · SIM',venue:'Gillette Stadium', city:'Foxborough, MA',      wx:{ic:'⛅',desc:'Nublado',t:'20°C'},     odds:[4.5,3.2,1.7]},
+  // ── J3 Grupo D (simultáneos) ──
+  {id:55,home:'USA',           away:'Turquía',                isoDate:'2026-06-29',date:'Jun 29',time:'20:00',phase:'Grupo D · J3 · SIM',venue:'SoFi Stadium',     city:'Inglewood, CA',       wx:{ic:'☀️',desc:'Soleado',t:'27°C'},     odds:[1.7,3.4,4.5]},
+  {id:56,home:'Australia',     away:'Paraguay',               isoDate:'2026-06-29',date:'Jun 29',time:'20:00',phase:'Grupo D · J3 · SIM',venue:'AT&T Stadium',     city:'Arlington, Texas',    wx:{ic:'☀️',desc:'Caluroso',t:'33°C'},    odds:[2.0,3.3,3.5]},
+  // ── J3 Grupo E (simultáneos) ──
+  {id:57,home:'Alemania',      away:'Costa de Marfil',        isoDate:'2026-06-30',date:'Jun 30',time:'17:00',phase:'Grupo E · J3 · SIM',venue:'AT&T Stadium',     city:'Arlington, Texas',    wx:{ic:'☀️',desc:'Muy caluroso',t:'35°C'},odds:[1.4,4.0,7.5]},
+  {id:58,home:'Ecuador',       away:'Curazao',                isoDate:'2026-06-30',date:'Jun 30',time:'17:00',phase:'Grupo E · J3 · SIM',venue:'NRG Stadium',      city:'Houston, Texas',      wx:{ic:'☀️',desc:'Caluroso',t:'35°C'},    odds:[1.3,5.5,12.0]},
+  // ── J3 Grupo F (simultáneos) ──
+  {id:59,home:'Países Bajos',  away:'Túnez',                  isoDate:'2026-06-30',date:'Jun 30',time:'20:00',phase:'Grupo F · J3 · SIM',venue:'Levi Stadium',     city:'Santa Clara, CA',     wx:{ic:'🌫️',desc:'Neblina',t:'16°C'},   odds:[1.4,4.0,8.0]},
+  {id:60,home:'Japón',         away:'Suecia',                 isoDate:'2026-06-30',date:'Jun 30',time:'20:00',phase:'Grupo F · J3 · SIM',venue:'Lincoln Financial Field',city:'Filadelfia, PA',wx:{ic:'🌤️',desc:'Agradable',t:'26°C'},odds:[1.6,3.5,5.5]},
+  // ── J3 Grupo G (simultáneos) ──
+  {id:61,home:'Bélgica',       away:'Nueva Zelanda',          isoDate:'2026-07-01',date:'Jul 1', time:'17:00',phase:'Grupo G · J3 · SIM',venue:'Mercedes-Benz Stadium',city:'Atlanta, Georgia',wx:{ic:'⛈️',desc:'Tormenta',t:'30°C'},odds:[1.3,5.5,12.0]},
+  {id:62,home:'Irán',          away:'Egipto',                 isoDate:'2026-07-01',date:'Jul 1', time:'17:00',phase:'Grupo G · J3 · SIM',venue:'Hard Rock Stadium', city:'Miami Gardens, FL',  wx:{ic:'🌤️',desc:'Caluroso',t:'31°C'},   odds:[1.8,3.3,4.5]},
+  // ── J3 Grupo H (simultáneos) ──
+  {id:63,home:'España',        away:'Arabia Saudita',         isoDate:'2026-07-01',date:'Jul 1', time:'20:00',phase:'Grupo H · J3 · SIM',venue:'SoFi Stadium',     city:'Inglewood, CA',       wx:{ic:'☀️',desc:'Soleado',t:'27°C'},     odds:[1.3,5.5,12.0]},
+  {id:64,home:'Uruguay',       away:'Cabo Verde',             isoDate:'2026-07-01',date:'Jul 1', time:'20:00',phase:'Grupo H · J3 · SIM',venue:'Lumen Field',      city:'Seattle, WA',         wx:{ic:'🌧️',desc:'Lluvia',t:'17°C'},     odds:[1.4,4.0,8.0]},
+  // ── J3 Grupo I (simultáneos) ──
+  {id:65,home:'Francia',       away:'Noruega',                isoDate:'2026-07-01',date:'Jul 1', time:'17:00',phase:'Grupo I · J3 · SIM',venue:'MetLife Stadium',  city:'East Rutherford, NJ', wx:{ic:'🌤️',desc:'Agradable',t:'25°C'},  odds:[1.6,3.6,5.5]},
+  {id:66,home:'Irak',          away:'Senegal',                isoDate:'2026-07-01',date:'Jul 1', time:'17:00',phase:'Grupo I · J3 · SIM',venue:'Arrowhead Stadium',city:'Kansas City, MO',     wx:{ic:'⛅',desc:'Nublado',t:'28°C'},     odds:[4.0,3.2,1.9]},
+  // ── J3 Grupo J (simultáneos) ──
+  {id:67,home:'Argentina',     away:'Jordania',               isoDate:'2026-07-02',date:'Jul 2', time:'17:00',phase:'Grupo J · J3 · SIM',venue:'NRG Stadium',      city:'Houston, Texas',      wx:{ic:'☀️',desc:'Caluroso',t:'35°C'},    odds:[1.2,7.0,22.0]},
+  {id:68,home:'Argelia',       away:'Austria',                isoDate:'2026-07-02',date:'Jul 2', time:'17:00',phase:'Grupo J · J3 · SIM',venue:'BMO Field',        city:'Toronto, Ontario',    wx:{ic:'🌤️',desc:'Fresco',t:'19°C'},     odds:[2.8,3.0,2.5]},
+  // ── J3 Grupo K (simultáneos) ──
+  {id:69,home:'Portugal',      away:'Uzbekistán',             isoDate:'2026-07-02',date:'Jul 2', time:'20:00',phase:'Grupo K · J3 · SIM',venue:'AT&T Stadium',     city:'Arlington, Texas',    wx:{ic:'☀️',desc:'Muy caluroso',t:'34°C'},odds:[1.2,6.5,20.0]},
+  {id:70,home:'Colombia',      away:'Congo DR',               isoDate:'2026-07-02',date:'Jul 2', time:'20:00',phase:'Grupo K · J3 · SIM',venue:'Lincoln Financial Field',city:'Filadelfia, PA',wx:{ic:'🌤️',desc:'Agradable',t:'27°C'},odds:[1.4,4.0,8.0]},
+  // ── J3 Grupo L (simultáneos) ──
+  {id:71,home:'Inglaterra',    away:'Panamá',                 isoDate:'2026-07-02',date:'Jul 2', time:'17:00',phase:'Grupo L · J3 · SIM',venue:'Mercedes-Benz Stadium',city:'Atlanta, Georgia',wx:{ic:'⛈️',desc:'Tormenta',t:'29°C'},odds:[1.2,7.0,22.0]},
+  {id:72,home:'Ghana',         away:'Croacia',                isoDate:'2026-07-02',date:'Jul 2', time:'17:00',phase:'Grupo L · J3 · SIM',venue:'Hard Rock Stadium', city:'Miami Gardens, FL',  wx:{ic:'🌤️',desc:'Caluroso',t:'30°C'},   odds:[2.5,3.0,2.8]},
 ];
 const GROUPS=[
   // Grupos confirmados — Copa Mundial FIFA 2026
@@ -1681,23 +1753,22 @@ function HomeScreen({onMatch,onGoToCal}){
   const [liveMatches,setLiveMatches]=useState(LIVE_MATCHES);
   const [apiStatus,setApiStatus]=useState(AF_ON?'connecting':'off');
 
-  // Read live data from Firestore (server updates this, not each user)
+  // Firestore: lee marcadores en vivo que el servidor actualiza cada 60s
   useEffect(()=>{
-    if(new Date()<new Date('2026-06-11'))return;
-    if(!window._fbDB) return;
-    try{
-      const {doc,onSnapshot,getFirestore}=window._fbFirestore||{};
-      if(!onSnapshot) return;
-      const db=getFirestore();
-      const unsub=onSnapshot(doc(db,'live','matches'),snap=>{
-        if(snap.exists()){
-          const d=snap.data();
-          if(d.matches) setLiveMatches(d.matches);
+    if(new Date()<new Date('2026-06-11')) return;
+    let unsub;
+    const trySubscribe=()=>{
+      const fn=window._fbSubscribeLive;
+      if(!fn){ setTimeout(trySubscribe,800); return; }
+      try{
+        unsub=fn('matches',data=>{
+          if(data.matches?.length) setLiveMatches(data.matches);
           setApiStatus('live');
-        }
-      });
-      return()=>unsub();
-    }catch(e){setApiStatus('error');}
+        });
+      }catch(e){ setApiStatus('error'); }
+    };
+    trySubscribe();
+    return()=>{ if(typeof unsub==='function') unsub(); };
   },[]);
   const doRef=useCallback(()=>{
     setRef(true);setTimeout(()=>{setRef(false);setUpd(new Date());},900);
@@ -1781,6 +1852,23 @@ function HomeScreen({onMatch,onGoToCal}){
 function CalScreen(){
   const t=useLang();
   const [fil,setFil]=useState('todos');
+  const [matches,setMatches]=useState(NEXT_MATCHES);
+
+  // Firestore: horarios confirmados que el servidor sincroniza desde la API
+  useEffect(()=>{
+    let unsub;
+    const trySubscribe=()=>{
+      const fn=window._fbSubscribeLive;
+      if(!fn){ setTimeout(trySubscribe,800); return; }
+      try{
+        unsub=fn('fixtures',data=>{
+          if(data.fixtures?.length>0) setMatches(data.fixtures);
+        });
+      }catch(e){}
+    };
+    trySubscribe();
+    return()=>{ if(typeof unsub==='function') unsub(); };
+  },[]);
 
   // Build dynamic date tabs from match dates
   const today=new Date();
@@ -1791,10 +1879,10 @@ function CalScreen(){
   const nextWeek=new Date(today); nextWeek.setDate(nextWeek.getDate()+7);
 
   // Get unique dates from all upcoming matches
-  const allDates=[...new Set(NEXT_MATCHES.map(m=>m.isoDate))].sort();
+  const allDates=[...new Set(matches.map(m=>m.isoDate))].sort();
 
   // Filter matches by selected tab
-  const filtered=NEXT_MATCHES.filter(m=>{
+  const filtered=matches.filter(m=>{
     if(fil==='todos')return true;
     if(fil==='hoy')return m.isoDate===todayISO;
     if(fil==='manana')return m.isoDate===tomorrowISO;
@@ -1829,7 +1917,7 @@ function CalScreen(){
       <div style={{padding:'18px 16px 6px'}}>
         <div style={{fontFamily:'var(--ff)',fontSize:28,letterSpacing:2}}>CALENDARIO</div>
         <div style={{fontSize:12,color:'var(--muted)'}}>
-          Mundial FIFA 2026 · {NEXT_MATCHES.length} partidos programados
+          Mundial FIFA 2026 · {matches.length} partidos programados
         </div>
       </div>
 
@@ -2012,9 +2100,10 @@ function BracketView({bracket}){
           </div>
         </div>
       )}
-      <BracketRound title="RONDA DE 16"  slots={bracket.r16||[]}  color='var(--acc)'  icon='⚔️'/>
-      <BracketRound title="CUARTOS"      slots={bracket.qf||[]}   color='var(--grn)'  icon='🎯'/>
-      <BracketRound title="SEMIFINALES"  slots={bracket.sf||[]}   color='#A855F7'     icon='⭐'/>
+      <BracketRound title="RONDA DE 32"  slots={bracket.r32||[]}  color='var(--acc)'   icon='⚔️'/>
+      <BracketRound title="OCTAVOS"      slots={bracket.r16||[]}  color='#4F8EF7'      icon='🎯'/>
+      <BracketRound title="CUARTOS"      slots={bracket.qf||[]}   color='var(--grn)'   icon='⚡'/>
+      <BracketRound title="SEMIFINALES"  slots={bracket.sf||[]}   color='#A855F7'      icon='⭐'/>
       <BracketRound title="3er LUGAR"    slots={[bracket.tercero||{}]} color='#CD7F32' icon='🥉'/>
       <BracketRound title="🏆 GRAN FINAL" slots={[bracket.final||{}]}  color='var(--gold)' icon=''/>
     </div>
@@ -2031,61 +2120,65 @@ function TablaScreen(){
   // ── Initial bracket — all TBD until tournament plays ──
   const mkSlot=(label,date,venue='')=>({label,date,venue,home:null,away:null,winner:null});
   const [bracket,setBracket]=useState({
-    r16:[
-      mkSlot('2°A vs 2°B',     'Jun 28','Los Ángeles'),
-      mkSlot('1°E vs 3°*',     'Jun 29','Boston'),
-      mkSlot('1°F vs 2°C',     'Jun 29','Monterrey'),
-      mkSlot('1°C vs 3°*',     'Jun 30','?'),
-      mkSlot('1°I vs 3°*',     'Jun 30','MetLife'),
-      mkSlot('2°E vs 2°I',     'Jun 30','Dallas'),
-      mkSlot('1°A vs 3°*',     'Jun 30','Azteca'),
-      mkSlot('1°L vs 3°*',     'Jul 1', 'Atlanta'),
-      mkSlot('1°D vs 3°*',     'Jul 1', 'San Francisco'),
-      mkSlot('1°G vs 3°*',     'Jul 1', 'Seattle'),
-      mkSlot('2°K vs 2°L',     'Jul 2', 'Toronto'),
-      mkSlot('1°H vs 2°J',     'Jul 2', 'Los Ángeles'),
-      mkSlot('1°B vs 3°*',     'Jul 2', 'Vancouver'),
-      mkSlot('1°J vs 2°H',     'Jul 3', 'Miami'),
-      mkSlot('1°K vs 3°*',     'Jul 3', 'Kansas City'),
-      mkSlot('2°D vs 2°G',     'Jul 3', 'Dallas'),
+    r32:[  // Ronda de 32 · Jun 28–Jul 3 · 16 partidos
+      mkSlot('2°A vs 2°B',    'Jun 28','Los Ángeles · SoFi Stadium'),
+      mkSlot('1°E vs Mejor3', 'Jun 28','Boston · Gillette Stadium'),
+      mkSlot('1°F vs 2°C',    'Jun 29','Monterrey · BBVA'),
+      mkSlot('1°I vs Mejor3', 'Jun 29','MetLife · New Jersey'),
+      mkSlot('1°C vs Mejor3', 'Jun 30','Dallas · AT&T Stadium'),
+      mkSlot('2°E vs 2°I',    'Jun 30','Dallas · AT&T Stadium'),
+      mkSlot('1°A vs Mejor3', 'Jun 30','Azteca · CDMX'),
+      mkSlot('1°L vs Mejor3', 'Jun 30','Atlanta · Mercedes-Benz'),
+      mkSlot('1°D vs Mejor3', 'Jul 1', 'San Francisco · Levi Stadium'),
+      mkSlot('1°G vs Mejor3', 'Jul 1', 'Seattle · Lumen Field'),
+      mkSlot('2°K vs 2°L',    'Jul 1', 'Toronto · BMO Field'),
+      mkSlot('1°H vs 2°J',    'Jul 2', 'Los Ángeles · SoFi Stadium'),
+      mkSlot('1°B vs Mejor3', 'Jul 2', 'Vancouver · BC Place'),
+      mkSlot('1°J vs 2°H',    'Jul 2', 'Miami · Hard Rock Stadium'),
+      mkSlot('1°K vs Mejor3', 'Jul 3', 'Kansas City · Arrowhead'),
+      mkSlot('2°D vs 2°G',    'Jul 3', 'Dallas · AT&T Stadium'),
     ],
-    qf:[
-      mkSlot('G.P74 vs G.P77', 'Jul 4', 'Filadelfia'),
-      mkSlot('G.P75 vs G.P76', 'Jul 4', 'Houston'),
-      mkSlot('G.P77 vs G.P79', 'Jul 5', 'MetLife'),
-      mkSlot('G.P73 vs G.P80', 'Jul 5', 'Azteca'),
-      mkSlot('G.P83 vs G.P84', 'Jul 6', 'Dallas'),
-      mkSlot('G.P81 vs G.P82', 'Jul 6', 'Seattle'),
-      mkSlot('G.P86 vs G.P88', 'Jul 7', 'Atlanta'),
-      mkSlot('G.P85 vs G.P87', 'Jul 7', 'Vancouver'),
+    r16:[  // Octavos de Final · Jul 5–8 · 8 partidos
+      mkSlot('G.R1 vs G.R2',  'Jul 5', 'Houston · NRG Stadium'),
+      mkSlot('G.R3 vs G.R4',  'Jul 5', 'Filadelfia · Lincoln Financial'),
+      mkSlot('G.R5 vs G.R6',  'Jul 6', 'Seattle · Lumen Field'),
+      mkSlot('G.R7 vs G.R8',  'Jul 6', 'Azteca · Ciudad de México'),
+      mkSlot('G.R9 vs G.R10', 'Jul 7', 'Vancouver · BC Place'),
+      mkSlot('G.R11 vs G.R12','Jul 7', 'Atlanta · Mercedes-Benz'),
+      mkSlot('G.R13 vs G.R14','Jul 8', 'Dallas · AT&T Stadium'),
+      mkSlot('G.R15 vs G.R16','Jul 8', 'MetLife · New Jersey'),
     ],
-    sf:[
-      mkSlot('SF1','Jul 14','Dallas'),
-      mkSlot('SF2','Jul 15','Atlanta'),
+    qf:[   // Cuartos de Final · Jul 10–12 · 4 partidos
+      mkSlot('O.1 vs O.2',    'Jul 10','Los Ángeles · SoFi Stadium'),
+      mkSlot('O.3 vs O.4',    'Jul 11','Kansas City · Arrowhead'),
+      mkSlot('O.5 vs O.6',    'Jul 11','Houston · NRG Stadium'),
+      mkSlot('O.7 vs O.8',    'Jul 12','MetLife · New Jersey'),
     ],
-    tercero: mkSlot('3er Lugar','Jul 18','Miami'),
-    final:   mkSlot('🏆 FINAL', 'Jul 19','MetLife Stadium, NJ'),
+    sf:[   // Semifinales · Jul 14–15 · 2 partidos
+      mkSlot('QF1 vs QF2',    'Jul 14','Dallas · AT&T Stadium'),
+      mkSlot('QF3 vs QF4',    'Jul 15','Atlanta · Mercedes-Benz'),
+    ],
+    tercero: mkSlot('3er Lugar','Jul 18','Miami · Hard Rock Stadium'),
+    final:   mkSlot('🏆 FINAL', 'Jul 19','MetLife Stadium, New Jersey'),
   });
 
-  // Firestore listener for standings AND bracket
+  // Firestore: clasificación y llave eliminatoria
   useEffect(()=>{
-    if(!window._fbDB) return;
-    try{
-      const {doc,onSnapshot,getFirestore}=window._fbFirestore||{};
-      if(!onSnapshot) return;
-      const db=getFirestore();
-      // standings
-      const u1=onSnapshot(doc(db,'live','standings'),snap=>{
-        if(snap.exists()&&snap.data().groups?.length>0){
-          setGroups(snap.data().groups);setApiLoaded(true);
-        }
-      });
-      // bracket updates from server
-      const u2=onSnapshot(doc(db,'live','bracket'),snap=>{
-        if(snap.exists()&&snap.data().r16) setBracket(snap.data());
-      });
-      return()=>{u1();u2();};
-    }catch(e){console.warn('standings error',e);}
+    let u1,u2;
+    const trySubscribe=()=>{
+      const fn=window._fbSubscribeLive;
+      if(!fn){ setTimeout(trySubscribe,800); return; }
+      try{
+        u1=fn('standings',data=>{
+          if(data.groups?.length>0){ setGroups(data.groups); setApiLoaded(true); }
+        });
+        u2=fn('bracket',data=>{
+          if(data.r32) setBracket(data);
+        });
+      }catch(e){ console.warn('standings error',e); }
+    };
+    trySubscribe();
+    return()=>{ if(typeof u1==='function') u1(); if(typeof u2==='function') u2(); };
   },[]);
 
   const grp=groups[gi]||GROUPS[0];
@@ -2197,6 +2290,27 @@ function GolesScreen(){
   const t=useLang();
   const [sel,setSel]=useState(null);
   const [scorers,setScorers]=useState(SCORERS);
+
+  // Firestore: goleadores actualizados por el servidor
+  useEffect(()=>{
+    let unsub;
+    const trySubscribe=()=>{
+      const fn=window._fbSubscribeLive;
+      if(!fn){ setTimeout(trySubscribe,800); return; }
+      try{
+        unsub=fn('scorers',data=>{
+          if(data.list?.length){
+            setScorers(prev=>data.list.map(s=>{
+              const ex=prev.find(p=>p.n===s.n)||{};
+              return {...ex,...s};
+            }));
+          }
+        });
+      }catch(e){}
+    };
+    trySubscribe();
+    return()=>{ if(typeof unsub==='function') unsub(); };
+  },[]);
 
   // Sort by goals
   const sorted=[...scorers].sort((a,b)=>b.g-a.g||b.a-a.a);

@@ -106,19 +106,54 @@ async function pollScorers(){
   }catch(e){ console.warn('pollScorers error:', e.message); }
 }
 
+// ── Poll fixtures (horarios confirmados por FIFA) ────────
+async function pollFixtures(){
+  if(!AF_KEY) return;
+  try{
+    const data=await afFetch(`/fixtures?league=${WC_ID}&season=${WC_SEASON}`);
+    if(!data||!data.length) return;
+    const fixtures=data.map(f=>({
+      id:      f.fixture.id,
+      home:    f.teams.home.name,
+      away:    f.teams.away.name,
+      isoDate: (f.fixture.date||'').slice(0,10),
+      date:    f.fixture.date
+        ?new Date(f.fixture.date).toLocaleDateString('es',{day:'numeric',month:'short'})
+        :'--',
+      time:    f.fixture.date
+        ?new Date(f.fixture.date).toLocaleTimeString('es',{
+            hour:'2-digit',minute:'2-digit',timeZone:'America/Mexico_City'
+          })
+        :'--:--',
+      phase:   f.league.round,
+      venue:   f.fixture.venue.name,
+      city:    f.fixture.venue.city,
+      status:  f.fixture.status.short,
+      hs:      f.goals.home??null,
+      as:      f.goals.away??null,
+    }));
+    await save('fixtures',{fixtures});
+    console.log(`[${new Date().toLocaleTimeString()}] 📅 ${fixtures.length} fixtures sincronizados`);
+  }catch(e){ console.warn('pollFixtures error:',e.message); }
+}
+
 // ── Scheduling ──────────────────────────────────────────
 const WC_START = new Date('2026-06-11');
 const WC_END   = new Date('2026-07-20');
 const isActive = ()=> new Date()>=WC_START && new Date()<=WC_END;
 
 function startPolling(){
+  // Siempre sincronizar fixtures (horarios confirmados por FIFA)
+  pollFixtures();
+  setInterval(pollFixtures, 6*60*60000); // cada 6h
   if(isActive()){
     console.log('⚽ Mundial ACTIVO — polling cada 60s');
-    pollLive(); setInterval(pollLive, 60000);
+    pollLive();      setInterval(pollLive,      60000);
     pollStandings(); setInterval(pollStandings, 5*60000);
-    pollScorers(); setInterval(pollScorers, 10*60000);
+    pollScorers();   setInterval(pollScorers,   10*60000);
+    setInterval(pollFixtures, 30*60000); // fixtures también cada 30min
   } else {
-    console.log('⏳ Pre-Mundial — actualizando cada 6h');
+    console.log('⏳ Pre-Mundial — clasificación y fixtures cada 6h');
     pollStandings(); pollScorers();
     setInterval(()=>{ pollStandings(); pollScorers(); }, 6*60*60000);
   }
@@ -128,7 +163,18 @@ function startPolling(){
 app.use(express.json());
 
 app.get('/api/health', (req,res)=>{
-  res.json({ status:'ok', firebase:!!db, wcActive:isActive(), time:new Date().toISOString() });
+  res.json({ status:'ok', firebase:!!db, wcActive:isActive(), afKey:!!AF_KEY, time:new Date().toISOString() });
+});
+
+// ── Proxy API-Football (clave solo en servidor) ─────────────────────────────
+app.get('/api/af/*', async(req,res)=>{
+  if(!AF_KEY) return res.status(503).json({error:'AF_KEY no configurada en el servidor'});
+  try{
+    const path='/'+req.params[0];
+    const qs=Object.keys(req.query).length?'?'+new URLSearchParams(req.query).toString():'';
+    const data=await afFetch(path+qs);
+    res.json({response:data||[]});
+  }catch(e){ res.status(500).json({error:e.message}); }
 });
 
 // ── GRUPOS — almacenamiento en servidor (sin Firebase, sin permisos) ──
