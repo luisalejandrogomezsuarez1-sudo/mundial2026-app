@@ -4345,7 +4345,7 @@ function BetsScreen({bets,placeBet,credito,onPagar,onReset,betsSaved=false,onSav
               </div>
               <div style={{fontSize:12,color:'var(--muted)',lineHeight:1.6,marginBottom:12}}>
                 Tus pronósticos están asegurados y son de solo consulta.<br/>
-                Para hacer cambios necesitas más monedas.
+                Para hacer cambios necesitas comprar un nuevo paquete.
               </div>
               <div style={{background:'rgba(246,201,14,.08)',borderRadius:12,
                 border:'1px solid rgba(246,201,14,.2)',padding:'12px',marginBottom:12}}>
@@ -4353,8 +4353,7 @@ function BetsScreen({bets,placeBet,credito,onPagar,onReset,betsSaved=false,onSav
                   ¿Quieres cambiar tus pronósticos?
                 </div>
                 <div style={{fontSize:11,color:'var(--dim)'}}>
-                  Compra otro paquete de <strong style={{color:'var(--gold)'}}>$20 MXN</strong> y recibirás 1,000🪙 nuevas.<br/>
-                  O bien, pídele al <strong style={{color:'var(--gold)'}}>Administrador</strong> que te regale monedas.
+                  Compra otro paquete de <strong style={{color:'var(--gold)'}}>$20 MXN</strong> y recibirás 1,000🪙 nuevas para volver a apostar.
                 </div>
               </div>
               <button onClick={()=>setConfirmReset(true)}
@@ -4403,7 +4402,7 @@ function BetsScreen({bets,placeBet,credito,onPagar,onReset,betsSaved=false,onSav
               </button>
               <div style={{fontSize:10,color:'var(--muted)',lineHeight:1.5}}>
                 🔒 Una vez guardado, los pronósticos <strong style={{color:'var(--txt)'}}>no se podrán modificar</strong>.<br/>
-                Para cambiar necesitarás comprar un nuevo paquete o que el Admin te regale monedas.
+                Para cambiar necesitarás comprar un nuevo paquete de <strong style={{color:'var(--gold)'}}>$20 MXN</strong>.
               </div>
             </div>
           )}
