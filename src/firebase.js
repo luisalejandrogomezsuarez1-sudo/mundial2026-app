@@ -121,7 +121,7 @@ export function subscribeToChatMessages(groupCode, callback) {
   const q = query(
     collection(db, 'groups', groupCode, 'messages'),
     orderBy('timestamp', 'asc'),
-    limit(500)
+    limit(50)
   );
   return onSnapshot(q, snap => {
     const msgs = snap.docs.map(d => {

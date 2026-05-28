@@ -277,13 +277,40 @@ app.get('/api/groups/:code', async(req,res)=>{
   res.json({found:false});
 });
 
+// ── Limpieza automática: conserva solo los últimos 50 mensajes por grupo ────
+const MSG_LIMIT = 50;
+async function cleanupMessages(code){
+  if(!db) return;
+  try{
+    const snap = await db.collection('groups').doc(code)
+      .collection('messages').orderBy('ts','asc').get();
+    if(snap.size > MSG_LIMIT){
+      const toDelete = snap.docs.slice(0, snap.size - MSG_LIMIT);
+      const batch = db.batch();
+      toDelete.forEach(d => batch.delete(d.ref));
+      await batch.commit();
+      console.log(`🧹 ${code}: ${toDelete.length} mensajes eliminados, ${MSG_LIMIT} conservados`);
+    }
+  }catch(e){ /* silent */ }
+}
+
+// Limpieza global cada hora (todos los grupos)
+async function cleanupAllGroups(){
+  if(!db) return;
+  try{
+    const snap = await db.collection('groups').get();
+    for(const g of snap.docs) await cleanupMessages(g.id);
+  }catch(e){ console.warn('cleanupAllGroups error:', e.message); }
+}
+setInterval(cleanupAllGroups, 60*60*1000); // cada hora
+setTimeout(cleanupAllGroups, 10000);       // también al arrancar (+10s)
+
 // ── CHAT API — Firebase Admin for persistence + scalability ────
 app.post('/api/chat/:code', async(req,res)=>{
   const code = req.params.code.toUpperCase();
   const {id, uid, name, text, ts} = req.body||{};
   if(!text?.trim()) return res.status(400).json({error:'Empty message'});
 
-  // Use client-provided id+ts so polling doesn't create duplicates
   const msg = {
     id:   id   || 'cm_'+Date.now()+'_'+Math.random().toString(36).slice(2,5),
     uid:  uid  || 'anon',
@@ -293,21 +320,21 @@ app.post('/api/chat/:code', async(req,res)=>{
     ts:   ts   || Date.now(),
   };
 
-  // Save to Firestore via Admin (guaranteed to work)
   if(db){
     try{
       await db.collection('groups').doc(code)
               .collection('messages').add({...msg, timestamp: new Date()});
+      // Limpiar mensajes viejos (async, no bloquea la respuesta)
+      cleanupMessages(code);
     }catch(e){ console.warn('chat save FB error:', e.message); }
   }
 
-  // Also cache in memory for fast polling
+  // Cache en memoria: máx 50
   if(!serverGroups[code]) serverGroups[code] = {};
   if(!serverGroups[code]._msgs) serverGroups[code]._msgs = [];
   serverGroups[code]._msgs.push(msg);
-  // Keep only last 500 messages in memory
-  if(serverGroups[code]._msgs.length > 500)
-    serverGroups[code]._msgs = serverGroups[code]._msgs.slice(-500);
+  if(serverGroups[code]._msgs.length > MSG_LIMIT)
+    serverGroups[code]._msgs = serverGroups[code]._msgs.slice(-MSG_LIMIT);
 
   res.json({ok:true, msg});
 });
