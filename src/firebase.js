@@ -100,21 +100,26 @@ export function subscribeToChatMessages(groupId, callback) {
 // ── GRUPOS EN FIRESTORE ─────────────────────────────────────────
 export async function saveGroupToFirestore(group, userId) {
   try {
-    await setDoc(doc(db,'groups', group.id), {
+    // Use group CODE as document ID so lookup is a direct getDoc (no index needed)
+    await setDoc(doc(db,'groups', group.code), {
       ...group,
       ownerId:   userId,
       createdAt: new Date().toISOString(),
     });
+    console.log('✅ Group saved to Firestore:', group.code);
   } catch(e) { console.warn('saveGroup error:', e); }
 }
 
 export async function getGroupByCode(code) {
   try {
-    const q = query(collection(db,'groups'), where('code','==',code));
-    const snap = await getDocs(q);
-    if(snap.empty) return null;
-    const d = snap.docs[0];
-    return { id: d.id, ...d.data() };
+    // Direct document read by code (no query, no index needed — always works)
+    const snap = await getDoc(doc(db,'groups', code));
+    if(!snap.exists()) {
+      console.log('Group not found in Firestore:', code);
+      return null;
+    }
+    console.log('✅ Group found:', code);
+    return { id: snap.id, ...snap.data() };
   } catch(e) { console.warn('getGroup error:', e); return null; }
 }
 
