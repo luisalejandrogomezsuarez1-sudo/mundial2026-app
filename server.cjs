@@ -125,8 +125,53 @@ function startPolling(){
 }
 
 // ── Routes ──────────────────────────────────────────────
+app.use(express.json());
+
 app.get('/api/health', (req,res)=>{
-  res.json({ status:'ok', wcActive:isActive(), time:new Date().toISOString() });
+  res.json({ status:'ok', firebase:!!db, wcActive:isActive(), time:new Date().toISOString() });
+});
+
+// ── GRUPOS — usa Firebase Admin (sin restricciones de host) ──────
+app.post('/api/groups', async(req,res)=>{
+  const g = req.body;
+  if(!g?.code) return res.status(400).json({error:'Falta code'});
+  if(!db) return res.status(503).json({error:'Firebase no disponible'});
+  try{
+    await db.collection('groups').doc(g.code).set({
+      id:        g.id        || 'g_unknown',
+      name:      g.name      || 'Grupo',
+      desc:      g.desc      || '',
+      code:      g.code,
+      created:   g.created   || Date.now(),
+      members:   (g.members  || []).map(m=>({
+        id:     m.id     || 'anon',
+        name:   m.name   || 'Usuario',
+        ini:    m.ini    || 'U',
+        joined: m.joined || Date.now(),
+      })),
+      ownerId:   g.ownerId   || '',
+      createdAt: new Date().toISOString(),
+    });
+    console.log('✅ Grupo guardado:', g.code);
+    res.json({ok:true, code:g.code});
+  }catch(e){
+    console.error('Error guardando grupo:', e.message);
+    res.status(500).json({error:e.message});
+  }
+});
+
+app.get('/api/groups/:code', async(req,res)=>{
+  const code = (req.params.code||'').toUpperCase().trim();
+  if(!code) return res.status(400).json({error:'Falta code'});
+  if(!db) return res.status(503).json({error:'Firebase no disponible'});
+  try{
+    const snap = await db.collection('groups').doc(code).get();
+    if(!snap.exists) return res.json({found:false});
+    res.json({found:true, group: snap.data()});
+  }catch(e){
+    console.error('Error buscando grupo:', e.message);
+    res.status(500).json({error:e.message});
+  }
 });
 
 // Serve React app

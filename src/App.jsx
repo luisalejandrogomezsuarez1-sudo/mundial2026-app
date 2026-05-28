@@ -2936,69 +2936,49 @@ function GruposScreen({user,userBets,credito,onPagar}){
         ini:(user?.name||'U')[0].toUpperCase(),joined:Date.now()}],
       ownerId:user?.id||''};
 
-    // Wait for Firebase (up to 10 seconds)
-    let fn=fbSaveGroup||window._fbSaveGroup;
-    let waited=0;
-    while(!fn&&waited<20){
-      await new Promise(r=>setTimeout(r,500));
-      fn=fbSaveGroup||window._fbSaveGroup;
-      waited++;
-    }
-
-    if(fn){
-      try{
-        await fn(g, user?.id);  // await — confirm Firestore write before showing code
-        setGroups(p=>[...p,g]);
-        setNewName('');setNewDesc('');
-        setCreatingGroup(false);
-        goDetail(g);           // show group ONLY after Firestore confirms
-      }catch(e){
-        console.error('createGroup Firestore error:',e);
-        setCreateErr('Error al guardar en servidor. Verifica tu conexión.');
-        setCreatingGroup(false);
-      }
-    } else {
-      // Firebase never loaded — save locally only (degraded mode)
+    // Use Railway server API (Firebase Admin — no host restrictions)
+    try{
+      const res=await fetch('/api/groups',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify(g)
+      });
+      const data=await res.json();
+      if(!res.ok) throw new Error(data.error||'Error del servidor');
       setGroups(p=>[...p,g]);
       setNewName('');setNewDesc('');
       setCreatingGroup(false);
-      setCreateErr('⚠️ Sin conexión a Firebase. El código solo funciona en este dispositivo.');
-      goDetail(g);
+      goDetail(g);  // show ONLY after server confirms save
+    }catch(e){
+      console.error('createGroup error:',e);
+      setCreateErr('Error al guardar: '+e.message);
+      setCreatingGroup(false);
     }
   };
 
   const joinGroup=async()=>{
     const code=joinCode.trim().toUpperCase();
     if(!code)return;
-    // 1. Check local groups first
+    // Check local first (fast)
     const found=groups.find(g=>g.code===code);
     if(found){setJoinErr('');goDetail(found);setJoinCode('');return;}
-    // 2. Search Firestore — retry until Firebase is ready (max 8s)
-    setJoinErr('🔍 Buscando grupo...');
-    const tryFind=async(attempt=0)=>{
-      const fn=fbGetGroupByCode||window._fbGetGroupByCode;
-      if(fn){
-        try{
-          const fsGroup=await fn(code);
-          if(fsGroup){
-            setGroups(p=>[...p.filter(g=>g.id!==fsGroup.id),fsGroup]);
-            setJoinErr('');goDetail(fsGroup);setJoinCode('');
-          } else {
-            setJoinErr('❌ Código no encontrado. Verifica que sea exacto.');
-          }
-        }catch(e){
-          console.error('joinGroup Firestore error:',e);
-          setJoinErr('⚠️ Error de conexión. Intenta de nuevo.');
-        }
-      } else if(attempt<16){
-        // Firebase not loaded yet — retry every 500ms
-        setJoinErr(`🔄 Conectando... (${attempt+1}/16)`);
-        setTimeout(()=>tryFind(attempt+1),500);
+    // Search via Railway server API (Firebase Admin — no host restrictions)
+    try{
+      setJoinErr('🔍 Buscando grupo...');
+      const res=await fetch('/api/groups/'+encodeURIComponent(code));
+      const data=await res.json();
+      if(!res.ok) throw new Error(data.error||'Error del servidor');
+      if(data.found&&data.group){
+        const g=data.group;
+        setGroups(p=>[...p.filter(x=>x.code!==g.code),g]);
+        setJoinErr('');goDetail(g);setJoinCode('');
       } else {
-        setJoinErr('⚠️ Sin conexión a Firebase. Verifica tu internet.');
+        setJoinErr('❌ Código no encontrado. Verifica que sea exacto.');
       }
-    };
-    await tryFind();
+    }catch(e){
+      console.error('joinGroup error:',e);
+      setJoinErr('⚠️ Error: '+e.message);
+    }
   };
 
   const lockBets=gid=>{
