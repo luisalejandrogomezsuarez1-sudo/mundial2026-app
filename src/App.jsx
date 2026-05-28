@@ -2807,6 +2807,59 @@ function PerfilScreen({user,onLogout,lang='es'}){
 function GruposScreen({user,userBets,credito,onPagar}){
   const t=useLang();
   // ── PAYMENT GATE: must pay to access groups ──────────────────
+  const [view,setView]=useState('list');
+  // Groups persisted per user in localStorage — no demo groups
+  const GROUPS_KEY = `wc2026_groups_${user?.id||'guest'}`;
+  const [groups,setGroups]=useState(()=>{
+    try{
+      const saved=localStorage.getItem(GROUPS_KEY);
+      return saved?JSON.parse(saved):[];
+    }catch{return[];}
+  });
+
+  // Persist groups whenever they change
+  useEffect(()=>{
+    try{localStorage.setItem(GROUPS_KEY,JSON.stringify(groups));}
+    catch(e){console.warn('Groups save error:',e);}
+  },[groups]);
+
+  const [selGroup,setSelGroup]=useState(null);
+  const [dtab,setDtab]=useState('ranking');
+  const [newName,setNewName]=useState('');
+  const [newDesc,setNewDesc]=useState('');
+  const [joinCode,setJoinCode]=useState('');
+  const [locks,setLocks]=useState({});
+  const [confirmLock,setConfirmLock]=useState(false);
+  const [copied,setCopied]=useState(false);
+  const [joinErr,setJoinErr]=useState('');
+  // Chat state per group
+  // Chats vacíos — se llenarán con mensajes reales de los usuarios
+  const [chats,setChats]=useState({});
+  const [chatInput,setChatInput]=useState('');
+  const [creatingGroup,setCreatingGroup]=useState(false);
+  const [createErr,setCreateErr]=useState('');
+  const chatEndRef=useRef(null);
+
+  // Subscribe to Firestore chat in real-time when viewing a group (like WhatsApp)
+  // Placed here AFTER all state/ref declarations to avoid TDZ crash
+  useEffect(()=>{
+    if(!selGroup?.code) return;
+    const gid=selGroup.id;           // local state key
+    const grpCode=selGroup.code;     // Firestore path key
+    const subscribeFn=fbSubscribeChat||window._fbSubscribeChat;
+    if(!subscribeFn) return;
+    const unsubscribe=subscribeFn(grpCode,(messages)=>{
+      setChats(prev=>{
+        const local=(prev[gid]||[]).filter(m=>m.id.startsWith('cm_'));
+        const fsIds=new Set(messages.map(m=>m.id));
+        const localOnly=local.filter(m=>!fsIds.has(m.id));
+        const merged=[...messages,...localOnly].sort((a,b)=>(a.ts||0)-(b.ts||0));
+        return {...prev,[gid]:merged};
+      });
+      setTimeout(()=>chatEndRef.current?.scrollIntoView({behavior:'smooth'}),80);
+    });
+    return()=>{if(typeof unsubscribe==='function')unsubscribe();};
+  },[selGroup?.code]);
   if(!credito) return(
     <div className="scr fin" style={{display:'flex',flexDirection:'column',
       alignItems:'center',justifyContent:'center',padding:'32px 24px',
@@ -2839,57 +2892,7 @@ function GruposScreen({user,userBets,credito,onPagar}){
       </div>
     </div>
   );
-  const [view,setView]=useState('list');
-  // Groups persisted per user in localStorage — no demo groups
-  const GROUPS_KEY = `wc2026_groups_${user?.id||'guest'}`;
-  const [groups,setGroups]=useState(()=>{
-    try{
-      const saved=localStorage.getItem(GROUPS_KEY);
-      return saved?JSON.parse(saved):[];
-    }catch{return[];}
-  });
 
-  // Persist groups whenever they change
-  useEffect(()=>{
-    try{localStorage.setItem(GROUPS_KEY,JSON.stringify(groups));}
-    catch(e){console.warn('Groups save error:',e);}
-  },[groups]);
-
-  const [selGroup,setSelGroup]=useState(null);
-  const [dtab,setDtab]=useState('ranking');
-  const [newName,setNewName]=useState('');
-  const [newDesc,setNewDesc]=useState('');
-  const [joinCode,setJoinCode]=useState('');
-  const [locks,setLocks]=useState({});
-  const [confirmLock,setConfirmLock]=useState(false);
-  const [copied,setCopied]=useState(false);
-  const [joinErr,setJoinErr]=useState('');
-  // Chat state per group
-  // Chats vacíos — se llenarán con mensajes reales de los usuarios
-  const [chats,setChats]=useState({});
-  const [chatInput,setChatInput]=useState('');
-  const chatEndRef=useRef(null);
-
-  // Subscribe to Firestore chat in real-time when viewing a group (like WhatsApp)
-  // Placed here AFTER all state/ref declarations to avoid TDZ crash
-  useEffect(()=>{
-    if(!selGroup?.code) return;
-    const gid=selGroup.id;           // local state key
-    const grpCode=selGroup.code;     // Firestore path key
-    const subscribeFn=fbSubscribeChat||window._fbSubscribeChat;
-    if(!subscribeFn) return;
-    const unsubscribe=subscribeFn(grpCode,(messages)=>{
-      setChats(prev=>{
-        const local=(prev[gid]||[]).filter(m=>m.id.startsWith('cm_'));
-        const fsIds=new Set(messages.map(m=>m.id));
-        const localOnly=local.filter(m=>!fsIds.has(m.id));
-        const merged=[...messages,...localOnly].sort((a,b)=>(a.ts||0)-(b.ts||0));
-        return {...prev,[gid]:merged};
-      });
-      setTimeout(()=>chatEndRef.current?.scrollIntoView({behavior:'smooth'}),80);
-    });
-    return()=>{if(typeof unsubscribe==='function')unsubscribe();};
-  },[selGroup?.code]);
 
   // ── Helper functions ──────────────────────────────────────────
   // Generate unique group code
@@ -2923,17 +2926,15 @@ function GruposScreen({user,userBets,credito,onPagar}){
     }
   };
 
-  const [creatingGroup,setCreatingGroup]=useState(false);
-  const [createErr,setCreateErr]=useState('');
 
   const createGroup=async()=>{
     if(!newName.trim())return;
     setCreatingGroup(true);
     setCreateErr('');
     const g={id:'g_'+Date.now(),name:newName.trim(),desc:newDesc.trim(),
-      code:genCode(),created:Date.now(),members:[{id:user?.id,name:user?.name,
+      code:genCode(),created:Date.now(),members:[{id:user?.id||'anon',name:user?.name||'Usuario',
         ini:(user?.name||'U')[0].toUpperCase(),joined:Date.now()}],
-      ownerId:user?.id};
+      ownerId:user?.id||''};
 
     // Wait for Firebase (up to 10 seconds)
     let fn=fbSaveGroup||window._fbSaveGroup;

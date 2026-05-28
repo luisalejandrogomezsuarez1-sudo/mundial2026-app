@@ -68,18 +68,28 @@ export async function giftCoinsInFirestore(userId, gifted) {
 //   getDoc(doc(db,'groups','WC26-ABCDE')) ← siempre funciona
 
 export async function saveGroupToFirestore(group, userId) {
-  // ONE single write — code is the document ID
-  await setDoc(doc(db, 'groups', group.code), {
-    id:        group.id,
-    name:      group.name,
+  // Sanitize: Firestore rejects undefined values
+  const data = {
+    id:        group.id        || 'g_unknown',
+    name:      group.name      || 'Grupo',
     desc:      group.desc      || '',
     code:      group.code,
     created:   group.created   || Date.now(),
-    members:   group.members   || [],
+    members:   (group.members  || []).map(m=>({
+      id:     m.id     || 'anon',
+      name:   m.name   || 'Usuario',
+      ini:    m.ini    || 'U',
+      joined: m.joined || Date.now(),
+    })),
     ownerId:   userId          || '',
     createdAt: new Date().toISOString(),
-  });
-  // No try/catch — let errors propagate so createGroup can show them
+  };
+  try {
+    await setDoc(doc(db, 'groups', group.code), data);
+  } catch(e) {
+    console.error('saveGroup Firestore error:', e);
+    throw new Error('No se pudo guardar el grupo en Firestore: ' + e.message);
+  }
 }
 
 export async function getGroupByCode(code) {
