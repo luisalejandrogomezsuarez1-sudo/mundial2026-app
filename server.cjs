@@ -328,6 +328,45 @@ app.delete('/api/groups/:code', async(req,res)=>{
   res.json({ok:true});
 });
 
+// ── ADMIN: listar y borrar grupos por nombre (protegido con clave) ──────────
+const ADMIN_KEY = process.env.ADMIN_KEY || 'wc2026-admin-local';
+
+app.get('/api/admin/groups', (req,res)=>{
+  if(req.query.key !== ADMIN_KEY) return res.status(403).json({error:'Forbidden'});
+  const list = Object.values(serverGroups).map(g=>({
+    code:    g.code,
+    name:    g.name,
+    owner:   g.ownerId||'',
+    members: (g.members||[]).length,
+    savedAt: g.savedAt,
+  }));
+  res.json({total:list.length, groups:list});
+});
+
+app.delete('/api/admin/groups/by-name/:name', async(req,res)=>{
+  if(req.query.key !== ADMIN_KEY) return res.status(403).json({error:'Forbidden'});
+  const name = decodeURIComponent(req.params.name).toLowerCase().trim();
+  const matches = Object.values(serverGroups).filter(g=>(g.name||'').toLowerCase()===name);
+  if(!matches.length) return res.json({ok:false, msg:'No encontrado'});
+  let deleted = 0;
+  for(const g of matches){
+    delete serverGroups[g.code];
+    persistGroups();
+    if(db){
+      try{
+        await db.collection('groups').doc(g.code).delete();
+        const snap = await db.collection('groups').doc(g.code).collection('messages').get();
+        const batch = db.batch();
+        snap.docs.forEach(d=>batch.delete(d.ref));
+        if(snap.docs.length) await batch.commit();
+      }catch(e){ console.warn('admin delete FB error:',e.message); }
+    }
+    console.log(`🗑 [ADMIN] Grupo eliminado: ${g.name} (${g.code})`);
+    deleted++;
+  }
+  res.json({ok:true, deleted, names:matches.map(g=>g.name)});
+});
+
 // Serve React app
 
 app.use(express.static(path.join(__dirname,'dist')));
