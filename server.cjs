@@ -287,8 +287,11 @@ app.get('/api/groups/:code', async(req,res)=>{
   res.json({found:false});
 });
 
-// ── Limpieza automática: conserva solo los últimos 50 mensajes por grupo ────
+// ── Limpieza de mensajes: solo cuando supera el límite, no en cada mensaje ───
 const MSG_LIMIT = 50;
+// Contador por grupo: cuántos mensajes se han acumulado desde la última limpieza
+const msgCounter = {};
+
 async function cleanupMessages(code){
   if(!db) return;
   try{
@@ -301,10 +304,18 @@ async function cleanupMessages(code){
       await batch.commit();
       console.log(`🧹 ${code}: ${toDelete.length} mensajes eliminados, ${MSG_LIMIT} conservados`);
     }
+    msgCounter[code] = 0; // reset contador tras limpiar
   }catch(e){ /* silent */ }
 }
 
-// Limpieza global cada hora (todos los grupos)
+// Limpieza solo cuando el contador supera el límite (no en cada mensaje)
+function maybeCleanup(code){
+  msgCounter[code] = (msgCounter[code]||0) + 1;
+  // Solo limpiar cuando acumulamos más mensajes que el límite (aprox cada 50 mensajes)
+  if(msgCounter[code] >= MSG_LIMIT) cleanupMessages(code);
+}
+
+// Limpieza global cada hora — respaldo por si el servidor se reinicia con grupos viejos
 async function cleanupAllGroups(){
   if(!db) return;
   try{
@@ -313,7 +324,7 @@ async function cleanupAllGroups(){
   }catch(e){ console.warn('cleanupAllGroups error:', e.message); }
 }
 setInterval(cleanupAllGroups, 60*60*1000); // cada hora
-setTimeout(cleanupAllGroups, 10000);       // también al arrancar (+10s)
+setTimeout(cleanupAllGroups, 10000);       // al arrancar (+10s)
 
 // ── CHAT API — Firebase Admin for persistence + scalability ────
 app.post('/api/chat/:code', async(req,res)=>{
@@ -334,8 +345,8 @@ app.post('/api/chat/:code', async(req,res)=>{
     try{
       await db.collection('groups').doc(code)
               .collection('messages').add({...msg, timestamp: new Date()});
-      // Limpiar mensajes viejos (async, no bloquea la respuesta)
-      cleanupMessages(code);
+      // Solo limpia cada ~50 mensajes (no en cada mensaje)
+      maybeCleanup(code);
     }catch(e){ console.warn('chat save FB error:', e.message); }
   }
 
