@@ -2750,7 +2750,7 @@ function PerfilScreen({user,onLogout,lang='es'}){
                         }
                         const ok=await dbGiftCoins(u.email,amount);
                         if(ok){
-                          if(fbGiftCoins&&u.id) fbGiftCoins(u.id,true);
+                          if(fbGiftCoins&&u.id) fbGiftCoins(u.id,true,amount);
                           alert(`✅ ${amount} monedas regaladas a ${u.name||u.email}`);
                           const updated=await dbLoad();setDbUsers(updated);
                         }
@@ -4890,7 +4890,7 @@ export default function App(){
       setCredito({coins:999999,paquetes:999,paidAt:Date.now(),isAdmin:true});
       return;
     }
-    // Check if user has gifted coins from admin
+    // Check if user has gifted coins or paid package
     try{
       const users=await dbLoad();
       const dbUser=users.find(x=>x.email.toLowerCase()===u.email.toLowerCase());
@@ -4899,6 +4899,27 @@ export default function App(){
         setCredito({coins:giftedCoins,paquetes:1,paidAt:Date.now(),gifted:true,giftedCoins});
       } else if(dbUser?.paquetes>0){
         setCredito({coins:COINS_PER_PAGO,paquetes:dbUser.paquetes,paidAt:Date.now()});
+      } else {
+        // Fallback: verificar Firestore — el admin pudo haber regalado monedas desde otro dispositivo
+        const checkFirestoreCredit=async(attempts=0)=>{
+          const getFn=fbGetAllUsers||window._fbGetAllUsers;
+          if(getFn){
+            try{
+              const allUsers=await getFn();
+              const fsUser=allUsers.find(x=>x.id===u.id);
+              if(fsUser?.gifted){
+                const gc=fsUser.giftedCoins||1000;
+                setCredito({coins:gc,paquetes:1,paidAt:Date.now(),gifted:true,giftedCoins:gc});
+                // Sincronizar en localStorage para próximos logins
+                const localUsers=await dbLoad();
+                await dbSave(localUsers.map(x=>x.id===u.id?{...x,gifted:true,giftedCoins:gc}:x));
+              } else if(fsUser?.paquetes>0){
+                setCredito({coins:COINS_PER_PAGO,paquetes:fsUser.paquetes,paidAt:Date.now()});
+              }
+            }catch(e){console.warn('checkFirestoreCredit error:',e);}
+          } else if(attempts<10){ setTimeout(()=>checkFirestoreCredit(attempts+1),800); }
+        };
+        checkFirestoreCredit();
       }
       // Restore betsSaved state (locked predictions)
       try{

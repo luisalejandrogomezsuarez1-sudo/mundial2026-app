@@ -52,10 +52,12 @@ export async function getAllUsersFromFirestore() {
   } catch(e) { console.warn('getUsers error:', e); return []; }
 }
 
-export async function giftCoinsInFirestore(userId, gifted) {
+export async function giftCoinsInFirestore(userId, gifted, giftedCoins=1000) {
   try {
     await updateDoc(doc(db,'users', userId), {
-      gifted, giftedAt: gifted ? new Date().toISOString() : null
+      gifted,
+      giftedAt:    gifted ? new Date().toISOString() : null,
+      giftedCoins: gifted ? giftedCoins : null,
     });
   } catch(e) { console.warn('giftCoins error:', e); }
 }
