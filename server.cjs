@@ -195,7 +195,94 @@ app.get('/api/groups/:code', (req,res)=>{
   }
 });
 
+// ── CHAT API — Firebase Admin for persistence + scalability ────
+app.post('/api/chat/:code', async(req,res)=>{
+  const code = req.params.code.toUpperCase();
+  const {uid, name, text} = req.body||{};
+  if(!text?.trim()) return res.status(400).json({error:'Empty message'});
+
+  const msg = {
+    id:   'cm_'+Date.now()+'_'+Math.random().toString(36).slice(2,6),
+    uid:  uid  || 'anon',
+    name: name || 'Usuario',
+    ini:  (name||'?')[0].toUpperCase(),
+    text: text.trim(),
+    ts:   Date.now(),
+  };
+
+  // Save to Firestore via Admin (guaranteed to work)
+  if(db){
+    try{
+      await db.collection('groups').doc(code)
+              .collection('messages').add({...msg, timestamp: new Date()});
+    }catch(e){ console.warn('chat save FB error:', e.message); }
+  }
+
+  // Also cache in memory for fast polling
+  if(!serverGroups[code]) serverGroups[code] = {};
+  if(!serverGroups[code]._msgs) serverGroups[code]._msgs = [];
+  serverGroups[code]._msgs.push(msg);
+  // Keep only last 500 messages in memory
+  if(serverGroups[code]._msgs.length > 500)
+    serverGroups[code]._msgs = serverGroups[code]._msgs.slice(-500);
+
+  res.json({ok:true, msg});
+});
+
+app.get('/api/chat/:code', async(req,res)=>{
+  const code  = req.params.code.toUpperCase();
+  const since = parseInt(req.query.since)||0;
+
+  let msgs = [];
+
+  // Try Firestore first (authoritative source)
+  if(db){
+    try{
+      const snap = await db.collection('groups').doc(code)
+                           .collection('messages')
+                           .orderBy('ts','asc').get();
+      msgs = snap.docs.map(d=>d.data());
+    }catch(e){
+      // Fallback to memory cache
+      msgs = (serverGroups[code]?._msgs)||[];
+    }
+  } else {
+    msgs = (serverGroups[code]?._msgs)||[];
+  }
+
+  // Return only messages newer than 'since'
+  const filtered = since>0 ? msgs.filter(m=>m.ts>since) : msgs;
+  res.json({ok:true, msgs:filtered});
+});
+
+// ── DELETE GROUP ─────────────────────────────────────────────────
+app.delete('/api/groups/:code', async(req,res)=>{
+  const code = req.params.code.toUpperCase();
+  if(!code) return res.status(400).json({error:'Falta code'});
+
+  // Delete from memory + file
+  delete serverGroups[code];
+  persistGroups();
+
+  // Delete from Firestore
+  if(db){
+    try{
+      await db.collection('groups').doc(code).delete();
+      // Also delete messages subcollection
+      const msgsSnap = await db.collection('groups').doc(code)
+                                .collection('messages').get();
+      const batch = db.batch();
+      msgsSnap.docs.forEach(d => batch.delete(d.ref));
+      if(msgsSnap.docs.length > 0) await batch.commit();
+    }catch(e){ console.warn('delete group FB error:', e.message); }
+  }
+
+  console.log('🗑 Grupo eliminado:', code);
+  res.json({ok:true});
+});
+
 // Serve React app
+
 app.use(express.static(path.join(__dirname,'dist')));
 app.get('*', (req,res)=>{
   res.sendFile(path.join(__dirname,'dist','index.html'));

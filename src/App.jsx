@@ -2838,27 +2838,41 @@ function GruposScreen({user,userBets,credito,onPagar}){
   const [chatInput,setChatInput]=useState('');
   const [creatingGroup,setCreatingGroup]=useState(false);
   const [createErr,setCreateErr]=useState('');
+  const [confirmDelete,setConfirmDelete]=useState(false);
   const chatEndRef=useRef(null);
 
-  // Subscribe to Firestore chat in real-time when viewing a group (like WhatsApp)
-  // Placed here AFTER all state/ref declarations to avoid TDZ crash
+  // Poll server for new chat messages every 3 seconds (WhatsApp-style)
   useEffect(()=>{
     if(!selGroup?.code) return;
-    const gid=selGroup.id;           // local state key
-    const grpCode=selGroup.code;     // Firestore path key
-    const subscribeFn=fbSubscribeChat||window._fbSubscribeChat;
-    if(!subscribeFn) return;
-    const unsubscribe=subscribeFn(grpCode,(messages)=>{
-      setChats(prev=>{
-        const local=(prev[gid]||[]).filter(m=>m.id.startsWith('cm_'));
-        const fsIds=new Set(messages.map(m=>m.id));
-        const localOnly=local.filter(m=>!fsIds.has(m.id));
-        const merged=[...messages,...localOnly].sort((a,b)=>(a.ts||0)-(b.ts||0));
-        return {...prev,[gid]:merged};
-      });
-      setTimeout(()=>chatEndRef.current?.scrollIntoView({behavior:'smooth'}),80);
-    });
-    return()=>{if(typeof unsubscribe==='function')unsubscribe();};
+    const gid=selGroup.id;
+    const grpCode=selGroup.code;
+    let lastTs=0;
+
+    const fetchMsgs=async()=>{
+      try{
+        const res=await fetch('/api/chat/'+grpCode+'?since='+lastTs);
+        if(!res.ok) return;
+        const data=await res.json();
+        if(data.msgs?.length>0){
+          const newMsgs=data.msgs.map(m=>({...m,col:
+            m.uid===user?.id?'var(--gold)':'var(--acc)'}));
+          setChats(prev=>{
+            const existing=prev[gid]||[];
+            const existIds=new Set(existing.map(m=>m.id));
+            const toAdd=newMsgs.filter(m=>!existIds.has(m.id));
+            if(toAdd.length===0) return prev;
+            const merged=[...existing,...toAdd].sort((a,b)=>(a.ts||0)-(b.ts||0));
+            return{...prev,[gid]:merged};
+          });
+          lastTs=Math.max(...newMsgs.map(m=>m.ts||0));
+          setTimeout(()=>chatEndRef.current?.scrollIntoView({behavior:'smooth'}),80);
+        }
+      }catch(e){}
+    };
+
+    fetchMsgs(); // immediate load
+    const interval=setInterval(fetchMsgs,3000); // poll every 3s
+    return()=>clearInterval(interval);
   },[selGroup?.code]);
   if(!credito) return(
     <div className="scr fin" style={{display:'flex',flexDirection:'column',
@@ -2895,6 +2909,18 @@ function GruposScreen({user,userBets,credito,onPagar}){
 
 
   // ── Helper functions ──────────────────────────────────────────
+  const deleteGroup=async(grp)=>{
+    try{
+      const ctrl=new AbortController();
+      setTimeout(()=>ctrl.abort(),8000);
+      await fetch('/api/groups/'+grp.code,{method:'DELETE',signal:ctrl.signal});
+    }catch(e){ console.warn('deleteGroup error:',e); }
+    // Remove from local list regardless
+    setGroups(p=>p.filter(g=>g.code!==grp.code));
+    setConfirmDelete(false);
+    setView('list');
+    setSelGroup(null);
+  };
   // Generate unique group code
   const genCode=()=>{
     const chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -2909,21 +2935,20 @@ function GruposScreen({user,userBets,credito,onPagar}){
     const txt=chatInput.trim();
     if(!txt)return;
     const myName=user?.name||'Tú';
-    const myIni=(myName)[0].toUpperCase();
-    const msgId='cm_'+Date.now()+'_'+Math.random().toString(36).slice(2,6);
-    const msg={id:msgId,uid:user?.id||'user',name:myName,ini:myIni,
+    const grpCode=selGroup?.code||gid;
+    const msg={id:'cm_'+Date.now()+'_'+Math.random().toString(36).slice(2,6),
+      uid:user?.id||'user',name:myName,ini:myName[0].toUpperCase(),
       col:'var(--gold)',text:txt,ts:Date.now()};
     // 1. Optimistic update — show immediately
     setChats(prev=>({...prev,[gid]:[...(prev[gid]||[]),msg]}));
     setChatInput('');
     setTimeout(()=>chatEndRef.current?.scrollIntoView({behavior:'smooth'}),50);
-    // 2. Save to Firestore — use group CODE as path (groups/{code}/messages)
-    const fn=fbSendMsg||window._fbSendMsg;
-    const grpCode=selGroup?.code||gid; // code is the Firestore document ID
-    if(fn){
-      fn(grpCode, user?.id||'anon', myName, txt)
-        .catch(e=>console.warn('sendMsg error:',e));
-    }
+    // 2. Save via server API (Firebase Admin — no restrictions)
+    fetch('/api/chat/'+grpCode,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({uid:user?.id||'anon',name:myName,text:txt})
+    }).catch(e=>console.warn('sendMsg error:',e));
   };
 
 
@@ -3214,6 +3239,45 @@ function GruposScreen({user,userBets,credito,onPagar}){
                 cursor:'pointer',fontSize:11,fontWeight:700,fontFamily:'var(--fb)',transition:'all .2s',flexShrink:0}}>
               {copied?'✓ Copiado!':selGroup.code+' 📋'}
             </button>
+            {selGroup.ownerId===user?.id&&(
+              <button onClick={()=>setConfirmDelete(true)}
+                style={{background:'rgba(229,62,62,.1)',border:'1px solid rgba(229,62,62,.3)',
+                  color:'#FC8181',borderRadius:9,padding:'6px 8px',cursor:'pointer',
+                  fontSize:15,flexShrink:0}} title="Eliminar grupo">🗑️</button>
+            )}
+            {/* Confirm delete dialog */}
+            {confirmDelete&&(
+              <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.7)',
+                zIndex:100,display:'flex',alignItems:'center',justifyContent:'center',
+                padding:'0 24px'}}>
+                <div style={{background:'var(--surf)',borderRadius:18,padding:24,
+                  maxWidth:320,width:'100%',border:'1px solid rgba(229,62,62,.3)'}}>
+                  <div style={{fontSize:32,textAlign:'center',marginBottom:12}}>🗑️</div>
+                  <div style={{fontFamily:'var(--ff)',fontSize:18,textAlign:'center',
+                    marginBottom:8,letterSpacing:1}}>ELIMINAR GRUPO</div>
+                  <div style={{fontSize:13,color:'var(--muted)',textAlign:'center',
+                    lineHeight:1.6,marginBottom:20}}>
+                    ¿Estás seguro que quieres eliminar <strong style={{color:'var(--txt)'}}>"{selGroup.name}"</strong>?
+                    <br/>Esta acción no se puede deshacer y se perderá el historial del chat.
+                  </div>
+                  <div style={{display:'flex',gap:10}}>
+                    <button onClick={()=>setConfirmDelete(false)}
+                      style={{flex:1,background:'var(--surf2)',border:'1px solid var(--br)',
+                        color:'var(--txt)',borderRadius:10,padding:'11px',fontSize:13,
+                        fontWeight:700,cursor:'pointer',fontFamily:'var(--fb)'}}>
+                      Cancelar
+                    </button>
+                    <button onClick={()=>deleteGroup(selGroup)}
+                      style={{flex:1,background:'rgba(229,62,62,.15)',
+                        border:'1px solid rgba(229,62,62,.4)',color:'#FC8181',
+                        borderRadius:10,padding:'11px',fontSize:13,
+                        fontWeight:700,cursor:'pointer',fontFamily:'var(--fb)'}}>
+                      🗑️ Eliminar
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
           <div style={{display:'flex',gap:7,padding:'0 16px 11px',overflowX:'auto'}}>
             {visibleTabs.map(([k,l])=>(
