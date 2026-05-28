@@ -343,26 +343,31 @@ app.get('/api/chat/:code', async(req,res)=>{
   const code  = req.params.code.toUpperCase();
   const since = parseInt(req.query.since)||0;
 
-  let msgs = [];
-
-  // Try Firestore first (authoritative source)
-  if(db){
-    try{
-      const snap = await db.collection('groups').doc(code)
-                           .collection('messages')
-                           .orderBy('ts','asc').get();
-      msgs = snap.docs.map(d=>d.data());
-    }catch(e){
-      // Fallback to memory cache
-      msgs = (serverGroups[code]?._msgs)||[];
-    }
-  } else {
-    msgs = (serverGroups[code]?._msgs)||[];
+  // Usar caché en memoria primero (O(1), no toca Firestore)
+  const cached = (serverGroups[code]?._msgs)||[];
+  if(cached.length > 0){
+    const filtered = since>0 ? cached.filter(m=>m.ts>since) : cached;
+    return res.json({ok:true, msgs:filtered, source:'cache'});
   }
 
-  // Return only messages newer than 'since'
-  const filtered = since>0 ? msgs.filter(m=>m.ts>since) : msgs;
-  res.json({ok:true, msgs:filtered});
+  // Fallback Firestore solo si no hay caché (primera carga del grupo en este servidor)
+  if(db){
+    try{
+      let q = db.collection('groups').doc(code)
+                .collection('messages')
+                .orderBy('ts','asc').limit(MSG_LIMIT);
+      if(since>0) q = q.where('ts','>',since);
+      const snap = await q.get();
+      const msgs = snap.docs.map(d=>d.data());
+      // Poblar caché
+      if(!serverGroups[code]) serverGroups[code]={};
+      serverGroups[code]._msgs = msgs;
+      return res.json({ok:true, msgs, source:'firestore'});
+    }catch(e){
+      return res.json({ok:true, msgs:[], source:'error'});
+    }
+  }
+  res.json({ok:true, msgs:[], source:'empty'});
 });
 
 // ── DELETE GROUP ─────────────────────────────────────────────────
