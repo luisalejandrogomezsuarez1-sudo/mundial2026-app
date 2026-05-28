@@ -4211,9 +4211,9 @@ function BetsScreen({bets,placeBet,credito,onPagar,onReset,betsSaved=false,onSav
                 <div style={{fontSize:10,color:'var(--muted)',fontWeight:700,marginBottom:6,letterSpacing:.8}}>GOLES</div>
                 <div style={{display:'grid',gridTemplateColumns:'repeat(2,1fr)',gap:5}}>
                   <OBtn id={`m${mid}-total`} category="Total Goles" val="over" odds={1.85}
-                    display="Más +2.5"/>
+                    display="Más +2"/>
                   <OBtn id={`m${mid}-total`} category="Total Goles" val="under" odds={1.95}
-                    display="Menos -2.5"/>
+                    display="Menos -2"/>
                 </div>
               </div>
               {/* BTTS — 2 columnas fijas */}
