@@ -4854,12 +4854,25 @@ export default function App(){
     };
     saveToFirestore();
     // Admin: verificar si hay reset forzado de apuestas para este usuario
-    const checkBetReset=async(attempts=0)=>{
+    const checkAdminFlags=async(attempts=0)=>{
       const getFn=fbGetAllUsers||window._fbGetAllUsers;
       if(getFn){
         try{
           const allUsers=await getFn();
           const fsUser=allUsers.find(x=>x.id===u.id);
+          // ── Borrar cuenta completa ──────────────────────────
+          if(fsUser?.forceDelete){
+            // Borrar de la DB local
+            const allDB=await dbLoad();
+            await dbSave(allDB.filter(x=>x.id!==u.id));
+            // Borrar todos los datos del usuario en localStorage
+            ['wc2026_bets_','wc2026_saved_','wc2026_groups_','wc2026_session_'].forEach(k=>{
+              try{localStorage.removeItem(k+u.id);}catch(e){}
+            });
+            logout('Tu cuenta fue eliminada. Puedes registrarte de nuevo con el mismo correo.');
+            return;
+          }
+          // ── Reset solo apuestas ─────────────────────────────
           if(fsUser?.forceBetReset){
             localStorage.removeItem('wc2026_bets_'+u.id);
             localStorage.removeItem('wc2026_saved_'+u.id);
@@ -4867,12 +4880,11 @@ export default function App(){
             setBetsSaved(false);
             const saveFn=fbSaveUser||window._fbSaveUser;
             if(saveFn) saveFn({...u,forceBetReset:false});
-            console.log('🗑 Apuestas reseteadas por admin');
           }
-        }catch(e){console.warn('checkBetReset error:',e);}
-      } else if(attempts<10){ setTimeout(()=>checkBetReset(attempts+1),800); }
+        }catch(e){console.warn('checkAdminFlags error:',e);}
+      } else if(attempts<10){ setTimeout(()=>checkAdminFlags(attempts+1),800); }
     };
-    checkBetReset();
+    checkAdminFlags();
     // Admin gets unlimited coins automatically
     if(u.isAdmin){
       setCredito({coins:999999,paquetes:999,paidAt:Date.now(),isAdmin:true});
