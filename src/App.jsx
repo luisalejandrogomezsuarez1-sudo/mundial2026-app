@@ -3569,19 +3569,20 @@ function GruposScreen({user,userBets,credito,onPagar}){
           )}
           {/* ── Chat ── */}
           {dtab==='chat'&&(
-            <div style={{display:'flex',flexDirection:'column',height:'100%'}}>
-              {/* Chat header */}
+            <div style={{display:'flex',flexDirection:'column',
+              height:'calc(100dvh - 230px)',minHeight:'300px'}}>
+              {/* Header */}
               <div style={{padding:'10px 16px 8px',borderBottom:'1px solid var(--br)',
-                background:'rgba(255,255,255,.02)',flexShrink:0}}>
+                flexShrink:0,background:'rgba(255,255,255,.02)'}}>
                 <div style={{fontSize:12,fontWeight:700,color:'var(--muted)',letterSpacing:.5}}>
-                  💬 CHAT DEL GRUPO · {allM.length} MIEMBROS
+                  💬 CHAT · {allM.length} MIEMBROS
                 </div>
                 <div style={{fontSize:10,color:'var(--dim)',marginTop:2}}>
-                  Los mensajes son visibles para todos los miembros
+                  Se actualiza cada 3 segundos
                 </div>
               </div>
 
-              {/* Messages */}
+              {/* Messages — scrollable */}
               <div style={{flex:1,overflowY:'auto',padding:'12px 16px',
                 display:'flex',flexDirection:'column',gap:10}}>
                 {(chats[gid]||[]).length===0&&(
@@ -3592,57 +3593,36 @@ function GruposScreen({user,userBets,credito,onPagar}){
                   </div>
                 )}
                 {(chats[gid]||[]).map((msg,i)=>{
-                  const isMe=msg.uid==='user';
-                  const ts=new Date(msg.ts);
+                  const isMe=msg.uid===user?.id||msg.uid==='user';
+                  const ts=new Date(msg.ts||Date.now());
                   const timeStr=ts.toLocaleTimeString('es',{hour:'2-digit',minute:'2-digit'});
-                  const dateStr=ts.toLocaleDateString('es',{day:'numeric',month:'short'});
-                  const showDate=i===0||new Date((chats[gid]||[])[i-1]?.ts).toDateString()!==ts.toDateString();
                   return(
-                    <div key={msg.id}>
-                      {showDate&&(
-                        <div style={{textAlign:'center',margin:'6px 0'}}>
-                          <span style={{fontSize:10,color:'var(--muted)',background:'var(--surf)',
-                            padding:'2px 10px',borderRadius:20}}>{dateStr}</span>
+                    <div key={msg.id||i} style={{display:'flex',gap:8,
+                      flexDirection:isMe?'row-reverse':'row',alignItems:'flex-end'}}>
+                      {!isMe&&(
+                        <div style={{width:28,height:28,borderRadius:'50%',
+                          background:'var(--acc)22',border:'1.5px solid var(--acc)55',
+                          display:'flex',alignItems:'center',justifyContent:'center',
+                          fontSize:11,fontWeight:700,color:'#fff',flexShrink:0}}>
+                          {(msg.ini||msg.name||'?')[0].toUpperCase()}
                         </div>
                       )}
-                      <div style={{display:'flex',gap:8,
-                        flexDirection:isMe?'row-reverse':'row',alignItems:'flex-end'}}>
-                        {/* Avatar */}
+                      <div style={{maxWidth:'72%'}}>
                         {!isMe&&(
-                          <div style={{width:30,height:30,borderRadius:'50%',
-                            background:msg.col+'25',border:`1.5px solid ${msg.col}55`,
-                            display:'flex',alignItems:'center',justifyContent:'center',
-                            fontSize:11,fontWeight:700,color:'#fff',flexShrink:0}}>
-                            {msg.ini}
+                          <div style={{fontSize:10,color:'var(--muted)',marginBottom:2,paddingLeft:4}}>
+                            {msg.name||'Usuario'}
                           </div>
                         )}
-                        {isMe&&(
-                          <div style={{width:30,height:30,borderRadius:'50%',
-                            background:'rgba(246,201,14,.2)',border:'1.5px solid rgba(246,201,14,.5)',
-                            display:'flex',alignItems:'center',justifyContent:'center',
-                            fontSize:11,fontWeight:700,color:'var(--gold)',flexShrink:0}}>
-                            {msg.ini}
-                          </div>
-                        )}
-                        {/* Bubble */}
-                        <div style={{maxWidth:'72%'}}>
-                          {!isMe&&(
-                            <div style={{fontSize:10,color:'var(--muted)',marginBottom:3,
-                              fontWeight:600,paddingLeft:2}}>{msg.name}</div>
-                          )}
-                          <div style={{
-                            background:isMe?'var(--gold)':'var(--surf)',
-                            color:isMe?'#000':'var(--txt)',
-                            padding:'9px 12px',
-                            borderRadius:isMe?'14px 14px 4px 14px':'14px 14px 14px 4px',
-                            fontSize:13,lineHeight:1.45,
-                            border:isMe?'none':'1px solid var(--br)',
-                            boxShadow:'0 1px 4px rgba(0,0,0,.2)',
-                          }}>{msg.text}</div>
-                          <div style={{fontSize:9,color:'var(--muted)',marginTop:3,
-                            textAlign:isMe?'right':'left',paddingRight:isMe?2:0,paddingLeft:isMe?0:2}}>
-                            {timeStr}
-                          </div>
+                        <div style={{background:isMe?'var(--gold)':'var(--surf2)',
+                          color:isMe?'#000':'var(--txt)',
+                          borderRadius:isMe?'16px 16px 4px 16px':'16px 16px 16px 4px',
+                          padding:'9px 13px',fontSize:13,lineHeight:1.5,
+                          border:isMe?'none':'1px solid var(--br)'}}>
+                          {msg.text}
+                        </div>
+                        <div style={{fontSize:9,color:'var(--muted)',marginTop:3,
+                          textAlign:isMe?'right':'left',paddingLeft:4}}>
+                          {timeStr}
                         </div>
                       </div>
                     </div>
@@ -3651,7 +3631,7 @@ function GruposScreen({user,userBets,credito,onPagar}){
                 <div ref={chatEndRef}/>
               </div>
 
-              {/* Input */}
+              {/* Input — always visible at bottom */}
               <div style={{padding:'10px 12px',borderTop:'1px solid var(--br)',
                 background:'var(--surf)',flexShrink:0,
                 display:'flex',gap:8,alignItems:'flex-end'}}>
@@ -3659,28 +3639,29 @@ function GruposScreen({user,userBets,credito,onPagar}){
                   value={chatInput}
                   onChange={e=>setChatInput(e.target.value)}
                   onKeyDown={e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg(gid);}}}
-                  placeholder="Escribe un mensaje... (Enter para enviar)"
+                  placeholder="Escribe un mensaje..."
                   rows={1}
                   style={{flex:1,background:'var(--surf2)',border:'1.5px solid var(--br)',
                     borderRadius:12,padding:'10px 14px',color:'var(--txt)',
                     fontFamily:'var(--fb)',fontSize:14,outline:'none',resize:'none',
-                    lineHeight:1.4,maxHeight:100,overflowY:'auto',
+                    lineHeight:1.4,maxHeight:80,overflowY:'auto',
                     transition:'border-color .2s'}}
                   onFocus={e=>e.target.style.borderColor='var(--gold)'}
                   onBlur={e=>e.target.style.borderColor='var(--br)'}/>
                 <button
                   onClick={()=>sendMsg(gid)}
                   disabled={!chatInput.trim()}
-                  style={{width:42,height:42,borderRadius:12,
+                  style={{width:44,height:44,borderRadius:12,flexShrink:0,
                     background:chatInput.trim()?'var(--gold)':'rgba(255,255,255,.08)',
                     border:'none',cursor:chatInput.trim()?'pointer':'not-allowed',
                     display:'flex',alignItems:'center',justifyContent:'center',
-                    fontSize:18,flexShrink:0,transition:'all .15s'}}>
+                    fontSize:20,transition:'all .15s'}}>
                   ➤
                 </button>
               </div>
             </div>
           )}
+
         </div>
       </div>
     );
