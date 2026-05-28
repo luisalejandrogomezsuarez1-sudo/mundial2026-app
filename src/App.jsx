@@ -1507,7 +1507,7 @@ function MatchDetail({m,onBack}){
   // ── Fetch live events: goles, tarjetas, cambios ──
   useEffect(()=>{
     const fetch_ev=async()=>{
-      if(!AF_ON||!m.id)return;
+      if(!true||!m.id)return;
       setLoadingEv(true);
       const data=await afFetch(`/fixtures/events?fixture=${m.id}`);
       if(data&&data.length>0){
@@ -1751,7 +1751,7 @@ function HomeScreen({onMatch,onGoToCal}){
   const [upd,setUpd]=useState(new Date());
   // API-Football live data
   const [liveMatches,setLiveMatches]=useState(LIVE_MATCHES);
-  const [apiStatus,setApiStatus]=useState(AF_ON?'connecting':'off');
+  const [apiStatus,setApiStatus]=useState(true?'connecting':'off');
 
   // Firestore: lee marcadores en vivo que el servidor actualiza cada 60s
   useEffect(()=>{
@@ -2915,17 +2915,17 @@ function PerfilScreen({user,onLogout,lang='es'}){
 
         {/* ── API-Football Status ── */}
         <div style={{margin:'0 0 14px',background:'var(--surf)',borderRadius:14,
-          border:`1px solid ${AF_ON?'rgba(30,198,108,.2)':'rgba(255,255,255,.08)'}`,
+          border:`1px solid ${true?'rgba(30,198,108,.2)':'rgba(255,255,255,.08)'}`,
           padding:'14px 16px'}}>
           <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:8}}>
             <div style={{fontFamily:'var(--ff)',fontSize:16,letterSpacing:1}}>🔌 API DEPORTIVA</div>
             <div style={{fontSize:10,padding:'3px 10px',borderRadius:20,fontWeight:700,
-              background:AF_ON?'rgba(30,198,108,.15)':'rgba(255,255,255,.06)',
-              color:AF_ON?'var(--grn)':'var(--muted)'}}>
-              {AF_ON?'✅ CONECTADA':'⚠️ SIN CONECTAR'}
+              background:true?'rgba(30,198,108,.15)':'rgba(255,255,255,.06)',
+              color:true?'var(--grn)':'var(--muted)'}}>
+              {true?'✅ CONECTADA':'⚠️ SIN CONECTAR'}
             </div>
           </div>
-          {!AF_ON&&(
+          {!true&&(
             <div style={{fontSize:12,color:'var(--dim)',lineHeight:1.6}}>
               Para ver datos en tiempo real (goles, tarjetas, marcadores en vivo):
               <br/>1. Ve a <strong style={{color:'var(--acc)'}}>api-football.com</strong>
@@ -2936,7 +2936,7 @@ function PerfilScreen({user,onLogout,lang='es'}){
                 fontSize:11,display:'block',marginTop:4}}>const AF_KEY = 'TU_KEY_AQUI';</code>
             </div>
           )}
-          {AF_ON&&(
+          {true&&(
             <div style={{fontSize:12,color:'var(--grn)',lineHeight:1.6}}>
               ✓ Marcadores en vivo actualizando cada 30 segundos<br/>
               ✓ Goleadores reales del torneo<br/>
