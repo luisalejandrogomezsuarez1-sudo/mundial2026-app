@@ -4849,14 +4849,82 @@ export default function App(){
   };
 
   const nav=[
-    ['home','🏠',t('nav_home')],
-    ['cal','📅',t('nav_matches')],
-    ['tabla','📊',t('nav_table')],
-    ['goles','⚽',t('nav_goals')],
-    ['pronostico','TROPHY',t('nav_bets')],
-    ['grupos','CROWN',t('nav_groups')],
-    ['perfil','👤',t('nav_profile')],
+    ['home',t('nav_home')],
+    ['cal',t('nav_matches')],
+    ['tabla',t('nav_table')],
+    ['goles',t('nav_goals')],
+    ['pronostico',t('nav_bets')],
+    ['grupos',t('nav_groups')],
+    ['perfil',t('nav_profile')],
   ];
+  const navSvg=(id,isActive)=>{
+    const sc=isActive?'#F6C90E':'#E2B840';
+    const sf=isActive?'rgba(246,201,14,.28)':'rgba(226,184,64,.13)';
+    const W=22,vb='0 0 24 24';
+    switch(id){
+      case 'home':return(
+        <svg width={W} height={W} viewBox={vb} fill="none">
+          <path d="M12 3L3 12v9h6v-5h6v5h6V12L12 3z"
+            fill={sf} stroke={sc} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+      );
+      case 'cal':return(
+        <svg width={W} height={W} viewBox={vb} fill="none">
+          <rect x="3" y="5" width="18" height="16" rx="2" fill={sf} stroke={sc} strokeWidth="2"/>
+          <path d="M8 3v4M16 3v4M3 11h18" stroke={sc} strokeWidth="2" strokeLinecap="round"/>
+          <rect x="7.5" y="14" width="3" height="3" rx="1" fill={sc}/>
+          <rect x="13.5" y="14" width="3" height="3" rx="1" fill={sc}/>
+        </svg>
+      );
+      case 'tabla':return(
+        <svg width={W} height={W} viewBox={vb} fill="none">
+          <path d="M2 20h20" stroke={sc} strokeWidth="2" strokeLinecap="round"/>
+          <rect x="3" y="13" width="4" height="7" rx="1" fill={sf} stroke={sc} strokeWidth="2"/>
+          <rect x="10" y="7" width="4" height="13" rx="1" fill={sf} stroke={sc} strokeWidth="2"/>
+          <rect x="17" y="10" width="4" height="10" rx="1" fill={sf} stroke={sc} strokeWidth="2"/>
+          <circle cx="5" cy="11" r="1.2" fill={sc}/>
+          <circle cx="12" cy="5" r="1.5" fill={sc}/>
+          <circle cx="19" cy="8" r="1.2" fill={sc}/>
+        </svg>
+      );
+      case 'goles':return(
+        <svg width={W} height={W} viewBox={vb} fill="none">
+          <circle cx="12" cy="12" r="9" fill={sf} stroke={sc} strokeWidth="2"/>
+          <path d="M12 8l2.6 1.9-.99 3.05H10.4L9.4 9.9z" fill={sc}/>
+          <line x1="12" y1="8" x2="12" y2="3.5" stroke={sc} strokeWidth="1.3" strokeLinecap="round"/>
+          <line x1="14.6" y1="9.9" x2="19.5" y2="8.2" stroke={sc} strokeWidth="1.3" strokeLinecap="round"/>
+          <line x1="13.6" y1="13" x2="17.5" y2="16.5" stroke={sc} strokeWidth="1.3" strokeLinecap="round"/>
+          <line x1="10.4" y1="13" x2="6.5" y2="16.5" stroke={sc} strokeWidth="1.3" strokeLinecap="round"/>
+          <line x1="9.4" y1="9.9" x2="4.5" y2="8.2" stroke={sc} strokeWidth="1.3" strokeLinecap="round"/>
+        </svg>
+      );
+      case 'pronostico':return(
+        <svg width={W} height={W} viewBox={vb} fill="none">
+          <path d="M8 21h8M12 17v4M5 3H3v3c0 2.21 1.79 4 4 4M19 3h2v3c0 2.21-1.79 4-4 4"
+            stroke={sc} strokeWidth="2" strokeLinecap="round"/>
+          <path d="M12 17c-3.87 0-7-3.13-7-7V3h14v7c0 3.87-3.13 7-7 7z"
+            fill={sf} stroke={sc} strokeWidth="2"/>
+          <circle cx="12" cy="8" r="2" fill={sc}/>
+        </svg>
+      );
+      case 'grupos':return(
+        <svg width={W} height={W} viewBox={vb} fill="none">
+          <path d="M3 18h18M5 18L3 8l4.5 4L12 4l4.5 8L21 8l-2 10H5z"
+            fill={sf} stroke={sc} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          <circle cx="12" cy="4" r="1.5" fill={sc}/>
+          <circle cx="3" cy="8" r="1.5" fill={sc}/>
+          <circle cx="21" cy="8" r="1.5" fill={sc}/>
+        </svg>
+      );
+      case 'perfil':return(
+        <svg width={W} height={W} viewBox={vb} fill="none">
+          <circle cx="12" cy="8" r="4" fill={sf} stroke={sc} strokeWidth="2"/>
+          <path d="M4 20c0-4 3.58-7 8-7s8 3 8 7" stroke={sc} strokeWidth="2" strokeLinecap="round"/>
+        </svg>
+      );
+      default:return null;
+    }
+  };
 
   return(
     <LangCtx.Provider value={t}>
@@ -4885,31 +4953,9 @@ export default function App(){
           {tab==='perfil'     &&<PerfilScreen user={user} onLogout={logout} lang={lang}/>}
           {/* Bottom nav */}
           <div className="bnav">
-            {nav.map(([id,ic,lb])=>{
+            {nav.map(([id,lb])=>{
               const isPremium=id==='pronostico'||id==='grupos';
               const isActive=tab===id;
-              const svgIcon=id==='pronostico'?(
-                // Trofeo SVG
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-                  <path d="M8 21h8M12 17v4M5 3H3v3c0 2.21 1.79 4 4 4M19 3h2v3c0 2.21-1.79 4-4 4"
-                    stroke={isActive?'#F6C90E':'#E2B840'} strokeWidth="2" strokeLinecap="round"/>
-                  <path d="M12 17c-3.87 0-7-3.13-7-7V3h14v7c0 3.87-3.13 7-7 7z"
-                    fill={isActive?'rgba(246,201,14,.25)':'rgba(226,184,64,.12)'}
-                    stroke={isActive?'#F6C90E':'#E2B840'} strokeWidth="2"/>
-                  <circle cx="12" cy="8" r="2" fill={isActive?'#F6C90E':'#E2B840'}/>
-                </svg>
-              ):(
-                // Corona SVG
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-                  <path d="M3 18h18M5 18L3 8l4.5 4L12 4l4.5 8L21 8l-2 10H5z"
-                    fill={isActive?'rgba(246,201,14,.25)':'rgba(226,184,64,.12)'}
-                    stroke={isActive?'#F6C90E':'#E2B840'} strokeWidth="2"
-                    strokeLinecap="round" strokeLinejoin="round"/>
-                  <circle cx="12" cy="4" r="1.5" fill={isActive?'#F6C90E':'#E2B840'}/>
-                  <circle cx="3" cy="8" r="1.5" fill={isActive?'#F6C90E':'#E2B840'}/>
-                  <circle cx="21" cy="8" r="1.5" fill={isActive?'#F6C90E':'#E2B840'}/>
-                </svg>
-              );
               return(
                 <div key={id} onClick={()=>setTab(id)}
                   style={{display:'flex',flexDirection:'column',alignItems:'center',
@@ -4926,26 +4972,22 @@ export default function App(){
                   )}
                   <div style={{
                     display:'flex',alignItems:'center',justifyContent:'center',
-                    width:isPremium?38:28, height:isPremium?38:28,
-                    borderRadius:isPremium?12:8,
-                    background:isPremium
-                      ?(isActive?'rgba(246,201,14,.18)':'rgba(226,184,64,.08)')
-                      :'transparent',
-                    border:isPremium
-                      ?`1.5px solid ${isActive?'rgba(246,201,14,.6)':'rgba(226,184,64,.3)'}`
-                      :'none',
+                    width:34, height:34,
+                    borderRadius:10,
+                    background:isActive?'rgba(246,201,14,.15)':'rgba(226,184,64,.06)',
+                    border:`1.5px solid ${isActive?'rgba(246,201,14,.55)':'rgba(226,184,64,.22)'}`,
                     transition:'all .2s',
-                    boxShadow:isPremium&&isActive?'0 0 12px rgba(246,201,14,.35)':'none',
+                    boxShadow:isActive?'0 0 10px rgba(246,201,14,.3)':'none',
                   }}>
-                    {isPremium ? svgIcon
-                      : <div style={{fontSize:18,filter:isActive?'none':'grayscale(.3)'}}>{ic}</div>}
+                    {navSvg(id,isActive)}
                   </div>
                   <div style={{
-                    fontSize: isPremium?9:9,
-                    fontWeight: isPremium?800:600,
-                    color: isPremium?(isActive?'#F6C90E':'#C9A840'):(isActive?'var(--gold)':'var(--muted)'),
-                    letterSpacing: isPremium?.5:0,
+                    fontSize:9,
+                    fontWeight:isPremium?800:700,
+                    color:isActive?'#F6C90E':'#8A9BC9',
+                    letterSpacing:isPremium?.5:.2,
                     marginTop:1,
+                    textTransform:'uppercase',
                   }}>{lb}</div>
                 </div>
               );
