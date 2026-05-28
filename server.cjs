@@ -177,16 +177,38 @@ app.get('/api/af/*', async(req,res)=>{
   }catch(e){ res.status(500).json({error:e.message}); }
 });
 
-// ── GRUPOS — almacenamiento en servidor (sin Firebase, sin permisos) ──
+// ── GRUPOS ────────────────────────────────────────────────────────────────
 const fs = require('fs');
 const GROUPS_FILE = '/tmp/wc2026_groups.json';
 
-// Load groups from file at startup
+// Load groups from /tmp file at startup
 let serverGroups = {};
 try {
   serverGroups = JSON.parse(fs.readFileSync(GROUPS_FILE,'utf8'));
-  console.log(`📂 ${Object.keys(serverGroups).length} grupos cargados`);
+  console.log(`📂 ${Object.keys(serverGroups).length} grupos cargados desde /tmp`);
 } catch(e) { serverGroups = {}; }
+
+// Restore groups from Firestore on startup (in case /tmp was cleared on restart)
+async function restoreGroupsFromFirestore(){
+  if(!db) return;
+  try{
+    const snap = await db.collection('groups').get();
+    let restored = 0;
+    snap.docs.forEach(d=>{
+      const g = d.data();
+      if(g.code && !serverGroups[g.code]){
+        serverGroups[g.code] = g;
+        restored++;
+      }
+    });
+    if(restored>0){
+      persistGroups();
+      console.log(`♻️  ${restored} grupos restaurados desde Firestore`);
+    }
+  }catch(e){ console.warn('restoreGroups error:', e.message); }
+}
+// Run after Firebase Admin is initialized (slight delay to ensure db is ready)
+setTimeout(restoreGroupsFromFirestore, 3000);
 
 function persistGroups() {
   try { fs.writeFileSync(GROUPS_FILE, JSON.stringify(serverGroups)); }
@@ -228,17 +250,31 @@ app.post('/api/groups', (req,res)=>{
   res.json({ok:true, code:g.code}); // respond immediately
 });
 
-app.get('/api/groups/:code', (req,res)=>{
+app.get('/api/groups/:code', async(req,res)=>{
   const code = (req.params.code||'').toUpperCase().trim();
   if(!code) return res.status(400).json({error:'Falta code'});
-  const g = serverGroups[code];
-  if(g) {
-    console.log('✅ Grupo encontrado:', code);
-    res.json({found:true, group:g});
-  } else {
-    console.log('❌ Grupo no encontrado:', code);
-    res.json({found:false});
+
+  // 1. Check in-memory first (fast)
+  if(serverGroups[code]){
+    console.log('✅ Grupo en memoria:', code);
+    return res.json({found:true, group:serverGroups[code]});
   }
+
+  // 2. Fallback: check Firestore (survives server restarts)
+  if(db){
+    try{
+      const snap = await db.collection('groups').doc(code).get();
+      if(snap.exists){
+        const g = snap.data();
+        serverGroups[code] = g; // cache para próximas búsquedas
+        console.log('✅ Grupo en Firestore:', code);
+        return res.json({found:true, group:g});
+      }
+    }catch(e){ console.warn('Firestore group lookup error:', e.message); }
+  }
+
+  console.log('❌ Grupo no encontrado:', code);
+  res.json({found:false});
 });
 
 // ── CHAT API — Firebase Admin for persistence + scalability ────
