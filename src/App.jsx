@@ -677,7 +677,8 @@ const DEMO_MEMBERS=[
 // ── Coin System ───────────────────────────────────
 const COINS_PER_PAGO=1000; // 1 pago de $20 MXN = 1000 monedas
 // Costos EXACTOS: 24 partidos × (4 tipos×6 + 3 especiales×4) + 3 mundiales + 12 grupos×8 = 1000
-const COIN_COSTS={campeon:16,'bota-oro':12,'balon-oro':12};
+const COIN_COSTS={campeon:16,'bota-oro':12,'balon-oro':12,
+  'goleador-1':32,'goleador-2':32,'goleador-3':32};
 const getBetCost=id=>{
   if(COIN_COSTS[id]!==undefined)return COIN_COSTS[id];
   if(id.startsWith('grp-'))return 8;          // 12×8=96
@@ -726,12 +727,13 @@ const dbUpdatePaquetes=async email=>{
 };
 
 // Gift 1000 coins to a user (admin only) — marks gifted:true in DB
-const dbGiftCoins=async email=>{
+const dbGiftCoins=async(email,amount=1000)=>{
+  // Admin can gift any amount of coins to any user
   try{
     const users=await dbLoad();
     const updated=users.map(u=>
       u.email.toLowerCase()===email.toLowerCase().trim()
-        ?{...u,gifted:true,giftedAt:new Date().toISOString()}
+        ?{...u,gifted:true,giftedCoins:amount,giftedAt:new Date().toISOString()}
         :u
     );
     await dbSave(updated);
@@ -2569,31 +2571,41 @@ function PerfilScreen({user,onLogout,lang='es'}){
                         :'—'}
                     </div>
                   </div>
-                  {/* Gift / Revoke coins button */}
+                  {/* Gift coins — admin inputs custom amount */}
                   <button
                     onClick={async()=>{
                       if(u.gifted){
+                        // Revoke
+                        if(!window.confirm(`¿Quitar monedas a ${u.name||u.email}?`))return;
                         const ok=await dbRevokeGift(u.email);
                         if(ok){
                           if(fbGiftCoins&&u.id) fbGiftCoins(u.id,false);
                           const updated=await dbLoad();setDbUsers(updated);
                         }
                       } else {
-                        const ok=await dbGiftCoins(u.email);
+                        // Gift — ask amount
+                        const raw=window.prompt(`¿Cuántas monedas regalar a ${u.name||u.email}?\n(mínimo 1, máximo 99999)`, '1000');
+                        if(!raw) return;
+                        const amount=parseInt(raw,10);
+                        if(isNaN(amount)||amount<1||amount>99999){
+                          alert('Cantidad inválida. Ingresa un número entre 1 y 99,999.');return;
+                        }
+                        const ok=await dbGiftCoins(u.email,amount);
                         if(ok){
                           if(fbGiftCoins&&u.id) fbGiftCoins(u.id,true);
+                          alert(`✅ ${amount} monedas regaladas a ${u.name||u.email}`);
                           const updated=await dbLoad();setDbUsers(updated);
                         }
                       }
                     }}
-                    title={u.gifted?'Quitar monedas gratis':'Dar 1000 monedas gratis'}
+                    title={u.gifted?`Quitar monedas (tiene ${u.giftedCoins||1000}🪙)`:'Regalar monedas (ingresarás el monto)'}
                     style={{width:28,flexShrink:0,
                       background:u.gifted?'rgba(30,198,108,.15)':'rgba(246,201,14,.12)',
                       border:`1px solid ${u.gifted?'rgba(30,198,108,.3)':'rgba(246,201,14,.3)'}`,
                       color:u.gifted?'var(--grn)':'var(--gold)',
                       borderRadius:5,padding:'3px 4px',
                       fontSize:11,cursor:'pointer',fontFamily:'var(--fb)'}}>
-                    {u.gifted?'🎁':'🎁'}
+                    🎁
                   </button>
                   {/* Delete */}
                   <button onClick={()=>deleteUser(u.id)}
@@ -2889,10 +2901,17 @@ function GruposScreen({user,userBets,credito,onPagar}){
     const g={id:'g_'+Date.now(),name:newName.trim(),desc:newDesc.trim(),
       code:genCode(),created:Date.now(),members:[],ownerId:user?.id};
     setGroups(p=>[...p,g]);
-    // Save to Firestore so other users can find it by code
-    const fn=fbSaveGroup||window._fbSaveGroup;
-    if(fn) fn(g, user?.id).catch(e=>console.warn('saveGroup error:',e));
     goDetail(g);setNewName('');setNewDesc('');
+    // Save to Firestore with retry (Firebase may not be ready yet)
+    const saveGroupFS=(attempts=0)=>{
+      const fn=fbSaveGroup||window._fbSaveGroup;
+      if(fn){
+        fn(g, user?.id).catch(e=>console.warn('saveGroup error:',e));
+      } else if(attempts<15){
+        setTimeout(()=>saveGroupFS(attempts+1), 600);
+      }
+    };
+    saveGroupFS();
   };
 
   const joinGroup=async()=>{
@@ -3816,7 +3835,7 @@ function PagoScreen({onExito,onCancelar,esReset=false}){
 }
 
 // ── Bets Screen ───────────────────────────────────
-function BetsScreen({bets,placeBet,credito,onPagar,onReset}){
+function BetsScreen({bets,placeBet,credito,onPagar,onReset,betsSaved=false,onSave,currentUser}){
   const t=useLang();
   const [tab,setTab]=useState('largo');
   const [exact,setExact]=useState({});
@@ -3845,17 +3864,19 @@ function BetsScreen({bets,placeBet,credito,onPagar,onReset}){
     placeBet({id,category,selection,odds,status:'pendiente',ts:Date.now()});
   };
 
-  // Reusable option button — tamaño FIJO, solo cambia color al seleccionar
+  // Botón apuesta — FIJO en tamaño; deshabilitado si pronóstico guardado
   const OBtn=({id,category,val,odds,display})=>{
     const sel=isSel(id,val);
     return(
-      <button type="button" onClick={e=>{e.preventDefault();place(id,category,val,odds);}}
+      <button type="button"
+        onClick={betsSaved?undefined:e=>{e.preventDefault();place(id,category,val,odds);}}
         style={{background:sel?'rgba(246,201,14,.18)':'var(--surf2)',
           border:`1.5px solid ${sel?'var(--gold)':'var(--br)'}`,
-          borderRadius:10,padding:'8px 6px',cursor:'pointer',
+          borderRadius:10,padding:'8px 6px',cursor:betsSaved?'default':'pointer',
           transition:'background .15s,border-color .15s,color .15s',
           display:'flex',flexDirection:'column',alignItems:'center',gap:2,
-          fontFamily:'var(--fb)',width:'100%',boxSizing:'border-box'}}>
+          fontFamily:'var(--fb)',width:'100%',boxSizing:'border-box',
+          opacity:betsSaved&&!sel?0.4:1}}>
         <span style={{fontSize:11,color:sel?'var(--gold)':'var(--txt)',fontWeight:700,
           textAlign:'center',lineHeight:1.3,whiteSpace:'nowrap',overflow:'hidden',
           textOverflow:'ellipsis',width:'100%'}}>{display||val}</span>
@@ -3864,6 +3885,7 @@ function BetsScreen({bets,placeBet,credito,onPagar,onReset}){
       </button>
     );
   };
+
 
   const SecHead=({icon,title,betId})=>(
     <div style={{padding:'10px 14px 8px',borderBottom:'1px solid var(--br)',display:'flex',alignItems:'center',gap:8}}>
@@ -3884,25 +3906,27 @@ function BetsScreen({bets,placeBet,credito,onPagar,onReset}){
     );
   };
 
-  // Botón compacto para Partidos del Mundial — varios por fila, tamaño fijo sin toast
+  // Botón compacto para Partidos del Mundial — varios por fila
   const SmBtn=({id,category,val,odds,display})=>{
     const sel=isSel(id,val);
     return(
-      <button type="button" onClick={e=>{e.preventDefault();place(id,category,val,odds);}}
+      <button type="button"
+        onClick={betsSaved?undefined:e=>{e.preventDefault();place(id,category,val,odds);}}
         style={{background:sel?'rgba(246,201,14,.18)':'var(--surf2)',
           border:`1.5px solid ${sel?'var(--gold)':'var(--br)'}`,
-          borderRadius:8,padding:'5px 8px',cursor:'pointer',
+          borderRadius:8,padding:'5px 8px',cursor:betsSaved?'default':'pointer',
           transition:'background .15s,border-color .15s,color .15s',
           display:'inline-flex',flexDirection:'column',alignItems:'center',gap:1,
-          fontFamily:'var(--fb)',boxSizing:'border-box',flexShrink:0}}>
+          fontFamily:'var(--fb)',boxSizing:'border-box',flexShrink:0,
+          opacity:betsSaved&&!sel?0.4:1}}>
         <span style={{fontSize:11,color:sel?'var(--gold)':'var(--txt)',fontWeight:700,
           textAlign:'center',lineHeight:1.3,whiteSpace:'nowrap'}}>{display||val}</span>
         <span style={{fontSize:10,color:sel?'var(--gold)':'#6B82AF',fontWeight:600}}>{odds}x</span>
-        {/* espacio reservado siempre para que no cambie de tamaño */}
         <span style={{fontSize:8,fontWeight:700,color:sel?'var(--grn)':'transparent',userSelect:'none'}}>✓</span>
       </button>
     );
   };
+
 
   // ── Tab: Partidos Mundial ──
   const LargoPlazo=()=>(
@@ -4052,6 +4076,61 @@ function BetsScreen({bets,placeBet,credito,onPagar,onReset}){
   // ── Tab: Especiales ──
   const Especiales=()=>(
     <div>
+      {/* ── MEJORES GOLEADORES DEL MUNDIAL — 3 × 32 = 96 monedas ── */}
+      <div style={{margin:'0 16px 16px',background:'var(--surf)',borderRadius:14,
+        border:'2px solid rgba(246,201,14,.3)',overflow:'hidden'}}>
+        <div style={{padding:'11px 14px',background:'rgba(246,201,14,.06)',
+          borderBottom:'1px solid rgba(246,201,14,.2)',display:'flex',alignItems:'center',gap:8}}>
+          <span style={{fontSize:20}}>🥇</span>
+          <div>
+            <div style={{fontFamily:'var(--ff)',fontSize:16,letterSpacing:1,color:'var(--gold)'}}>
+              MEJORES GOLEADORES DEL MUNDIAL
+            </div>
+            <div style={{fontSize:10,color:'var(--muted)'}}>
+              Selecciona al 1°, 2° y 3° goleador · 32🪙 cada uno · Total: 96🪙
+            </div>
+          </div>
+        </div>
+        {[
+          {key:'goleador-1',label:'🥇 1er Goleador',rank:1},
+          {key:'goleador-2',label:'🥈 2do Goleador',rank:2},
+          {key:'goleador-3',label:'🥉 3er Goleador',rank:3},
+        ].map(({key,label,rank})=>{
+          const picked=getBet(key);
+          return(
+            <div key={key} style={{padding:'10px 14px',
+              borderBottom:'1px solid rgba(255,255,255,.04)'}}>
+              <div style={{fontSize:10,color:'var(--muted)',fontWeight:700,
+                marginBottom:8,letterSpacing:.8,display:'flex',alignItems:'center',gap:8}}>
+                {label} · 32🪙
+                {picked&&<span style={{color:'var(--grn)',fontWeight:700}}>✓ {picked.selection}</span>}
+              </div>
+              <div style={{display:'flex',flexWrap:'wrap',gap:5}}>
+                {SCORERS.map(p=>{
+                  const sel=getBet(key)?.selection===p.n;
+                  return(
+                    <button type="button" key={p.n}
+                      onClick={e=>{e.preventDefault();place(key,`Goleador ${rank}°`,p.n,32);}}
+                      style={{background:sel?'rgba(246,201,14,.18)':'var(--surf2)',
+                        border:`1.5px solid ${sel?'var(--gold)':'var(--br)'}`,
+                        borderRadius:8,padding:'5px 9px',cursor:'pointer',
+                        display:'flex',alignItems:'center',gap:5,
+                        transition:'background .15s,border-color .15s,color .15s'}}>
+                      <span style={{fontSize:14}}>{FLAGS[p.team]||'🏳️'}</span>
+                      <span style={{fontSize:11,fontWeight:700,
+                        color:sel?'var(--gold)':'var(--txt)'}}>
+                        {p.n.split(' ').slice(-1)[0]}
+                      </span>
+                      {sel&&<span style={{fontSize:9,color:'var(--grn)'}}>✓</span>}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
       {[...LIVE_MATCHES,...NEXT_MATCHES].map(m=>{
         const mid=m.id;
         const exKey=`m${mid}-exacto`;
@@ -4073,19 +4152,23 @@ function BetsScreen({bets,placeBet,credito,onPagar,onReset}){
                 {getBet(exKey)&&<span style={{color:'var(--grn)',fontWeight:700}}>✓ {getBet(exKey).selection}</span>}
               </div>
               <div style={{display:'flex',alignItems:'center',gap:8}}>
-                <input type="number" min="0" max="9" placeholder="0" value={ex.h}
+                <input type="number" inputMode="numeric" pattern="[0-9]*"
+                  min="0" max="9" placeholder="0" value={ex.h}
                   onChange={e=>setExact(p=>({...p,[mid]:{...ex,h:e.target.value}}))}
-                  onFocus={e=>e.target.select()}
+                  onFocus={e=>{e.target.select();e.preventDefault();}}
+                  onTouchStart={e=>e.stopPropagation()}
                   style={{width:50,padding:'9px 6px',background:'var(--surf2)',border:'1.5px solid var(--br)',
                     borderRadius:10,color:'var(--txt)',fontSize:22,fontFamily:'var(--ff)',
-                    textAlign:'center',outline:'none'}}/>
+                    textAlign:'center',outline:'none',WebkitAppearance:'none',MozAppearance:'textfield'}}/>
                 <span style={{fontFamily:'var(--ff)',fontSize:24,color:'var(--muted)'}}>–</span>
-                <input type="number" min="0" max="9" placeholder="0" value={ex.a}
+                <input type="number" inputMode="numeric" pattern="[0-9]*"
+                  min="0" max="9" placeholder="0" value={ex.a}
                   onChange={e=>setExact(p=>({...p,[mid]:{...ex,a:e.target.value}}))}
-                  onFocus={e=>e.target.select()}
+                  onFocus={e=>{e.target.select();e.preventDefault();}}
+                  onTouchStart={e=>e.stopPropagation()}
                   style={{width:50,padding:'9px 6px',background:'var(--surf2)',border:'1.5px solid var(--br)',
                     borderRadius:10,color:'var(--txt)',fontSize:22,fontFamily:'var(--ff)',
-                    textAlign:'center',outline:'none'}}/>
+                    textAlign:'center',outline:'none',WebkitAppearance:'none',MozAppearance:'textfield'}}/>
                 <button
                   type="button"
                   onClick={e=>{
@@ -4096,29 +4179,31 @@ function BetsScreen({bets,placeBet,credito,onPagar,onReset}){
                   style={{flex:1,background:'rgba(246,201,14,.1)',border:'1px solid rgba(246,201,14,.3)',
                     color:'var(--gold)',borderRadius:10,padding:'10px 8px',fontSize:12,
                     fontWeight:700,cursor:'pointer',fontFamily:'var(--fb)'}}>
-                  Apostar
+                  Registrar Marcador
                 </button>
               </div>
             </div>
-            {/* Jugador que Anota */}
+            {/* Quién Anotará Primero — elige equipo */}
             <div style={{padding:'12px 14px',borderBottom:'1px solid rgba(255,255,255,.05)'}}>
               <div style={{fontSize:10,color:'var(--muted)',fontWeight:700,marginBottom:8,letterSpacing:.8,display:'flex',alignItems:'center',gap:8}}>
-                👤 JUGADOR QUE ANOTARÁ · 3.5x
+                🥅 QUIÉN ANOTARÁ PRIMERO · 1.8x
                 {getBet(jugKey)&&<span style={{color:'var(--grn)',fontWeight:700}}>✓ {getBet(jugKey).selection}</span>}
               </div>
-              <div style={{display:'flex',flexWrap:'wrap',gap:6}}>
-                {players.slice(0,10).map(p=>{
-                  const sel=getBet(jugKey)?.selection===p.n;
+              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:6}}>
+                {[m.home,m.away].map(team=>{
+                  const sel=getBet(jugKey)?.selection===team;
                   return(
-                    <button type="button" key={p.n}
-                      onClick={e=>{e.preventDefault();place(jugKey,'Jugador que Anotará',p.n,3.5);}}
+                    <button type="button" key={team}
+                      onClick={e=>{e.preventDefault();place(jugKey,'Quién Anotará Primero',team,1.8);}}
                       style={{background:sel?'rgba(246,201,14,.18)':'var(--surf2)',
-                        border:`1px solid ${sel?'var(--gold)':'var(--br)'}`,
-                        borderRadius:8,padding:'5px 10px',cursor:'pointer',
-                        fontSize:11,color:sel?'var(--gold)':'var(--txt)',
-                        fontWeight:600,fontFamily:'var(--fb)',
+                        border:`1.5px solid ${sel?'var(--gold)':'var(--br)'}`,
+                        borderRadius:10,padding:'10px 6px',cursor:'pointer',
+                        display:'flex',flexDirection:'column',alignItems:'center',gap:3,
                         transition:'background .15s,border-color .15s,color .15s'}}>
-                      {p.n.split(' ').slice(-1)[0]}
+                      <span style={{fontSize:22}}>{FLAGS[team]||'🏳️'}</span>
+                      <span style={{fontSize:11,fontWeight:700,color:sel?'var(--gold)':'var(--txt)',
+                        textAlign:'center'}}>{team}</span>
+                      <span style={{fontSize:8,color:sel?'var(--grn)':'transparent',fontWeight:700}}>✓</span>
                     </button>
                   );
                 })}
@@ -4131,12 +4216,12 @@ function BetsScreen({bets,placeBet,credito,onPagar,onReset}){
                 {getBet(hdKey)&&<span style={{color:'var(--grn)',fontWeight:700}}>✓ {getBet(hdKey).selection}</span>}
               </div>
               <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:5}}>
-                <OBtn id={hdKey} category="Hándicap" val={`${m.home} -1.5`} odds={2.1}
-                  display={`${m.home.substring(0,7)} -1.5`}/>
+                <OBtn id={hdKey} category="Hándicap" val={`${m.home} -1`} odds={2.1}
+                  display={`${m.home.substring(0,7)} -1`}/>
                 <OBtn id={hdKey} category="Hándicap" val="Empate HC" odds={3.4}
                   display="Empate HC"/>
-                <OBtn id={hdKey} category="Hándicap" val={`${m.away} +1.5`} odds={1.9}
-                  display={`${m.away.substring(0,7)} +1.5`}/>
+                <OBtn id={hdKey} category="Hándicap" val={`${m.away} +1`} odds={1.9}
+                  display={`${m.away.substring(0,7)} +1`}/>
               </div>
             </div>
           </div>
@@ -4147,8 +4232,10 @@ function BetsScreen({bets,placeBet,credito,onPagar,onReset}){
 
   return(
     <div className="scr fin">
-      {/* Header */}
-      <div style={{padding:'14px 16px 10px',borderBottom:'1px solid rgba(255,255,255,.04)'}}>
+      {/* Header — STICKY para que monedas siempre sean visibles */}
+      <div style={{padding:'14px 16px 10px',borderBottom:'1px solid rgba(255,255,255,.04)',
+        position:'sticky',top:0,zIndex:20,background:'var(--bg)',
+        backdropFilter:'blur(12px)',WebkitBackdropFilter:'blur(12px)'}}>
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:10}}>
           <div>
             <div style={{fontFamily:'var(--ff)',fontSize:26,letterSpacing:2}}>MI PRONÓSTICO</div>
@@ -4242,10 +4329,86 @@ function BetsScreen({bets,placeBet,credito,onPagar,onReset}){
       {tab==='partido'&&<PorPartido/>}
       {tab==='especiales'&&<Especiales/>}
       {tab==='stats'&&<StatsScreen bets={bets} noWrapper={true}/>}
-      <div style={{margin:'4px 16px 16px',padding:'11px 14px',background:'rgba(246,201,14,.05)',
-        borderRadius:10,border:'1px solid rgba(246,201,14,.15)',fontSize:11,color:'var(--dim)',lineHeight:1.55}}>
-        🪙 Cada pago de <strong style={{color:'var(--gold)'}}>$20 MXN</strong> = <strong style={{color:'var(--gold)'}}>1,000 monedas</strong> virtuales que cubren todos tus pronósticos. Para cambiar cualquier predicción, paga $10 MXN nuevamente y todo se reinicia.
-      </div>
+
+      {/* ── BOTÓN GUARDAR PRONÓSTICO ── */}
+      {!isAdminUser&&(
+        <div style={{margin:'8px 16px 24px',padding:'16px',background:'var(--surf)',
+          borderRadius:16,border:`2px solid ${betsSaved?'var(--grn)':coinsLeft===0?'rgba(246,201,14,.5)':'var(--br)'}`,
+          textAlign:'center'}}>
+
+          {betsSaved?(
+            /* Estado: GUARDADO — solo consulta */
+            <div>
+              <div style={{fontSize:28,marginBottom:6}}>🔒</div>
+              <div style={{fontFamily:'var(--ff)',fontSize:20,letterSpacing:1,color:'var(--grn)',marginBottom:6}}>
+                PRONÓSTICO GUARDADO
+              </div>
+              <div style={{fontSize:12,color:'var(--muted)',lineHeight:1.6,marginBottom:12}}>
+                Tus pronósticos están asegurados y son de solo consulta.<br/>
+                Para hacer cambios necesitas más monedas.
+              </div>
+              <div style={{background:'rgba(246,201,14,.08)',borderRadius:12,
+                border:'1px solid rgba(246,201,14,.2)',padding:'12px',marginBottom:12}}>
+                <div style={{fontSize:13,color:'var(--gold)',fontWeight:700,marginBottom:4}}>
+                  ¿Quieres cambiar tus pronósticos?
+                </div>
+                <div style={{fontSize:11,color:'var(--dim)'}}>
+                  Compra otro paquete de <strong style={{color:'var(--gold)'}}>$20 MXN</strong> y recibirás 1,000🪙 nuevas.<br/>
+                  O bien, pídele al <strong style={{color:'var(--gold)'}}>Administrador</strong> que te regale monedas.
+                </div>
+              </div>
+              <button onClick={()=>setConfirmReset(true)}
+                style={{width:'100%',background:'rgba(246,201,14,.1)',
+                  border:'1px solid rgba(246,201,14,.3)',color:'var(--gold)',
+                  borderRadius:10,padding:'11px',fontSize:13,fontWeight:700,
+                  cursor:'pointer',fontFamily:'var(--fb)'}}>
+                💳 Comprar otro paquete ($20 MXN)
+              </button>
+            </div>
+          ):(
+            /* Estado: PENDIENTE GUARDAR */
+            <div>
+              <div style={{fontFamily:'var(--ff)',fontSize:18,letterSpacing:1,marginBottom:8}}>
+                {coinsLeft===0?'✅ PRONÓSTICO LISTO PARA GUARDAR':'⏳ COMPLETA TUS PRONÓSTICOS'}
+              </div>
+              <div style={{fontSize:12,color:'var(--muted)',lineHeight:1.6,marginBottom:12}}>
+                {coinsLeft===0
+                  ?'Has usado todas tus monedas. Una vez que guardes, los pronósticos no se podrán modificar.'
+                  :`Aún tienes ${coinsLeft}🪙 disponibles. Usa todas tus monedas antes de guardar.`
+                }
+              </div>
+              {coinsLeft>0&&(
+                <div style={{background:'rgba(229,62,62,.06)',borderRadius:10,
+                  border:'1px solid rgba(229,62,62,.2)',padding:'10px 12px',
+                  marginBottom:12,fontSize:11,color:'#FC8181'}}>
+                  ⚠️ Te quedan <strong>{coinsLeft}</strong> monedas sin usar. Debes usar el saldo completo para guardar.
+                </div>
+              )}
+              <button
+                disabled={coinsLeft!==0||bets.length===0}
+                onClick={()=>{
+                  if(coinsLeft!==0||bets.length===0) return;
+                  onSave&&onSave();
+                }}
+                style={{width:'100%',
+                  background:coinsLeft===0&&bets.length>0?'linear-gradient(135deg,var(--gold),var(--gold2))':'var(--surf2)',
+                  border:`1.5px solid ${coinsLeft===0&&bets.length>0?'var(--gold)':'var(--br)'}`,
+                  color:coinsLeft===0&&bets.length>0?'#000':'var(--muted)',
+                  borderRadius:12,padding:'14px',fontSize:15,fontWeight:800,
+                  cursor:coinsLeft===0&&bets.length>0?'pointer':'not-allowed',
+                  fontFamily:'var(--ff)',letterSpacing:1,
+                  boxShadow:coinsLeft===0&&bets.length>0?'0 4px 20px rgba(246,201,14,.4)':'none',
+                  transition:'all .3s',marginBottom:10}}>
+                💾 GUARDAR PRONÓSTICO
+              </button>
+              <div style={{fontSize:10,color:'var(--muted)',lineHeight:1.5}}>
+                🔒 Una vez guardado, los pronósticos <strong style={{color:'var(--txt)'}}>no se podrán modificar</strong>.<br/>
+                Para cambiar necesitarás comprar un nuevo paquete o que el Admin te regale monedas.
+              </div>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -4385,6 +4548,7 @@ export default function App(){
     catch(e){}
   };
   const [credito,setCredito]=useState(null);
+  const [betsSaved,setBetsSaved]=useState(false); // predictions locked after saving
   // credito = {coins:1000, paquetes:N, paidAt:timestamp} | null
 
   // ── Push Notification helper ──────────────────────────
@@ -4440,10 +4604,16 @@ export default function App(){
       const users=await dbLoad();
       const dbUser=users.find(x=>x.email.toLowerCase()===u.email.toLowerCase());
       if(dbUser?.gifted){
-        setCredito({coins:1000,paquetes:1,paidAt:Date.now(),gifted:true});
+        const giftedCoins=dbUser.giftedCoins||1000;
+        setCredito({coins:giftedCoins,paquetes:1,paidAt:Date.now(),gifted:true,giftedCoins});
       } else if(dbUser?.paquetes>0){
-        setCredito({coins:1000,paquetes:dbUser.paquetes,paidAt:Date.now()});
+        setCredito({coins:COINS_PER_PAGO,paquetes:dbUser.paquetes,paidAt:Date.now()});
       }
+      // Restore betsSaved state (locked predictions)
+      try{
+        const savedFlag=localStorage.getItem('wc2026_saved_'+u.id);
+        if(savedFlag==='true') setBetsSaved(true);
+      }catch(e){}
     }catch(e){console.warn('login check error:',e);}
   };
   // Listen for language changes dispatched from Profile screen
@@ -4456,7 +4626,7 @@ export default function App(){
   const logout=(reason='')=>{
     if(reason && typeof reason === 'string') alert('⚠️ '+reason);
     setUser(null);setScreen('auth');setMatch(null);
-    setTab('home');setUserBets([]);setCredito(null);
+    setTab('home');setUserBets([]);setCredito(null);setBetsSaved(false);
   };
 
   // Check session validity every 30s — detect if logged in from another device
@@ -4486,6 +4656,8 @@ export default function App(){
 
   // Called after successful $20 payment (first time)
   const onPagar=async()=>{
+    setBetsSaved(false);
+    if(user?.id) localStorage.removeItem('wc2026_saved_'+user.id);
     setCredito(prev=>({
       coins:COINS_PER_PAGO,
       paquetes:(prev?.paquetes||0)+1,
@@ -4497,6 +4669,8 @@ export default function App(){
   // Called after successful $20 payment (reset)
   const onReset=async()=>{
     setUserBets([]);
+    setBetsSaved(false);
+    if(user?.id) localStorage.removeItem('wc2026_saved_'+user.id);
     setCredito(prev=>({
       coins:COINS_PER_PAGO,
       paquetes:(prev?.paquetes||0)+1,
@@ -4534,7 +4708,10 @@ export default function App(){
           {tab==='tabla'      &&<TablaScreen/>}
           {tab==='goles'      &&<GolesScreen/>}
           {tab==='pronostico' &&<BetsScreen bets={userBets} placeBet={placeBet}
-                                  credito={credito} onPagar={onPagar} onReset={onReset}/>}
+                                  credito={credito} onPagar={onPagar} onReset={onReset}
+                                  betsSaved={betsSaved}
+                                  onSave={()=>{setBetsSaved(true);if(user?.id)localStorage.setItem('wc2026_saved_'+user.id,'true');}}
+                                  currentUser={user}/>}
           {tab==='grupos'     &&<GruposScreen user={user} userBets={userBets} credito={credito} onPagar={onPagar}/>}
           {tab==='perfil'     &&<PerfilScreen user={user} onLogout={logout} lang={lang}/>}
           {/* Bottom nav */}
