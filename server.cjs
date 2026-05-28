@@ -250,30 +250,40 @@ app.post('/api/groups', (req,res)=>{
   res.json({ok:true, code:g.code}); // respond immediately
 });
 
+// Caché negativo: códigos confirmados inexistentes (evita hits innecesarios a Firestore)
+const notFoundCache = new Set();
+const NOT_FOUND_TTL = 5 * 60 * 1000; // 5 min
+
 app.get('/api/groups/:code', async(req,res)=>{
   const code = (req.params.code||'').toUpperCase().trim();
   if(!code) return res.status(400).json({error:'Falta code'});
 
-  // 1. Check in-memory first (fast)
-  if(serverGroups[code]){
-    console.log('✅ Grupo en memoria:', code);
+  // 1. Encontrado en memoria → respuesta inmediata
+  if(serverGroups[code])
     return res.json({found:true, group:serverGroups[code]});
-  }
 
-  // 2. Fallback: check Firestore (survives server restarts)
+  // 2. Ya confirmado inexistente → respuesta inmediata sin tocar Firestore
+  if(notFoundCache.has(code))
+    return res.json({found:false});
+
+  // 3. Buscar en Firestore con timeout de 3s
   if(db){
     try{
-      const snap = await db.collection('groups').doc(code).get();
+      const snap = await Promise.race([
+        db.collection('groups').doc(code).get(),
+        new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),3000)),
+      ]);
       if(snap.exists){
         const g = snap.data();
-        serverGroups[code] = g; // cache para próximas búsquedas
-        console.log('✅ Grupo en Firestore:', code);
+        serverGroups[code] = g;
         return res.json({found:true, group:g});
       }
-    }catch(e){ console.warn('Firestore group lookup error:', e.message); }
+    }catch(e){ /* timeout o error → caer a not found */ }
   }
 
-  console.log('❌ Grupo no encontrado:', code);
+  // Cachear como inexistente para evitar repetir la consulta
+  notFoundCache.add(code);
+  setTimeout(()=>notFoundCache.delete(code), NOT_FOUND_TTL);
   res.json({found:false});
 });
 
