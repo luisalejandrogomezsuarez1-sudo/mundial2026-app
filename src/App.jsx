@@ -3001,12 +3001,12 @@ function GruposScreen({user,userBets,credito,onPagar}){
     if(!l)return null;
     return{id:'user',name:user?.name||'Tú',ini:(user?.name||'U')[0].toUpperCase(),
       col:'var(--gold)',locked:true,lockedAt:l.lockedAt,pts:0,
-      bets:l.bets.map(b=>({id:b.id,cat:b.category,sel:b.selection,odds:b.odds}))};
+      bets:(l.bets||[]).map(b=>({id:b.id,cat:b.category,sel:b.selection,odds:b.odds}))};
   };
 
   const getAllMembers=(g,gid)=>{
     const ue=getUserEntry(gid);
-    return [...g.members,...(ue?[ue]:[])].sort((a,b)=>b.pts-a.pts);
+    return [...(g.members||[]),...(ue?[ue]:[])].sort((a,b)=>(b.pts||0)-(a.pts||0));
   };
 
   const BackBtn=({to})=>(
@@ -3182,7 +3182,7 @@ function GruposScreen({user,userBets,credito,onPagar}){
     const lock=locks[gid];
     const allM=getAllMembers(selGroup,gid);
     const userEntry=getUserEntry(gid);
-    const allCats=[...new Set(allM.flatMap(m=>m.bets.map(b=>b.cat)))];
+    const allCats=[...new Set(allM.flatMap(m=>(m.bets||[]).map(b=>b.cat)))];
 
     const POINTS_INFO=[
       ['Campeón del Mundo','20 pts'],['Bota de Oro','15 pts'],['Balón de Oro','12 pts'],
@@ -3406,7 +3406,7 @@ function GruposScreen({user,userBets,credito,onPagar}){
                       {m.pts}<span style={{fontSize:9,color:'var(--muted)',fontFamily:'var(--fb)',fontWeight:600,display:'block'}}>PTS</span>
                     </div>
                   </div>
-                  {m.bets.map((b,i)=>(
+                  {(m.bets||[]).map((b,i)=>(
                     <div key={(b.id||'')+i} style={{display:'flex',justifyContent:'space-between',
                       padding:'7px 14px',borderBottom:'1px solid rgba(255,255,255,.03)',alignItems:'center'}}>
                       <div style={{flex:1,minWidth:0}}>
