@@ -2921,22 +2921,47 @@ function GruposScreen({user,userBets,credito,onPagar}){
     }
   };
 
-  const createGroup=()=>{
+  const [creatingGroup,setCreatingGroup]=useState(false);
+  const [createErr,setCreateErr]=useState('');
+
+  const createGroup=async()=>{
     if(!newName.trim())return;
+    setCreatingGroup(true);
+    setCreateErr('');
     const g={id:'g_'+Date.now(),name:newName.trim(),desc:newDesc.trim(),
-      code:genCode(),created:Date.now(),members:[],ownerId:user?.id};
-    setGroups(p=>[...p,g]);
-    goDetail(g);setNewName('');setNewDesc('');
-    // Save to Firestore with retry (Firebase may not be ready yet)
-    const saveGroupFS=(attempts=0)=>{
-      const fn=fbSaveGroup||window._fbSaveGroup;
-      if(fn){
-        fn(g, user?.id).catch(e=>console.warn('saveGroup error:',e));
-      } else if(attempts<15){
-        setTimeout(()=>saveGroupFS(attempts+1), 600);
+      code:genCode(),created:Date.now(),members:[{id:user?.id,name:user?.name,
+        ini:(user?.name||'U')[0].toUpperCase(),joined:Date.now()}],
+      ownerId:user?.id};
+
+    // Wait for Firebase (up to 10 seconds)
+    let fn=fbSaveGroup||window._fbSaveGroup;
+    let waited=0;
+    while(!fn&&waited<20){
+      await new Promise(r=>setTimeout(r,500));
+      fn=fbSaveGroup||window._fbSaveGroup;
+      waited++;
+    }
+
+    if(fn){
+      try{
+        await fn(g, user?.id);  // await — confirm Firestore write before showing code
+        setGroups(p=>[...p,g]);
+        setNewName('');setNewDesc('');
+        setCreatingGroup(false);
+        goDetail(g);           // show group ONLY after Firestore confirms
+      }catch(e){
+        console.error('createGroup Firestore error:',e);
+        setCreateErr('Error al guardar en servidor. Verifica tu conexión.');
+        setCreatingGroup(false);
       }
-    };
-    saveGroupFS();
+    } else {
+      // Firebase never loaded — save locally only (degraded mode)
+      setGroups(p=>[...p,g]);
+      setNewName('');setNewDesc('');
+      setCreatingGroup(false);
+      setCreateErr('⚠️ Sin conexión a Firebase. El código solo funciona en este dispositivo.');
+      goDetail(g);
+    }
   };
 
   const joinGroup=async()=>{
@@ -3117,9 +3142,15 @@ function GruposScreen({user,userBets,credito,onPagar}){
               borderBottom:'1px solid rgba(255,255,255,.04)',lineHeight:1.5}}>{r}</div>
           ))}
         </div>
+        {createErr&&<div style={{margin:'0 0 8px',padding:'10px 14px',
+          background:'rgba(229,62,62,.1)',border:'1px solid rgba(229,62,62,.3)',
+          borderRadius:10,fontSize:12,color:'#FC8181',lineHeight:1.5}}>
+          {createErr}
+        </div>}
         <button className="btn" onClick={createGroup}
-          style={{opacity:newName.trim()?1:0.45,marginTop:4}}>
-          CREAR GRUPO
+          disabled={creatingGroup}
+          style={{opacity:newName.trim()&&!creatingGroup?1:0.5,marginTop:4}}>
+          {creatingGroup?'⏳ Guardando en Firestore...':'CREAR GRUPO'}
         </button>
       </div>
     </div>

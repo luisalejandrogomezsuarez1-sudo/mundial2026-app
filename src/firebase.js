@@ -63,7 +63,8 @@ export async function giftCoinsInFirestore(userId, gifted) {
 // ── CHAT EN TIEMPO REAL ─────────────────────────────────────────
 export async function sendChatMessage(groupId, userId, userName, text) {
   try {
-    await addDoc(collection(db,'groups', groupId, 'messages'), {
+    // groupId can be either group.id or group.code — use groupData for messages
+    await addDoc(collection(db,'groupData', groupId, 'messages'), {
       userId,
       userName,
       text,
@@ -76,7 +77,7 @@ export async function sendChatMessage(groupId, userId, userName, text) {
 
 export function subscribeToChatMessages(groupId, callback) {
   const q = query(
-    collection(db,'groups', groupId, 'messages'),
+    collection(db,'groupData', groupId, 'messages'),
     orderBy('timestamp','asc'),
     limit(500)
   );
@@ -99,15 +100,17 @@ export function subscribeToChatMessages(groupId, callback) {
 
 // ── GRUPOS EN FIRESTORE ─────────────────────────────────────────
 export async function saveGroupToFirestore(group, userId) {
-  try {
-    // Use group CODE as document ID so lookup is a direct getDoc (no index needed)
-    await setDoc(doc(db,'groups', group.code), {
-      ...group,
-      ownerId:   userId,
-      createdAt: new Date().toISOString(),
-    });
-    console.log('✅ Group saved to Firestore:', group.code);
-  } catch(e) { console.warn('saveGroup error:', e); }
+  const data = {
+    ...group,
+    ownerId:   userId,
+    createdAt: new Date().toISOString(),
+  };
+  // Save TWICE: by code (for lookup) AND by id (for chat subcollections)
+  await Promise.all([
+    setDoc(doc(db,'groups', group.code), data),      // Lookup by code — direct getDoc
+    setDoc(doc(db,'groupData', group.id), data),      // Chat messages use group.id
+  ]);
+  console.log('✅ Group saved to Firestore:', group.code);
 }
 
 export async function getGroupByCode(code) {
