@@ -17,6 +17,9 @@ import('./firebase.js').then(fb => {
   window._fbSaveUser       = fb.saveUserToFirestore;
   window._fbSaveGroup      = fb.saveGroupToFirestore;
   window._fbGetGroupByCode = fb.getGroupByCode;
+  window._fbSendMsg        = fb.sendChatMessage;
+  window._fbSubscribeChat  = fb.subscribeToChatMessages;
+  window._fbReady          = true; // Firebase fully loaded
   console.log('🔥 Firebase conectado — mundial2026-15686');
 }).catch(e => console.warn('Firebase error:', e));
 
@@ -2851,6 +2854,28 @@ function GruposScreen({user,userBets,credito,onPagar}){
     try{localStorage.setItem(GROUPS_KEY,JSON.stringify(groups));}
     catch(e){console.warn('Groups save error:',e);}
   },[groups]);
+
+  // Subscribe to Firestore chat when entering a group — real-time like WhatsApp
+  useEffect(()=>{
+    if(!selGroup?.id) return;
+    const gid=selGroup.id;
+    const subscribeFn=fbSubscribeChat||window._fbSubscribeChat;
+    if(!subscribeFn) return;
+    // Subscribe — returns unsubscribe function
+    const unsubscribe=subscribeFn(gid,(messages)=>{
+      // Merge Firestore messages with local optimistic ones
+      setChats(prev=>{
+        const local=(prev[gid]||[]).filter(m=>m.id.startsWith('cm_'));
+        const fsIds=new Set(messages.map(m=>m.id));
+        // Keep local-only messages not yet in Firestore, plus all Firestore ones
+        const localOnly=local.filter(m=>!fsIds.has(m.id));
+        const merged=[...messages,...localOnly].sort((a,b)=>(a.ts||0)-(b.ts||0));
+        return {...prev,[gid]:merged};
+      });
+      setTimeout(()=>chatEndRef.current?.scrollIntoView({behavior:'smooth'}),80);
+    });
+    return()=>{if(typeof unsubscribe==='function')unsubscribe();};
+  },[selGroup?.id]);
   const [selGroup,setSelGroup]=useState(null);
   const [dtab,setDtab]=useState('ranking');
   const [newName,setNewName]=useState('');
@@ -2882,18 +2907,19 @@ function GruposScreen({user,userBets,credito,onPagar}){
     if(!txt)return;
     const myName=user?.name||'Tú';
     const myIni=(myName)[0].toUpperCase();
-    const msg={
-      id:'cm_'+Date.now(),
-      uid:'user',
-      name:myName,
-      ini:myIni,
-      col:'var(--gold)',
-      text:txt,
-      ts:Date.now()
-    };
+    const msgId='cm_'+Date.now()+'_'+Math.random().toString(36).slice(2,6);
+    const msg={id:msgId,uid:user?.id||'user',name:myName,ini:myIni,
+      col:'var(--gold)',text:txt,ts:Date.now()};
+    // 1. Optimistic update — show immediately like WhatsApp
     setChats(prev=>({...prev,[gid]:[...(prev[gid]||[]),msg]}));
     setChatInput('');
     setTimeout(()=>chatEndRef.current?.scrollIntoView({behavior:'smooth'}),50);
+    // 2. Persist to Firestore — all group members will receive it
+    const fn=fbSendMsg||window._fbSendMsg;
+    if(fn){
+      fn(gid, user?.id||'anon', myName, txt)
+        .catch(e=>console.warn('sendMsg Firestore error:',e));
+    }
   };
 
   const createGroup=()=>{
@@ -2917,22 +2943,35 @@ function GruposScreen({user,userBets,credito,onPagar}){
   const joinGroup=async()=>{
     const code=joinCode.trim().toUpperCase();
     if(!code)return;
-    // 1. Search local first (fast)
+    // 1. Check local groups first
     const found=groups.find(g=>g.code===code);
     if(found){setJoinErr('');goDetail(found);setJoinCode('');return;}
-    // 2. Search Firestore (groups created on other devices)
-    setJoinErr('Buscando grupo...');
-    try{
+    // 2. Search Firestore — retry until Firebase is ready (max 8s)
+    setJoinErr('🔍 Buscando grupo...');
+    const tryFind=async(attempt=0)=>{
       const fn=fbGetGroupByCode||window._fbGetGroupByCode;
       if(fn){
-        const fsGroup=await fn(code);
-        if(fsGroup){
-          setGroups(p=>[...p,fsGroup]); // add to local list
-          setJoinErr('');goDetail(fsGroup);setJoinCode('');return;
+        try{
+          const fsGroup=await fn(code);
+          if(fsGroup){
+            setGroups(p=>[...p.filter(g=>g.id!==fsGroup.id),fsGroup]);
+            setJoinErr('');goDetail(fsGroup);setJoinCode('');
+          } else {
+            setJoinErr('❌ Código no encontrado. Verifica que sea exacto.');
+          }
+        }catch(e){
+          console.error('joinGroup Firestore error:',e);
+          setJoinErr('⚠️ Error de conexión. Intenta de nuevo.');
         }
+      } else if(attempt<16){
+        // Firebase not loaded yet — retry every 500ms
+        setJoinErr(`🔄 Conectando... (${attempt+1}/16)`);
+        setTimeout(()=>tryFind(attempt+1),500);
+      } else {
+        setJoinErr('⚠️ Sin conexión a Firebase. Verifica tu internet.');
       }
-    }catch(e){console.warn('getGroup error:',e);}
-    setJoinErr('Código no encontrado. Verifica con tu amigo.');
+    };
+    await tryFind();
   };
 
   const lockBets=gid=>{

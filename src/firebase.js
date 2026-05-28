@@ -64,8 +64,12 @@ export async function giftCoinsInFirestore(userId, gifted) {
 export async function sendChatMessage(groupId, userId, userName, text) {
   try {
     await addDoc(collection(db,'groups', groupId, 'messages'), {
-      userId, userName, text,
+      userId,
+      userName,
+      text,
+      ini: (userName||'?')[0].toUpperCase(),
       timestamp: serverTimestamp(),
+      ts: Date.now(), // fallback numeric timestamp
     });
   } catch(e) { console.warn('sendMsg error:', e); }
 }
@@ -74,13 +78,22 @@ export function subscribeToChatMessages(groupId, callback) {
   const q = query(
     collection(db,'groups', groupId, 'messages'),
     orderBy('timestamp','asc'),
-    limit(200)
+    limit(500)
   );
   return onSnapshot(q, snap => {
-    callback(snap.docs.map(d => ({
-      id: d.id, ...d.data(),
-      ts: d.data().timestamp?.toMillis() || Date.now()
-    })));
+    const msgs = snap.docs.map(d => {
+      const data = d.data();
+      return {
+        id:   d.id,
+        uid:  data.userId   || 'anon',
+        name: data.userName || 'Usuario',
+        ini:  data.ini      || (data.userName||'?')[0].toUpperCase(),
+        col:  'var(--acc)',
+        text: data.text     || '',
+        ts:   data.timestamp?.toMillis() || data.ts || Date.now(),
+      };
+    });
+    callback(msgs);
   }, err => console.warn('chat snapshot error:', err));
 }
 
