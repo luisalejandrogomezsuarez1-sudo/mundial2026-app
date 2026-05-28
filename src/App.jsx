@@ -3263,14 +3263,14 @@ function GruposScreen({user,userBets,credito,onPagar}){
                         color:'var(--gold)',padding:'1px 6px',borderRadius:9,fontWeight:700}}>TÚ</span>}
                     </div>
                     <div style={{fontSize:11,color:'var(--muted)',marginTop:1}}>
-                      {m.bets.length} pronósticos · {m.locked
+                      {(m.bets||[]).length} pronósticos · {m.locked
                         ?`🔒 ${new Date(m.lockedAt).toLocaleDateString('es',{day:'numeric',month:'short'})}`
                         :'⚡ Sin guardar'}
                     </div>
                   </div>
                   <div style={{textAlign:'right',flexShrink:0}}>
                     <div style={{fontFamily:'var(--ff)',fontSize:30,lineHeight:1,
-                      color:i===0?'var(--gold)':i===1?'#C0C0C0':i===2?'#CD7F32':'var(--txt)'}}>{m.pts}</div>
+                      color:i===0?'var(--gold)':i===1?'#C0C0C0':i===2?'#CD7F32':'var(--txt)'}}>{m.pts||0}</div>
                     <div style={{fontSize:9,color:'var(--muted)',fontWeight:700}}>PUNTOS</div>
                   </div>
                 </div>
@@ -3301,8 +3301,8 @@ function GruposScreen({user,userBets,credito,onPagar}){
                   <div style={{fontSize:28,marginBottom:4}}>🔒</div>
                   <div style={{fontSize:14,fontWeight:700,color:'var(--grn)',marginBottom:4}}>Pronósticos Bloqueados</div>
                   <div style={{fontSize:11,color:'var(--dim)'}}>
-                    {new Date(lock.lockedAt).toLocaleDateString('es',{
-                      weekday:'long',day:'numeric',month:'long',hour:'2-digit',minute:'2-digit'})}
+                    {lock?.lockedAt ? new Date(lock.lockedAt).toLocaleDateString('es',{
+                      weekday:'long',day:'numeric',month:'long',hour:'2-digit',minute:'2-digit'}) : '—'}
                   </div>
                   <div style={{fontSize:11,color:'var(--muted)',marginTop:6}}>
                     ✅ Ahora puedes ver los pronósticos de los demás miembros
@@ -3327,7 +3327,7 @@ function GruposScreen({user,userBets,credito,onPagar}){
                 </div>
               )}
 
-              {(locked?lock.bets:userBets).map((b,i)=>(
+              {(locked?(lock?.bets||[]):userBets).map((b,i)=>(
                 <div key={(b.id||'')+i} style={{display:'flex',justifyContent:'space-between',
                   alignItems:'center',padding:'10px 13px',background:'var(--surf)',
                   borderRadius:11,marginBottom:7,border:'1px solid var(--br)'}}>
@@ -3400,10 +3400,10 @@ function GruposScreen({user,userBets,credito,onPagar}){
                       <div style={{fontSize:13,fontWeight:700}}>
                         {m.name}{m.id==='user'&&<span style={{marginLeft:6,fontSize:9,color:'var(--gold)'}}>· TÚ</span>}
                       </div>
-                      <div style={{fontSize:11,color:'var(--muted)'}}>{m.bets.length} pronósticos · 🔒</div>
+                      <div style={{fontSize:11,color:'var(--muted)'}}>{(m.bets||[]).length} pronósticos · 🔒</div>
                     </div>
                     <div style={{fontFamily:'var(--ff)',fontSize:24,color:rank===0?'var(--gold)':'var(--txt)',textAlign:'right'}}>
-                      {m.pts}<span style={{fontSize:9,color:'var(--muted)',fontFamily:'var(--fb)',fontWeight:600,display:'block'}}>PTS</span>
+                      {m.pts||0}<span style={{fontSize:9,color:'var(--muted)',fontFamily:'var(--fb)',fontWeight:600,display:'block'}}>PTS</span>
                     </div>
                   </div>
                   {(m.bets||[]).map((b,i)=>(
@@ -3428,7 +3428,7 @@ function GruposScreen({user,userBets,credito,onPagar}){
                 📊 Comparativa completa · pronóstico más popular destacado en 🟢
               </div>
               {allCats.map(cat=>{
-                const preds=allM.map(m=>({m,b:m.bets.find(b=>(b.cat||b.category)===cat)})).filter(x=>x.b);
+                const preds=allM.map(m=>({m,b:(m.bets||[]).find(b=>(b.cat||b.category)===cat)})).filter(x=>x.b);
                 if(!preds.length)return null;
                 const counts={};
                 preds.forEach(({b})=>{const s=b.sel||b.selection;counts[s]=(counts[s]||0)+1;});
