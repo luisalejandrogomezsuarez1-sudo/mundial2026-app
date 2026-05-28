@@ -2855,27 +2855,6 @@ function GruposScreen({user,userBets,credito,onPagar}){
     catch(e){console.warn('Groups save error:',e);}
   },[groups]);
 
-  // Subscribe to Firestore chat when entering a group — real-time like WhatsApp
-  useEffect(()=>{
-    if(!selGroup?.id) return;
-    const gid=selGroup.id;
-    const subscribeFn=fbSubscribeChat||window._fbSubscribeChat;
-    if(!subscribeFn) return;
-    // Subscribe — returns unsubscribe function
-    const unsubscribe=subscribeFn(gid,(messages)=>{
-      // Merge Firestore messages with local optimistic ones
-      setChats(prev=>{
-        const local=(prev[gid]||[]).filter(m=>m.id.startsWith('cm_'));
-        const fsIds=new Set(messages.map(m=>m.id));
-        // Keep local-only messages not yet in Firestore, plus all Firestore ones
-        const localOnly=local.filter(m=>!fsIds.has(m.id));
-        const merged=[...messages,...localOnly].sort((a,b)=>(a.ts||0)-(b.ts||0));
-        return {...prev,[gid]:merged};
-      });
-      setTimeout(()=>chatEndRef.current?.scrollIntoView({behavior:'smooth'}),80);
-    });
-    return()=>{if(typeof unsubscribe==='function')unsubscribe();};
-  },[selGroup?.id]);
   const [selGroup,setSelGroup]=useState(null);
   const [dtab,setDtab]=useState('ranking');
   const [newName,setNewName]=useState('');
@@ -2890,6 +2869,26 @@ function GruposScreen({user,userBets,credito,onPagar}){
   const [chats,setChats]=useState({});
   const [chatInput,setChatInput]=useState('');
   const chatEndRef=useRef(null);
+
+  // Subscribe to Firestore chat in real-time when viewing a group (like WhatsApp)
+  // Placed here AFTER all state/ref declarations to avoid TDZ crash
+  useEffect(()=>{
+    if(!selGroup?.id) return;
+    const gid=selGroup.id;
+    const subscribeFn=fbSubscribeChat||window._fbSubscribeChat;
+    if(!subscribeFn) return;
+    const unsubscribe=subscribeFn(gid,(messages)=>{
+      setChats(prev=>{
+        const local=(prev[gid]||[]).filter(m=>m.id.startsWith('cm_'));
+        const fsIds=new Set(messages.map(m=>m.id));
+        const localOnly=local.filter(m=>!fsIds.has(m.id));
+        const merged=[...messages,...localOnly].sort((a,b)=>(a.ts||0)-(b.ts||0));
+        return {...prev,[gid]:merged};
+      });
+      setTimeout(()=>chatEndRef.current?.scrollIntoView({behavior:'smooth'}),80);
+    });
+    return()=>{if(typeof unsubscribe==='function')unsubscribe();};
+  },[selGroup?.id]);
 
   // ── Helper functions ──────────────────────────────────────────
   // Generate unique group code
