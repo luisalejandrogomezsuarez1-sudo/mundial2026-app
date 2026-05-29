@@ -2594,16 +2594,19 @@ function GolesScreen(){
             {p.a>0&&<span style={{fontSize:rank<=3?11:9,color:'var(--acc)'}}>{p.a}A</span>}
           </div>
         </div>
-        {/* Bio expandible */}
+        {/* Bio expandible — posición según rank para no salirse de pantalla */}
         {isOpen&&(
-          <div style={{position:'absolute',top:'105%',left:'50%',transform:'translateX(-50%)',
-            width:200,background:'var(--surf)',border:'1px solid var(--br)',
-            borderRadius:12,padding:'10px 12px',zIndex:10,fontSize:11,
-            color:'var(--dim)',lineHeight:1.6,boxShadow:'0 8px 24px rgba(0,0,0,.4)'}}>
-            <div style={{fontWeight:700,color:'var(--txt)',marginBottom:4}}>
+          <div style={{position:'absolute',top:'105%',
+            left:rank===2?0:rank===3?'auto':rank>=4&&rank%3===2?'auto':rank>=4&&rank%3===0?0:'50%',
+            right:rank===3||rank%3===2?0:'auto',
+            transform:rank===1||rank%3===1?'translateX(-50%)':'none',
+            width:190,background:'var(--surf)',border:'1px solid var(--br)',
+            borderRadius:12,padding:'10px 12px',zIndex:20,fontSize:11,
+            color:'var(--txt)',lineHeight:1.6,boxShadow:'0 8px 24px rgba(0,0,0,.5)'}}>
+            <div style={{fontWeight:700,color:'var(--gold)',marginBottom:4}}>
               {FLAGS[p.team]||'🏳️'} {p.n}
             </div>
-            {p.bio}
+            <div style={{color:'var(--dim)'}}>{p.bio}</div>
           </div>
         )}
       </div>
@@ -4400,16 +4403,15 @@ function BetsScreen({bets,placeBet,credito,creditoLoading,onPagar,onReset,betsSa
         onClick={betsSaved?undefined:e=>{e.preventDefault();place(id,category,val,odds);}}
         style={{background:sel?'rgba(246,201,14,.18)':'var(--surf2)',
           border:`1.5px solid ${sel?'var(--gold)':'var(--br)'}`,
-          borderRadius:10,padding:'8px 6px',cursor:betsSaved?'default':'pointer',
+          borderRadius:10,padding:'6px 6px 5px',cursor:betsSaved?'default':'pointer',
           transition:'background .15s,border-color .15s,color .15s',
-          display:'flex',flexDirection:'column',alignItems:'center',gap:2,
+          display:'flex',flexDirection:'column',alignItems:'center',gap:1,
           fontFamily:'var(--fb)',width:'100%',boxSizing:'border-box',
           opacity:betsSaved&&!sel?0.4:1}}>
         <span style={{fontSize:11,color:sel?'var(--gold)':'var(--txt)',fontWeight:700,
-          textAlign:'center',lineHeight:1.3,whiteSpace:'nowrap',overflow:'hidden',
+          textAlign:'center',lineHeight:1.2,whiteSpace:'nowrap',overflow:'hidden',
           textOverflow:'ellipsis',width:'100%'}}>{display||val}</span>
-        <span style={{fontSize:10,color:sel?'var(--gold)':'#6B82AF',fontWeight:700}}>{odds}x</span>
-        <span style={{fontSize:9,fontWeight:700,color:sel?'var(--grn)':'transparent',userSelect:'none'}}>✓</span>
+        <span style={{fontSize:10,color:sel?'var(--gold)':'#6B82AF',fontWeight:700,lineHeight:1}}>{odds}x</span>
       </button>
     );
   };
@@ -4442,15 +4444,14 @@ function BetsScreen({bets,placeBet,credito,creditoLoading,onPagar,onReset,betsSa
         onClick={betsSaved?undefined:e=>{e.preventDefault();place(id,category,val,odds);}}
         style={{background:sel?'rgba(246,201,14,.18)':'var(--surf2)',
           border:`1.5px solid ${sel?'var(--gold)':'var(--br)'}`,
-          borderRadius:8,padding:'5px 8px',cursor:betsSaved?'default':'pointer',
+          borderRadius:8,padding:'4px 7px 3px',cursor:betsSaved?'default':'pointer',
           transition:'background .15s,border-color .15s,color .15s',
-          display:'inline-flex',flexDirection:'column',alignItems:'center',gap:1,
+          display:'inline-flex',flexDirection:'column',alignItems:'center',gap:0,
           fontFamily:'var(--fb)',boxSizing:'border-box',flexShrink:0,
           opacity:betsSaved&&!sel?0.4:1}}>
         <span style={{fontSize:11,color:sel?'var(--gold)':'var(--txt)',fontWeight:700,
-          textAlign:'center',lineHeight:1.3,whiteSpace:'nowrap'}}>{display||val}</span>
-        <span style={{fontSize:10,color:sel?'var(--gold)':'#6B82AF',fontWeight:600}}>{odds}x</span>
-        <span style={{fontSize:8,fontWeight:700,color:sel?'var(--grn)':'transparent',userSelect:'none'}}>✓</span>
+          textAlign:'center',lineHeight:1.2,whiteSpace:'nowrap'}}>{display||val}</span>
+        <span style={{fontSize:10,color:sel?'var(--gold)':'#6B82AF',fontWeight:600,lineHeight:1}}>{odds}x</span>
       </button>
     );
   };
@@ -4489,13 +4490,13 @@ function BetsScreen({bets,placeBet,credito,creditoLoading,onPagar,onReset,betsSa
         </div>
       </div>
 
-      {/* Balón de Oro */}
+      {/* Balón de Oro — mismos candidatos que Bota de Oro */}
       <div style={{margin:'0 16px 13px',background:'var(--surf)',borderRadius:14,border:'1px solid var(--br)',overflow:'hidden'}}>
         <SecHead icon="🌟" title="BALÓN DE ORO" betId="balon-oro"/>
         <div style={{padding:'10px 14px'}}>
           <div style={{fontSize:12,color:'var(--muted)',marginBottom:8}}>{t.best_player_q}</div>
           <div style={{display:'flex',flexWrap:'wrap',gap:5}}>
-            {BALON_ORO_OPTS.map(o=>(
+            {BOTA_ORO_OPTS.map(o=>(
               <SmBtn key={o.v} id="balon-oro" category="Balón de Oro" val={o.v} odds={o.odds}
                 display={`${FLAGS[o.team]||'🏴'} ${o.v.split(' ').slice(-1)[0]}`}/>
             ))}
@@ -4504,21 +4505,21 @@ function BetsScreen({bets,placeBet,credito,creditoLoading,onPagar,onReset,betsSa
         </div>
       </div>
 
-      {/* Ganadores de Grupo */}
+      {/* Ganadores de Grupo — 4 equipos en una línea, nombre abreviado */}
       <div style={{margin:'0 16px 6px',fontFamily:'var(--ff)',fontSize:17,letterSpacing:1,paddingLeft:2}}>🏅 {t.group_winners}</div>
       {GRP_WIN.map(grp=>{
         const gid=`grp-${grp.g.replace(' ','')}`;
         const gb=getBet(gid);
         return(
-          <div key={grp.g} style={{margin:'0 16px 10px',background:'var(--surf)',borderRadius:12,border:'1px solid var(--br)',overflow:'hidden'}}>
-            <div style={{padding:'8px 14px',borderBottom:'1px solid var(--br)',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
-              <span style={{fontSize:12,fontWeight:700,color:'var(--muted)',letterSpacing:.8}}>{grp.g}</span>
-              {gb&&<span style={{fontSize:10,background:'rgba(30,198,108,.15)',color:'var(--grn)',padding:'2px 7px',borderRadius:20,fontWeight:700}}>✓ {gb.selection}</span>}
+          <div key={grp.g} style={{margin:'0 16px 8px',background:'var(--surf)',borderRadius:12,border:'1px solid var(--br)',overflow:'hidden'}}>
+            <div style={{padding:'6px 12px',borderBottom:'1px solid var(--br)',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+              <span style={{fontSize:11,fontWeight:700,color:'var(--muted)',letterSpacing:.8}}>{grp.g}</span>
+              {gb&&<span style={{fontSize:9,background:'rgba(30,198,108,.15)',color:'var(--grn)',padding:'1px 6px',borderRadius:20,fontWeight:700}}>✓ {gb.selection.split(' ').slice(-1)[0].substring(0,6)}</span>}
             </div>
-            <div style={{padding:'10px 12px',display:'flex',gap:5,flexWrap:'wrap'}}>
-              {grp.teams.map(t=>(
-                <SmBtn key={t.v} id={gid} category={`Ganador ${grp.g}`} val={t.v} odds={t.odds}
-                  display={`${FLAGS[t.v]||'🏴'} ${t.v}`}/>
+            <div style={{padding:'7px 10px',display:'flex',gap:4}}>
+              {grp.teams.map(tm=>(
+                <SmBtn key={tm.v} id={gid} category={`Ganador ${grp.g}`} val={tm.v} odds={tm.odds}
+                  display={`${FLAGS[tm.v]||'🏴'} ${tm.v.split(' ')[0].substring(0,5)}`}/>
               ))}
             </div>
           </div>
@@ -4535,63 +4536,38 @@ function BetsScreen({bets,placeBet,credito,creditoLoading,onPagar,onReset,betsSa
         const isLive=m.min!=null;
         const o=m.odds||[2.2,3.2,3.0];
         return(
-          <div key={mid} style={{margin:'0 16px 13px',background:'var(--surf)',borderRadius:14,border:'1px solid var(--br)',overflow:'hidden'}}>
-            {/* Header */}
-            <div style={{padding:'9px 14px 7px',background:'rgba(255,255,255,.02)',borderBottom:'1px solid var(--br)',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
-              <div style={{display:'flex',alignItems:'center',gap:7,minWidth:0}}>
-                <span style={{fontSize:16,flexShrink:0}}>{FLAGS[m.home]||'🏴'}</span>
-                <span style={{fontSize:12,fontWeight:700,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',maxWidth:80}}>{m.home}</span>
-                <span style={{fontSize:11,color:'var(--muted)',flexShrink:0}}>vs</span>
-                <span style={{fontSize:12,fontWeight:700,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',maxWidth:80}}>{m.away}</span>
-                <span style={{fontSize:16,flexShrink:0}}>{FLAGS[m.away]||'🏴'}</span>
+          <div key={mid} style={{margin:'0 16px 8px',background:'var(--surf)',borderRadius:12,border:'1px solid var(--br)',overflow:'hidden'}}>
+            {/* Nombres apilados + fecha */}
+            <div style={{padding:'8px 12px 6px'}}>
+              <div style={{display:'flex',alignItems:'center',gap:6,marginBottom:2}}>
+                <span style={{fontSize:15}}>{FLAGS[m.home]||'🏴'}</span>
+                <span style={{fontSize:12,fontWeight:700,color:'var(--txt)'}}>{m.home}</span>
+                {isLive&&<span className="live" style={{fontSize:8,marginLeft:'auto'}}><span className="ldot"/>{m.min}'</span>}
               </div>
-              {isLive
-                ?<span className="live" style={{fontSize:9,flexShrink:0}}><span className="ldot"/>{m.min}'</span>
-                :<span style={{fontSize:10,color:'var(--muted)',flexShrink:0}}>{m.time||''}</span>}
+              <div style={{display:'flex',alignItems:'center',gap:6,marginBottom:5}}>
+                <span style={{fontSize:15}}>{FLAGS[m.away]||'🏴'}</span>
+                <span style={{fontSize:12,fontWeight:700,color:'var(--txt)'}}>{m.away}</span>
+              </div>
+              <div style={{fontSize:10,color:'var(--muted)'}}>
+                📅 {m.date||''}{m.time?' · '+m.time:''}
+              </div>
             </div>
-            <div style={{padding:'10px 14px',display:'flex',flexDirection:'column',gap:10}}>
-              {/* 1X2 — 3 columnas fijas */}
-              <div>
-                <div style={{fontSize:10,color:'var(--muted)',fontWeight:700,marginBottom:6,letterSpacing:.8}}>1X2</div>
-                <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:5}}>
-                  <OBtn id={`m${mid}-1x2`} category="1X2" val="1" odds={o[0]}
-                    display={`① ${m.home.substring(0,6)}`}/>
-                  <OBtn id={`m${mid}-1x2`} category="1X2" val="X" odds={o[1]}
-                    display={`✕ ${t.draw}`}/>
-                  <OBtn id={`m${mid}-1x2`} category="1X2" val="2" odds={o[2]}
-                    display={`② ${m.away.substring(0,6)}`}/>
-                </div>
+            <div style={{padding:'6px 10px 8px',display:'flex',flexDirection:'column',gap:7,borderTop:'1px solid var(--br)'}}>
+              {/* 1X2 */}
+              <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:4}}>
+                <OBtn id={`m${mid}-1x2`} category="1X2" val="1" odds={o[0]}
+                  display={m.home.substring(0,7)}/>
+                <OBtn id={`m${mid}-1x2`} category="1X2" val="X" odds={o[1]}
+                  display={t.draw}/>
+                <OBtn id={`m${mid}-1x2`} category="1X2" val="2" odds={o[2]}
+                  display={m.away.substring(0,7)}/>
               </div>
-              {/* Total — 2 columnas fijas */}
+              {/* Ambos equipos anotan */}
               <div>
-                <div style={{fontSize:10,color:'var(--muted)',fontWeight:700,marginBottom:6,letterSpacing:.8}}>GOLES</div>
-                <div style={{display:'grid',gridTemplateColumns:'repeat(2,1fr)',gap:5}}>
-                  <OBtn id={`m${mid}-total`} category="Total Goles" val="over" odds={1.85}
-                    display="Más +2"/>
-                  <OBtn id={`m${mid}-total`} category="Total Goles" val="under" odds={1.95}
-                    display="Menos -2"/>
-                </div>
-              </div>
-              {/* BTTS — 2 columnas fijas */}
-              <div>
-                <div style={{fontSize:10,color:'var(--muted)',fontWeight:700,marginBottom:6,letterSpacing:.8}}>BTTS</div>
-                <div style={{display:'grid',gridTemplateColumns:'repeat(2,1fr)',gap:5}}>
-                  <OBtn id={`m${mid}-btts`} category="BTTS" val="si" odds={1.75}
-                    display="✓ Sí anotan"/>
-                  <OBtn id={`m${mid}-btts`} category="BTTS" val="no" odds={2.05}
-                    display="✗ No anotan"/>
-                </div>
-              </div>
-              {/* Doble Oportunidad — 3 columnas fijas */}
-              <div>
-                <div style={{fontSize:10,color:'var(--muted)',fontWeight:700,marginBottom:6,letterSpacing:.8}}>DOBLE OPORT.</div>
-                <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:5}}>
-                  <OBtn id={`m${mid}-dc`} category="Doble Oportunidad" val="1X" odds={1.4}
-                    display="1X L/Emp"/>
-                  <OBtn id={`m${mid}-dc`} category="Doble Oportunidad" val="X2" odds={1.5}
-                    display="X2 E/Vis"/>
-                  <OBtn id={`m${mid}-dc`} category="Doble Oportunidad" val="12" odds={1.25}
-                    display="12 S/Emp"/>
+                <div style={{fontSize:9,color:'var(--muted)',fontWeight:700,marginBottom:4,letterSpacing:.5}}>Ambos equipos anotan</div>
+                <div style={{display:'grid',gridTemplateColumns:'repeat(2,1fr)',gap:4}}>
+                  <OBtn id={`m${mid}-btts`} category="BTTS" val="si" odds={1.75} display="SÍ"/>
+                  <OBtn id={`m${mid}-btts`} category="BTTS" val="no" odds={2.05} display="NO"/>
                 </div>
               </div>
             </div>
@@ -4659,7 +4635,7 @@ function BetsScreen({bets,placeBet,credito,creditoLoading,onPagar,onReset,betsSa
         })}
       </div>
 
-      {[...LIVE_MATCHES,...NEXT_MATCHES].map(m=>{
+      {false&&[...LIVE_MATCHES,...NEXT_MATCHES].map(m=>{
         const mid=m.id;
         const exKey=`m${mid}-exacto`;
         const jugKey=`m${mid}-jugador`;
