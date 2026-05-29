@@ -33,11 +33,12 @@ export const googleProvider = new GoogleAuthProvider();
 export async function saveUserToFirestore(user) {
   if(!user?.id) return;
   try {
+    // No incluir 'gifted' aquí — solo giftCoinsInFirestore debe escribirlo.
+    // Si se incluye con false, sobreescribe el regalo que el admin puso.
     await setDoc(doc(db,'users', user.id), {
       name:      user.name      || '',
       email:     user.email     || '',
       paquetes:  user.paquetes  || 0,
-      gifted:    user.gifted    || false,
       isAdmin:   user.isAdmin   || false,
       sessionId: user.sessionId || '',
       updatedAt: new Date().toISOString(),
