@@ -1,21 +1,34 @@
 # CLAUDE.md — Reglas permanentes del proyecto
 
+## Reglas de modificación
+
+1. **Modificar ÚNICAMENTE lo que se pide.** No tocar nada más.
+   - Ningún refactor, limpieza ni mejora no solicitada.
+   - Si algo colateral parece necesario, preguntar antes de hacerlo.
+
+2. **Si un cambio puede afectar funcionalidad existente, avisar antes de modificarlo.**
+   - Explicar qué puede romperse y esperar aprobación.
+
+3. **Nunca hacer cambios en cascada sin aprobación explícita.**
+   - Un cambio aprobado no autoriza cambios adicionales relacionados.
+
 ## Antes de cada commit
 
-1. **Siempre ejecutar `npm run build` antes de hacer commit.**
+4. **Siempre ejecutar `npm run build` antes de hacer commit.**
    - Si el build falla, corregir todos los errores antes de continuar.
    - No hacer commit ni push con errores de compilación.
 
-2. **Nunca hacer push si la app tiene errores.**
+5. **Nunca hacer push si la app tiene errores.**
    - Build exitoso es condición obligatoria para cualquier push.
    - Las advertencias (warnings) son aceptables; los errores no.
 
-3. **Verificar que la app no quede en pantalla en blanco después de cada cambio.**
+6. **Verificar que la app no quede en pantalla en blanco después de cada cambio.**
    - Un `ReferenceError` o variable eliminada sin actualizar sus referencias causa pantalla blanca en React.
    - Antes de hacer push: buscar con `grep` cualquier variable eliminada que siga siendo referenciada.
    - Prestar especial atención a cambios que eliminan constantes globales (`AF_ON`, `AF_KEY`, etc.).
+   - Si se usa `t.clave` en un componente, verificar que ese componente llame `useLang()`.
 
-4. **Corregir errores antes de hacer push.**
+7. **Corregir errores antes de hacer push.**
    - Si un cambio introduce un bug en el flujo de login o navegación, arreglarlo en el mismo commit.
 
 ## Stack del proyecto
