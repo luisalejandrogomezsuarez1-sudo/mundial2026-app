@@ -994,21 +994,22 @@ const DEMO_MEMBERS=[
 ];
 // ── Coin System ───────────────────────────────────
 const COINS_PER_PAGO=1000; // 1 pago de $20 MXN = 1000 monedas
-// 73 partidos × (1X2:7 + BTTS:6) = 73×13 = 949
-// Fijos: campeon:5 + bota:5 + balon:5 + goles(3×4):12 + grupos(12×2):24 = 51
-// Total: 949 + 51 = 1000 exacto ✓
-const COIN_COSTS={campeon:5,'bota-oro':5,'balon-oro':5,
+// 72 partidos × (1X2:7 + BTTS:6=13) = 936
+// Fijos: campeon:6 + bota:6 + balon:4 + goles(3×4):12 + grupos(12×3):36 = 64
+// Total: 936 + 64 = 1000 exacto ✓
+const COIN_COSTS={campeon:6,'bota-oro':6,'balon-oro':4,
   'goleador-1':4,'goleador-2':4,'goleador-3':4};
 const getBetCost=id=>{
   if(COIN_COSTS[id]!==undefined)return COIN_COSTS[id];
-  if(id.startsWith('grp-'))return 2;           // 12×2=24
-  if(id.endsWith('-exacto'))return 1;
-  if(id.endsWith('-jugador'))return 1;
-  if(id.endsWith('-handicap'))return 1;
-  if(id.endsWith('-1x2'))return 7;             // 73×7=511
-  if(id.endsWith('-btts'))return 6;            // 73×6=438
-  if(id.endsWith('-total')||id.endsWith('-dc'))return 2;
-  return 2;
+  if(id.startsWith('grp-'))return 3;           // 12×3=36
+  if(id.endsWith('-1x2'))return 7;             // 72×7=504
+  if(id.endsWith('-btts'))return 6;            // 72×6=432
+  // Tipos deprecados — ya no aparecen en UI, no deben contar monedas
+  if(id.endsWith('-exacto'))return 0;
+  if(id.endsWith('-jugador'))return 0;
+  if(id.endsWith('-handicap'))return 0;
+  if(id.endsWith('-total')||id.endsWith('-dc'))return 0;
+  return 0;
 };
 
 // ── Admin & DB Config ─────────────────────────────
