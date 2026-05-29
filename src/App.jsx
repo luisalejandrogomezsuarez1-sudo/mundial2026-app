@@ -5048,7 +5048,8 @@ export default function App(){
   const [user,setUser]=useState(null);
   const [lang,setLang]=useState('es');
   const _tr=TRANSLATIONS[lang]||TRANSLATIONS.es;
-  const t=Object.assign(k=>_tr[k]||TRANSLATIONS.es[k]||k, _tr);
+  const _fn=k=>_tr[k]||TRANSLATIONS.es[k]||k;
+  const t=new Proxy(_fn,{get(_,p){return p in _tr?_tr[p]:_fn[p];}});
   const [tab,setTab]=useState('home');
   const [match,setMatch]=useState(null);
   const [userBets,setUserBets]=useState([]);
