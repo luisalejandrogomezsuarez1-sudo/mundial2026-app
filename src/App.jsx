@@ -4266,18 +4266,13 @@ function PagoScreen({onExito,onCancelar,esReset=false}){
   // Referencia única por usuario (para identificar el pago en el dashboard de MP)
   const REF = `WC26_${Date.now()}_${Math.random().toString(36).slice(2,7).toUpperCase()}`;
 
+  const mpConfigurado = MP_LINK !== 'https://mpago.la/TU_LINK_AQUI';
+
   const pagar=()=>{
-    // Si ya está configurado el link real de MercadoPago
-    if(MP_LINK !== 'https://mpago.la/TU_LINK_AQUI'){
-      setEsperandoPago(true);
-      // Abrir MercadoPago en nueva pestaña con referencia única
-      const url = `${MP_LINK}?external_reference=${REF}`;
-      window.open(url, '_blank');
-      return;
-    }
-    // Modo demo (sin link configurado) — simula el pago
-    setLoading(true);
-    setTimeout(()=>{setLoading(false);setExito(true);setTimeout(onExito,1800);},1600);
+    if(!mpConfigurado) return; // No hay link configurado — botón deshabilitado
+    setEsperandoPago(true);
+    const url = `${MP_LINK}?external_reference=${REF}`;
+    window.open(url, '_blank');
   };
 
   const confirmarPagoManual=()=>{
@@ -4494,25 +4489,32 @@ function PagoScreen({onExito,onCancelar,esReset=false}){
         </div>
 
         {/* Pay button */}
-        <button onClick={pagar} disabled={loading}
-          style={{width:'100%',background:loading?'rgba(246,201,14,.5)':'var(--gold)',
-            color:'#000',border:'none',borderRadius:12,padding:'16px',
-            fontFamily:'var(--ff)',fontSize:20,letterSpacing:1,
-            cursor:loading?'not-allowed':'pointer',
-            display:'flex',alignItems:'center',justifyContent:'center',gap:10,
-            transition:'all .2s',fontWeight:400}}>
-          {loading&&(
-            <span style={{width:22,height:22,border:'3px solid #00000044',
-              borderTopColor:'#000',borderRadius:'50%',display:'inline-block',
-              animation:'spin .8s linear infinite'}}/>
-          )}
-          {loading?'PROCESANDO PAGO…':esReset?'PAGAR $20 Y REINICIAR TODO':'PAGAR $20 MXN Y ACTIVAR'}
-        </button>
-
-        <div style={{fontSize:11,color:'var(--muted)',textAlign:'center',lineHeight:1.6}}>
-          🔒 Pago simulado · Prototipo de demostración<br/>
-          En producción se conecta a Mercado Pago / Stripe
-        </div>
+        {mpConfigurado ? (
+          <button onClick={pagar}
+            style={{width:'100%',background:'var(--gold)',color:'#000',border:'none',
+              borderRadius:12,padding:'16px',fontFamily:'var(--ff)',fontSize:20,
+              letterSpacing:1,cursor:'pointer',transition:'all .2s',fontWeight:400}}>
+            {esReset?'PAGAR $20 Y REINICIAR TODO':'PAGAR $20 MXN Y ACTIVAR'}
+          </button>
+        ):(
+          <div style={{textAlign:'center'}}>
+            <div style={{background:'rgba(246,201,14,.07)',border:'1.5px solid rgba(246,201,14,.25)',
+              borderRadius:12,padding:'18px 16px',marginBottom:8}}>
+              <div style={{fontSize:32,marginBottom:8}}>🔜</div>
+              <div style={{fontFamily:'var(--ff)',fontSize:16,color:'var(--gold)',letterSpacing:1,marginBottom:6}}>
+                PAGO PRÓXIMAMENTE
+              </div>
+              <div style={{fontSize:12,color:'var(--muted)',lineHeight:1.6}}>
+                El pago en línea estará disponible muy pronto.<br/>
+                <strong style={{color:'var(--txt)'}}>Por ahora, contacta al administrador</strong><br/>
+                para que te active el acceso VIP.
+              </div>
+            </div>
+            <div style={{fontSize:11,color:'var(--dim)'}}>
+              📱 Escríbenos por WhatsApp para obtener acceso
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
