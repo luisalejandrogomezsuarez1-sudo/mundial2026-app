@@ -72,7 +72,7 @@ const TRANSLATIONS={
     bracket_title:'LLAVE ELIMINATORIA',auto_flags:'Las banderas aparecen conforme avanza el torneo',
     champion:'CAMPEÓN DEL MUNDO',
     // Goals
-    goals_title:'GOLEADORES',golden_boot:'Candidatos a la Bota de Oro',
+    goals_title:'GOLEADORES',golden_boot:'Candidatos a la Bota de Oro del Mundial 2026',
     // Bets
     bets_title:'MIS PRONÓSTICOS',long_term:'Partidos Mundial',
     per_match:'Por Partido',specials:'Especiales',stats:'Estadísticas',
@@ -300,7 +300,7 @@ const LANG_BY_NAT={
   'Marruecos':'fr','Argelia':'fr','Túnez':'fr','Haití':'fr','Camerún':'fr',
 };
 
-const LANG_FLAGS={'es':'🇪🇸','en':'🇺🇸','pt':'🇧🇷','fr':'🇫🇷','zh':'🇨🇳','ko':'🇰🇷'};
+const LANG_FLAGS={'es':'🇲🇽','en':'🇺🇸','pt':'🇧🇷','fr':'🇫🇷','zh':'🇨🇳','ko':'🇰🇷'};
 const LANG_NAMES={'es':'Español','en':'English','pt':'Português','fr':'Français','zh':'中文','ko':'한국어'};
 
 // React Context for language
@@ -2412,9 +2412,9 @@ function GolesScreen(){
     <div className="scr fin" onClick={e=>{if(sel&&!e.target.closest('[data-jersey]'))setSel(null)}}>
       {/* Header */}
       <div style={{padding:'18px 16px 10px'}}>
-        <div style={{fontFamily:'var(--ff)',fontSize:28,letterSpacing:2}}>GOLEADORES</div>
+        <div style={{fontFamily:'var(--ff)',fontSize:28,letterSpacing:2}}>{t.goals_title||'GOLEADORES'}</div>
         <div style={{fontSize:12,color:'var(--muted)'}}>
-          Candidatos a la Bota de Oro · FIFA World Cup 2026
+          {t.golden_boot||'Candidatos a la Bota de Oro del Mundial 2026'}
         </div>
       </div>
 
