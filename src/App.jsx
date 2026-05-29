@@ -5046,7 +5046,8 @@ export default function App(){
   const [screen,setScreen]=useState('splash');
   const [user,setUser]=useState(null);
   const [lang,setLang]=useState('es');
-  const t=k=>TRANSLATIONS[lang]?.[k]||TRANSLATIONS.es[k]||k;
+  const _tr=TRANSLATIONS[lang]||TRANSLATIONS.es;
+  const t=Object.assign(k=>_tr[k]||TRANSLATIONS.es[k]||k, _tr);
   const [tab,setTab]=useState('home');
   const [match,setMatch]=useState(null);
   const [userBets,setUserBets]=useState([]);
