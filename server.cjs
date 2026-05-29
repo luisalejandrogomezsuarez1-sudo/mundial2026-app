@@ -287,6 +287,33 @@ app.get('/api/groups/:code', async(req,res)=>{
   res.json({found:false});
 });
 
+// ── Agregar miembro a grupo ──────────────────────────────────────────────────
+app.post('/api/groups/:code/members', (req,res)=>{
+  const code = (req.params.code||'').toUpperCase().trim();
+  const member = req.body;
+  if(!code || !member?.id) return res.status(400).json({error:'Faltan datos'});
+  if(!serverGroups[code]) return res.status(404).json({error:'Grupo no encontrado'});
+
+  const g = serverGroups[code];
+  // Evitar duplicados
+  const exists = (g.members||[]).find(m=>m.id===member.id);
+  if(!exists){
+    g.members = [...(g.members||[]), {
+      id:     member.id,
+      name:   member.name   || 'Usuario',
+      ini:    member.ini    || 'U',
+      col:    member.col    || '#4F8EF7',
+      joined: Date.now(),
+      pts:    0,
+      locked: false,
+    }];
+    persistGroups();
+    backupGroupToFirestore(g);
+    console.log(`👤 ${member.name} se unió a ${code}`);
+  }
+  res.json({ok:true, group:g});
+});
+
 // ── Limpieza de mensajes: solo cuando supera el límite, no en cada mensaje ───
 const MSG_LIMIT = 50;
 // Contador por grupo: cuántos mensajes se han acumulado desde la última limpieza

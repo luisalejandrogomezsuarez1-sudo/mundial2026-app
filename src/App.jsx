@@ -3358,8 +3358,23 @@ function GruposScreen({user,userBets,credito,creditoLoading,onPagar}){
     for(let i=0;i<5;i++) c+=chars[Math.floor(Math.random()*chars.length)];
     return c;
   };
-  // Navigate to group detail — a user can be in multiple groups
-  const goDetail=(g)=>{setSelGroup(g);setDtab('ranking');setView('detail');};
+  // Navigate to group detail — refresca miembros desde el servidor al abrir
+  const goDetail=(g)=>{
+    setSelGroup(g);setDtab('ranking');setView('detail');
+    // Refrescar datos del grupo para ver miembros actualizados
+    if(g.code&&g.code!=='WC26-AMIGOS'){
+      fetch('/api/groups/'+encodeURIComponent(g.code))
+        .then(r=>r.ok?r.json():null)
+        .then(data=>{
+          if(data?.found&&data.group){
+            const fresh=data.group;
+            setSelGroup(fresh);
+            setGroups(p=>p.map(x=>x.code===fresh.code?fresh:x));
+          }
+        })
+        .catch(()=>{});
+    }
+  };
 
   const sendMsg=(gid)=>{
     const txt=chatInput.trim();
@@ -3463,7 +3478,19 @@ function GruposScreen({user,userBets,credito,creditoLoading,onPagar}){
       const data=await res.json();
       if(!res.ok) throw new Error(data.error||'Error del servidor');
       if(data.found&&data.group){
-        const g=data.group;
+        let g=data.group;
+        // Registrar al usuario como miembro en el servidor
+        try{
+          const mr=await fetch('/api/groups/'+encodeURIComponent(code)+'/members',{
+            method:'POST',headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({
+              id:user?.id||'anon',name:user?.name||'Usuario',
+              ini:(user?.name||'U')[0].toUpperCase(),
+              col:'#4F8EF7',
+            }),
+          });
+          if(mr.ok){const md=await mr.json();if(md.group) g=md.group;}
+        }catch(e){console.warn('add member error:',e);}
         setGroups(p=>[...p.filter(x=>x.code!==g.code),g]);
         setJoinErr('');goDetail(g);setJoinCode('');
       } else {
@@ -3484,15 +3511,26 @@ function GruposScreen({user,userBets,credito,creditoLoading,onPagar}){
 
   const getUserEntry=gid=>{
     const l=locks[gid];
-    if(!l)return null;
-    return{id:'user',name:user?.name||'Tú',ini:(user?.name||'U')[0].toUpperCase(),
-      col:'var(--gold)',locked:true,lockedAt:l.lockedAt,pts:0,
-      bets:(l.bets||[]).map(b=>({id:b.id,cat:b.category,sel:b.selection,odds:b.odds}))};
+    const uid=user?.id||'anon';
+    // Siempre incluir al usuario actual (con o sin bets bloqueados)
+    return{
+      id:'user',
+      name:user?.name||'Tú',
+      ini:(user?.name||'U')[0].toUpperCase(),
+      col:'var(--gold)',
+      locked:!!l,
+      lockedAt:l?.lockedAt||null,
+      pts:0,
+      bets:l?(l.bets||[]).map(b=>({id:b.id,cat:b.category,sel:b.selection,odds:b.odds})):[],
+    };
   };
 
   const getAllMembers=(g,gid)=>{
     const ue=getUserEntry(gid);
-    return [...(g.members||[]),...(ue?[ue]:[])].sort((a,b)=>(b.pts||0)-(a.pts||0));
+    const uid=user?.id||'anon';
+    // Combinar: miembros del grupo (filtrando al usuario actual para no duplicar) + entrada del usuario
+    const others=(g.members||[]).filter(m=>m.id!==uid&&m.id!=='user');
+    return [...others,ue].sort((a,b)=>(b.pts||0)-(a.pts||0));
   };
 
   const BackBtn=({to})=>(
