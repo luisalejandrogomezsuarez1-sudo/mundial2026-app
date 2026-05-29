@@ -994,18 +994,20 @@ const DEMO_MEMBERS=[
 ];
 // ── Coin System ───────────────────────────────────
 const COINS_PER_PAGO=1000; // 1 pago de $20 MXN = 1000 monedas
-// Costos recalculados para 72 partidos (fase de grupos completa):
-// 72×(3+2+2+2+1+1+1) + (10+8+8+24) + 12×4 = 864 + 50 + 48 = 962 ≤ 1000 ✓
-const COIN_COSTS={campeon:10,'bota-oro':8,'balon-oro':8,
-  'goleador-1':8,'goleador-2':8,'goleador-3':8};
+// 73 partidos × (1X2:7 + BTTS:6) = 73×13 = 949
+// Fijos: campeon:5 + bota:5 + balon:5 + goles(3×4):12 + grupos(12×2):24 = 51
+// Total: 949 + 51 = 1000 exacto ✓
+const COIN_COSTS={campeon:5,'bota-oro':5,'balon-oro':5,
+  'goleador-1':4,'goleador-2':4,'goleador-3':4};
 const getBetCost=id=>{
   if(COIN_COSTS[id]!==undefined)return COIN_COSTS[id];
-  if(id.startsWith('grp-'))return 4;           // 12×4=48
-  if(id.endsWith('-exacto'))return 1;          // 72×1=72
-  if(id.endsWith('-jugador'))return 1;         // 72×1=72
-  if(id.endsWith('-handicap'))return 1;        // 72×1=72
-  if(id.endsWith('-1x2'))return 3;             // 72×3=216
-  if(id.endsWith('-total')||id.endsWith('-btts')||id.endsWith('-dc'))return 2; // 72×3×2=432
+  if(id.startsWith('grp-'))return 2;           // 12×2=24
+  if(id.endsWith('-exacto'))return 1;
+  if(id.endsWith('-jugador'))return 1;
+  if(id.endsWith('-handicap'))return 1;
+  if(id.endsWith('-1x2'))return 7;             // 73×7=511
+  if(id.endsWith('-btts'))return 6;            // 73×6=438
+  if(id.endsWith('-total')||id.endsWith('-dc'))return 2;
   return 2;
 };
 
@@ -4530,45 +4532,46 @@ function BetsScreen({bets,placeBet,credito,creditoLoading,onPagar,onReset,betsSa
 
   // ── Tab: Por Partido ──
   const PorPartido=()=>(
-    <div>
+    <div style={{padding:'0 12px'}}>
       {[...LIVE_MATCHES,...NEXT_MATCHES].map(m=>{
         const mid=m.id;
         const isLive=m.min!=null;
         const o=m.odds||[2.2,3.2,3.0];
+        const homeShort=m.home.substring(0,8);
+        const awayShort=m.away.substring(0,8);
         return(
-          <div key={mid} style={{margin:'0 16px 8px',background:'var(--surf)',borderRadius:12,border:'1px solid var(--br)',overflow:'hidden'}}>
-            {/* Nombres apilados + fecha */}
-            <div style={{padding:'8px 12px 6px'}}>
-              <div style={{display:'flex',alignItems:'center',gap:6,marginBottom:2}}>
-                <span style={{fontSize:15}}>{FLAGS[m.home]||'🏴'}</span>
-                <span style={{fontSize:12,fontWeight:700,color:'var(--txt)'}}>{m.home}</span>
-                {isLive&&<span className="live" style={{fontSize:8,marginLeft:'auto'}}><span className="ldot"/>{m.min}'</span>}
+          <div key={mid} style={{display:'flex',alignItems:'center',gap:8,
+            padding:'6px 10px',marginBottom:5,
+            background:'var(--surf)',borderRadius:10,border:'1px solid var(--br)'}}>
+            {/* Izquierda: nombres + fecha */}
+            <div style={{flex:1,minWidth:0}}>
+              <div style={{display:'flex',alignItems:'center',gap:5,marginBottom:2}}>
+                <span style={{fontSize:14,lineHeight:1}}>{FLAGS[m.home]||'🏴'}</span>
+                <span style={{fontSize:11,fontWeight:700,color:'var(--txt)',
+                  overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{m.home}</span>
+                {isLive&&<span className="live" style={{fontSize:8}}><span className="ldot"/>{m.min}'</span>}
               </div>
-              <div style={{display:'flex',alignItems:'center',gap:6,marginBottom:5}}>
-                <span style={{fontSize:15}}>{FLAGS[m.away]||'🏴'}</span>
-                <span style={{fontSize:12,fontWeight:700,color:'var(--txt)'}}>{m.away}</span>
+              <div style={{display:'flex',alignItems:'center',gap:5,marginBottom:3}}>
+                <span style={{fontSize:14,lineHeight:1}}>{FLAGS[m.away]||'🏴'}</span>
+                <span style={{fontSize:11,fontWeight:700,color:'var(--txt)',
+                  overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{m.away}</span>
               </div>
-              <div style={{fontSize:10,color:'var(--muted)'}}>
-                📅 {m.date||''}{m.time?' · '+m.time:''}
+              <div style={{fontSize:9,color:'var(--muted)'}}>
+                {m.date||''}{m.time?' · '+m.time:''}
               </div>
             </div>
-            <div style={{padding:'6px 10px 8px',display:'flex',flexDirection:'column',gap:7,borderTop:'1px solid var(--br)'}}>
-              {/* 1X2 */}
-              <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:4}}>
-                <OBtn id={`m${mid}-1x2`} category="1X2" val="1" odds={o[0]}
-                  display={m.home.substring(0,7)}/>
-                <OBtn id={`m${mid}-1x2`} category="1X2" val="X" odds={o[1]}
-                  display={t.draw}/>
-                <OBtn id={`m${mid}-1x2`} category="1X2" val="2" odds={o[2]}
-                  display={m.away.substring(0,7)}/>
+            {/* Derecha: botones apuestas */}
+            <div style={{flexShrink:0}}>
+              {/* Fila 1: 1X2 */}
+              <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:3,marginBottom:3}}>
+                <OBtn id={`m${mid}-1x2`} category="1X2" val="1" odds={o[0]} display={homeShort}/>
+                <OBtn id={`m${mid}-1x2`} category="1X2" val="X" odds={o[1]} display="EMP"/>
+                <OBtn id={`m${mid}-1x2`} category="1X2" val="2" odds={o[2]} display={awayShort}/>
               </div>
-              {/* Ambos equipos anotan */}
-              <div>
-                <div style={{fontSize:9,color:'var(--muted)',fontWeight:700,marginBottom:4,letterSpacing:.5}}>Ambos equipos anotan</div>
-                <div style={{display:'grid',gridTemplateColumns:'repeat(2,1fr)',gap:4}}>
-                  <OBtn id={`m${mid}-btts`} category="BTTS" val="si" odds={1.75} display="SÍ"/>
-                  <OBtn id={`m${mid}-btts`} category="BTTS" val="no" odds={2.05} display="NO"/>
-                </div>
+              {/* Fila 2: Ambos anotan */}
+              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:3}}>
+                <OBtn id={`m${mid}-btts`} category="BTTS" val="si" odds={1.75} display="✓ Anotan"/>
+                <OBtn id={`m${mid}-btts`} category="BTTS" val="no" odds={2.05} display="✗ No"/>
               </div>
             </div>
           </div>
