@@ -2947,14 +2947,14 @@ function PerfilScreen({user,onLogout,lang='es'}){
                   </div>
                   {/* Info */}
                   <div style={{flex:1,minWidth:0}}>
-                    <div style={{fontSize:11,fontWeight:700,overflow:'hidden',
+                    <div style={{fontSize:12,fontWeight:700,overflow:'hidden',
                       textOverflow:'ellipsis',whiteSpace:'nowrap'}}>
                       {u.name||'Sin nombre'}
                       {u.google&&<span style={{marginLeft:4,fontSize:8,color:'var(--acc)',fontWeight:700}}>G</span>}
                       {u.gifted&&<span style={{marginLeft:4,fontSize:8,background:'rgba(246,201,14,.2)',
                         color:'var(--gold)',padding:'1px 4px',borderRadius:4,fontWeight:700}}>🎁GRATIS</span>}
                     </div>
-                    <div style={{fontSize:9,color:'var(--muted)',overflow:'hidden',
+                    <div style={{fontSize:10,color:'var(--acc)',overflow:'hidden',
                       textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{u.email}</div>
                   </div>
                   {/* Paquetes */}
