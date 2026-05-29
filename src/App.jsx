@@ -3006,7 +3006,7 @@ function PerfilScreen({user,onLogout,lang='es'}){
                           if(!window.confirm(`¿Quitar monedas a ${u.name||u.email}?`))return;
                           const ok=await dbRevokeGift(u.email);
                           if(ok){
-                            if(fbGiftCoins&&u.id) fbGiftCoins(u.id,false);
+                            if(fbGiftCoins&&u.id) try{await fbGiftCoins(u.id,false);}catch(e){console.warn('fbGiftCoins error:',e);}
                             const updated=await dbLoad();setDbUsers(updated);
                           }
                         } else {
@@ -3018,7 +3018,7 @@ function PerfilScreen({user,onLogout,lang='es'}){
                           }
                           const ok=await dbGiftCoins(u.email,amount);
                           if(ok){
-                            if(fbGiftCoins&&u.id) fbGiftCoins(u.id,true,amount);
+                            if(fbGiftCoins&&u.id) try{await fbGiftCoins(u.id,true,amount);}catch(e){console.warn('fbGiftCoins error:',e);}
                             alert(`✅ ${amount} monedas regaladas a ${u.name||u.email}`);
                             const updated=await dbLoad();setDbUsers(updated);
                           }
@@ -3228,7 +3228,7 @@ function PerfilScreen({user,onLogout,lang='es'}){
 }
 
 // ── Groups Screen ─────────────────────────────────
-function GruposScreen({user,userBets,credito,creditoLoading,onPagar}){
+function GruposScreen({user,userBets,credito,creditoLoading,onPagar,onRecheckAccess}){
   const t=useLang();
   // ── PAYMENT GATE: must pay to access groups ──────────────────
   const [view,setView]=useState('list');
@@ -3305,7 +3305,7 @@ function GruposScreen({user,userBets,credito,creditoLoading,onPagar}){
       <div style={{fontSize:13,color:'var(--muted)'}}>Verificando acceso…</div>
     </div>
   );
-  if(!credito&&showPago) return <PagoScreen onExito={()=>{setShowPago(false);onPagar();}}/>;
+  if(!credito&&showPago) return <PagoScreen onExito={()=>{setShowPago(false);onPagar();}} onRecheckAccess={onRecheckAccess}/>;
   if(!credito) return(
     <div className="scr fin" style={{display:'flex',flexDirection:'column',
       alignItems:'center',justifyContent:'center',padding:'32px 24px',
@@ -3330,6 +3330,16 @@ function GruposScreen({user,userBets,credito,creditoLoading,onPagar}){
         </div>
         <div style={{fontSize:24,fontWeight:800,color:'var(--gold)',marginTop:6}}>$20 MXN</div>
       </div>
+      {onRecheckAccess&&(
+        <div style={{marginBottom:10,width:'100%',maxWidth:300}}>
+          <button onClick={onRecheckAccess}
+            style={{width:'100%',background:'rgba(79,142,247,.12)',border:'1px solid rgba(79,142,247,.3)',
+              color:'var(--acc)',borderRadius:12,padding:'10px',fontSize:12,
+              cursor:'pointer',fontFamily:'var(--fb)',fontWeight:700}}>
+            🔍 Ya tengo regalo · Verificar acceso
+          </button>
+        </div>
+      )}
       <button className="btn" onClick={()=>setShowPago(true)} style={{maxWidth:300,width:'100%'}}>
         💳 PAGAR Y ACCEDER
       </button>
@@ -4289,7 +4299,7 @@ function GruposScreen({user,userBets,credito,creditoLoading,onPagar}){
 }
 
 // ── Pago Screen ───────────────────────────────────
-function PagoScreen({onExito,onCancelar,esReset=false}){
+function PagoScreen({onExito,onCancelar,esReset=false,onRecheckAccess}){
   const t=useLang();
   const [metodo,setMetodo]=useState('card');
   const [loading,setLoading]=useState(false);
@@ -4555,13 +4565,24 @@ function PagoScreen({onExito,onCancelar,esReset=false}){
             </div>
           </div>
         )}
+        {!esReset&&onRecheckAccess&&(
+          <div style={{textAlign:'center',marginTop:16,paddingTop:14,borderTop:'1px solid rgba(255,255,255,.07)'}}>
+            <div style={{fontSize:11,color:'var(--muted)',marginBottom:6}}>¿Ya recibiste monedas de regalo?</div>
+            <button onClick={onRecheckAccess}
+              style={{background:'rgba(79,142,247,.12)',border:'1px solid rgba(79,142,247,.3)',
+                color:'var(--acc)',borderRadius:10,padding:'8px 18px',fontSize:12,
+                cursor:'pointer',fontFamily:'var(--fb)',fontWeight:700}}>
+              🔍 Verificar acceso
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
 }
 
 // ── Bets Screen ───────────────────────────────────
-function BetsScreen({bets,placeBet,credito,creditoLoading,onPagar,onReset,betsSaved=false,onSave,currentUser}){
+function BetsScreen({bets,placeBet,credito,creditoLoading,onPagar,onReset,betsSaved=false,onSave,currentUser,onRecheckAccess}){
   const t=useLang();
   const [tab,setTab]=useState('largo');
   const [exact,setExact]=useState({});
@@ -4575,7 +4596,7 @@ function BetsScreen({bets,placeBet,credito,creditoLoading,onPagar,onReset,betsSa
       <div style={{fontSize:13,color:'var(--muted)'}}>Verificando acceso…</div>
     </div>
   );
-  if(!credito) return <PagoScreen onExito={onPagar}/>;
+  if(!credito) return <PagoScreen onExito={onPagar} onRecheckAccess={onRecheckAccess}/>;
   if(showReset) return(
     <PagoScreen
       onExito={()=>{onReset();setShowReset(false);setConfirmReset(false);}}
@@ -5377,6 +5398,27 @@ export default function App(){
       }catch(e){}
     }catch(e){console.warn('login check error:',e);}
   };
+  // Re-verifica acceso en Firestore sin necesidad de cerrar sesión
+  // Útil cuando el admin regala monedas mientras el usuario ya está en la app
+  const recheckAccess=async()=>{
+    if(!user?.id) return;
+    setCreditoLoading(true);
+    try{
+      const getFn=window._fbGetUser;
+      if(getFn){
+        const fsUser=await getFn(user.id);
+        if(fsUser?.gifted){
+          const gc=fsUser.giftedCoins||1000;
+          setCredito({coins:gc,paquetes:1,paidAt:Date.now(),gifted:true,giftedCoins:gc});
+          const localUsers=await dbLoad();
+          await dbSave(localUsers.map(x=>x.id===user.id?{...x,gifted:true,giftedCoins:gc}:x));
+        } else if(fsUser?.paquetes>0){
+          setCredito({coins:COINS_PER_PAGO,paquetes:fsUser.paquetes,paidAt:Date.now()});
+        }
+      }
+    }catch(e){console.warn('recheckAccess error:',e);}
+    setCreditoLoading(false);
+  };
   // Listen for language changes dispatched from Profile screen
   useEffect(()=>{
     const handleLang=e=>{if(TRANSLATIONS[e.detail])setLang(e.detail);};
@@ -5477,8 +5519,8 @@ export default function App(){
                                   credito={credito} creditoLoading={creditoLoading} onPagar={onPagar} onReset={onReset}
                                   betsSaved={betsSaved}
                                   onSave={()=>{setBetsSaved(true);if(user?.id)localStorage.setItem('wc2026_saved_'+user.id,'true');}}
-                                  currentUser={user}/>}
-          {tab==='grupos'     &&<GruposScreen user={user} userBets={userBets} credito={credito} creditoLoading={creditoLoading} onPagar={onPagar}/>}
+                                  currentUser={user} onRecheckAccess={recheckAccess}/>}
+          {tab==='grupos'     &&<GruposScreen user={user} userBets={userBets} credito={credito} creditoLoading={creditoLoading} onPagar={onPagar} onRecheckAccess={recheckAccess}/>}
           {tab==='perfil'     &&<PerfilScreen user={user} onLogout={logout} lang={lang}/>}
           {/* Bottom nav */}
           <div className="bnav">

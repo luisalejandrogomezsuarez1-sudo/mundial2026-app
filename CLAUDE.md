@@ -48,6 +48,12 @@
 - `window._fbSubscribeLive` es la función para suscribirse a documentos en `live/`. Se expone en el bloque `import('./firebase.js').then(...)`.
 - No exponer claves ni secrets en `src/` — todo lo que está en el frontend es público.
 
+## Deploy
+
+- **Ejecutar `railway up` automáticamente después de cada modificación** que amerite publicarse.
+  - El hook en `settings.local.json` lo hace de forma automática al terminar cada respuesta con cambios.
+  - No publicar si el build tiene errores (ver reglas 4–7 arriba).
+
 ## Contexto de conversación
 
 - **Usar siempre contexto estándar** al iniciar una conversación — nunca el modo de 1M tokens.
