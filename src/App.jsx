@@ -3264,6 +3264,7 @@ function GruposScreen({user,userBets,credito,creditoLoading,onPagar}){
   const [createErr,setCreateErr]=useState('');
   const [confirmDelete,setConfirmDelete]=useState(false);
   const chatEndRef=useRef(null);
+  const [showPago,setShowPago]=useState(false);
 
   // Poll server for new chat messages every 3 seconds (WhatsApp-style)
   useEffect(()=>{
@@ -3304,6 +3305,7 @@ function GruposScreen({user,userBets,credito,creditoLoading,onPagar}){
       <div style={{fontSize:13,color:'var(--muted)'}}>Verificando acceso…</div>
     </div>
   );
+  if(!credito&&showPago) return <PagoScreen onExito={()=>{setShowPago(false);onPagar();}}/>;
   if(!credito) return(
     <div className="scr fin" style={{display:'flex',flexDirection:'column',
       alignItems:'center',justifyContent:'center',padding:'32px 24px',
@@ -3328,7 +3330,7 @@ function GruposScreen({user,userBets,credito,creditoLoading,onPagar}){
         </div>
         <div style={{fontSize:24,fontWeight:800,color:'var(--gold)',marginTop:6}}>$20 MXN</div>
       </div>
-      <button className="btn" onClick={onPagar} style={{maxWidth:300,width:'100%'}}>
+      <button className="btn" onClick={()=>setShowPago(true)} style={{maxWidth:300,width:'100%'}}>
         💳 PAGAR Y ACCEDER
       </button>
       <div style={{fontSize:11,color:'var(--muted)',marginTop:12}}>

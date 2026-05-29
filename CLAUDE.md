@@ -48,6 +48,12 @@
 - `window._fbSubscribeLive` es la función para suscribirse a documentos en `live/`. Se expone en el bloque `import('./firebase.js').then(...)`.
 - No exponer claves ni secrets en `src/` — todo lo que está en el frontend es público.
 
+## Contexto de conversación
+
+- **Usar siempre contexto estándar** al iniciar una conversación — nunca el modo de 1M tokens.
+  - El contexto grande es costoso e innecesario para este proyecto.
+  - Si el archivo es muy largo, leer solo las secciones relevantes con `offset`/`limit`.
+
 ## Idioma
 
 - Responder siempre en **español**.
