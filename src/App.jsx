@@ -5321,19 +5321,26 @@ export default function App(){
       }
     };
     saveToFirestore();
-    // Admin: verificar si hay reset forzado de apuestas para este usuario
+    // Admin: verificar flags + TAMBIÉN detectar regalo (gifted) desde Firestore
     const checkAdminFlags=async(attempts=0)=>{
       const getFn=fbGetAllUsers||window._fbGetAllUsers;
       if(getFn){
         try{
           const allUsers=await getAllUsersCached(getFn);
-          const fsUser=allUsers.find(x=>x.id===u.id);
+          // Buscar por ID primero; si no hay match, buscar por email (cubre registro multi-dispositivo)
+          const fsUser=allUsers.find(x=>x.id===u.id)||
+                       allUsers.find(x=>x.email?.toLowerCase()===u.email?.toLowerCase());
+          // ── Regalo: otorgar acceso si Firestore dice gifted:true ──
+          if(fsUser?.gifted&&!u.isAdmin){
+            const gc=fsUser.giftedCoins||1000;
+            setCredito({coins:gc,paquetes:1,paidAt:Date.now(),gifted:true,giftedCoins:gc});
+            const localUsers=await dbLoad();
+            await dbSave(localUsers.map(x=>x.id===u.id?{...x,gifted:true,giftedCoins:gc}:x));
+          }
           // ── Borrar cuenta completa ──────────────────────────
           if(fsUser?.forceDelete){
-            // Borrar de la DB local
             const allDB=await dbLoad();
             await dbSave(allDB.filter(x=>x.id!==u.id));
-            // Borrar todos los datos del usuario en localStorage
             ['wc2026_bets_','wc2026_saved_','wc2026_groups_','wc2026_session_'].forEach(k=>{
               try{localStorage.removeItem(k+u.id);}catch(e){}
             });
@@ -5368,17 +5375,27 @@ export default function App(){
       } else if(dbUser?.paquetes>0){
         setCredito({coins:COINS_PER_PAGO,paquetes:dbUser.paquetes,paidAt:Date.now()});
       } else {
-        // Fallback: verificar Firestore directamente con el doc del usuario (1 lectura, más rápido y confiable)
+        // Fallback: leer doc del usuario en Firestore (1 lectura rápida)
         setCreditoLoading(true);
         const checkFirestoreCredit=async(attempts=0)=>{
-          const getOneFn=window._fbGetUser; // getUserFromFirestore — lectura directa por ID
+          const getOneFn=window._fbGetUser;
           if(getOneFn){
             try{
-              const fsUser=await getOneFn(u.id);
+              // Intentar por ID primero
+              let fsUser=await getOneFn(u.id);
+              // Si no tiene gifted/paquetes, buscar por email en todos los usuarios
+              // (cubre el caso donde el ID de Firestore difiere del ID local)
+              if(!fsUser?.gifted&&!(fsUser?.paquetes>0)){
+                const getAllFn=fbGetAllUsers||window._fbGetAllUsers;
+                if(getAllFn){
+                  const all=await getAllUsersCached(getAllFn);
+                  const byEmail=all.find(x=>x.email?.toLowerCase()===u.email?.toLowerCase()&&(x.gifted||(x.paquetes>0)));
+                  if(byEmail) fsUser=byEmail;
+                }
+              }
               if(fsUser?.gifted){
                 const gc=fsUser.giftedCoins||1000;
                 setCredito({coins:gc,paquetes:1,paidAt:Date.now(),gifted:true,giftedCoins:gc});
-                // Sincronizar en localStorage para próximos logins
                 const localUsers=await dbLoad();
                 await dbSave(localUsers.map(x=>x.id===u.id?{...x,gifted:true,giftedCoins:gc}:x));
               } else if(fsUser?.paquetes>0){
@@ -5405,16 +5422,25 @@ export default function App(){
     setCreditoLoading(true);
     try{
       const getFn=window._fbGetUser;
-      if(getFn){
-        const fsUser=await getFn(user.id);
-        if(fsUser?.gifted){
-          const gc=fsUser.giftedCoins||1000;
-          setCredito({coins:gc,paquetes:1,paidAt:Date.now(),gifted:true,giftedCoins:gc});
-          const localUsers=await dbLoad();
-          await dbSave(localUsers.map(x=>x.id===user.id?{...x,gifted:true,giftedCoins:gc}:x));
-        } else if(fsUser?.paquetes>0){
-          setCredito({coins:COINS_PER_PAGO,paquetes:fsUser.paquetes,paidAt:Date.now()});
-        }
+      const getAllFn=fbGetAllUsers||window._fbGetAllUsers;
+      let fsUser=null;
+      // Intentar por ID
+      if(getFn) try{ fsUser=await getFn(user.id); }catch(e){}
+      // Si no tiene gifted/paquetes, buscar por email (fallback multi-dispositivo)
+      if(!fsUser?.gifted&&!(fsUser?.paquetes>0)&&getAllFn){
+        try{
+          const all=await getAllUsersCached(getAllFn,0); // lectura fresca
+          const byEmail=all.find(x=>x.email?.toLowerCase()===user.email?.toLowerCase()&&(x.gifted||(x.paquetes>0)));
+          if(byEmail) fsUser=byEmail;
+        }catch(e){}
+      }
+      if(fsUser?.gifted){
+        const gc=fsUser.giftedCoins||1000;
+        setCredito({coins:gc,paquetes:1,paidAt:Date.now(),gifted:true,giftedCoins:gc});
+        const localUsers=await dbLoad();
+        await dbSave(localUsers.map(x=>x.id===user.id?{...x,gifted:true,giftedCoins:gc}:x));
+      } else if(fsUser?.paquetes>0){
+        setCredito({coins:COINS_PER_PAGO,paquetes:fsUser.paquetes,paidAt:Date.now()});
       }
     }catch(e){console.warn('recheckAccess error:',e);}
     setCreditoLoading(false);
