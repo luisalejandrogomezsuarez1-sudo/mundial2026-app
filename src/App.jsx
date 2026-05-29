@@ -995,9 +995,9 @@ const DEMO_MEMBERS=[
 // ── Coin System ───────────────────────────────────
 const COINS_PER_PAGO=1000; // 1 pago de $20 MXN = 1000 monedas
 // 72 partidos × (1X2:7 + BTTS:6=13) = 936
-// Fijos: campeon:12 + bota:6 + balon:4 + gol1:15 + gol2:4 + gol3:5 + grupos(12×2):24 = 70
-// Total: 936 + 70 = 1006 (ajustado por prueba real del usuario)
-const COIN_COSTS={campeon:12,'bota-oro':6,'balon-oro':4,
+// Fijos: campeon:6 + bota:6 + balon:4 + gol1:15 + gol2:4 + gol3:5 + grupos(12×2):24 = 64
+// Total: 936 + 64 = 1000 exacto ✓
+const COIN_COSTS={campeon:6,'bota-oro':6,'balon-oro':4,
   'goleador-1':15,'goleador-2':4,'goleador-3':5};
 const getBetCost=id=>{
   if(COIN_COSTS[id]!==undefined)return COIN_COSTS[id];
@@ -5209,7 +5209,8 @@ export default function App(){
           const getFn=fbGetAllUsers||window._fbGetAllUsers;
           if(getFn){
             try{
-              const allUsers=await getAllUsersCached(getFn);
+              // maxAge=0 → siempre lee fresco, sin caché (evita que regalo reciente no se detecte)
+              const allUsers=await getAllUsersCached(getFn,0);
               const fsUser=allUsers.find(x=>x.id===u.id);
               if(fsUser?.gifted){
                 const gc=fsUser.giftedCoins||1000;
@@ -5278,12 +5279,15 @@ export default function App(){
   const onPagar=async()=>{
     setBetsSaved(false);
     if(user?.id) localStorage.removeItem('wc2026_saved_'+user.id);
-    setCredito(prev=>({
-      coins:COINS_PER_PAGO,
-      paquetes:(prev?.paquetes||0)+1,
-      paidAt:Date.now()
-    }));
-    if(user&&!user.isAdmin) await dbUpdatePaquetes(user.email);
+    const newPaquetes=(credito?.paquetes||0)+1;
+    setCredito({coins:COINS_PER_PAGO,paquetes:newPaquetes,paidAt:Date.now()});
+    if(user&&!user.isAdmin){
+      // 1. Actualizar localStorage
+      await dbUpdatePaquetes(user.email);
+      // 2. Sincronizar a Firestore (para acceso multi-dispositivo)
+      const saveFn=fbSaveUser||window._fbSaveUser;
+      if(saveFn&&user.id) saveFn({...user,paquetes:newPaquetes,sessionId:localStorage.getItem('wc2026_session_'+user.id)||''});
+    }
   };
 
   // Called after successful $20 payment (reset)
