@@ -2688,9 +2688,12 @@ function PerfilScreen({user,onLogout,lang='es'}){
   useEffect(()=>{
     if(!user.isAdmin) return;
 
+    const getDeletedIds=()=>{try{return JSON.parse(localStorage.getItem('wc2026_admin_deleted')||'[]');}catch{return[];}};
     const mergeUsers=(local,fs)=>{
-      const merged=[...local];
+      const deleted=new Set(getDeletedIds());
+      const merged=[...local].filter(u=>!deleted.has(u.id));
       fs.forEach(fu=>{
+        if(deleted.has(fu.id)) return; // ignorar eliminados
         const idx=merged.findIndex(lu=>lu.email?.toLowerCase()===fu.email?.toLowerCase());
         if(idx>=0) merged[idx]={...merged[idx],...fu};
         else merged.push(fu);
@@ -2745,11 +2748,16 @@ function PerfilScreen({user,onLogout,lang='es'}){
     const target=dbUsers.find(u=>u.id===id);
     const label=target?.name||target?.email||id;
     if(!window.confirm(`¿Eliminar a "${label}"?\nEsta acción no se puede deshacer.`))return;
-    // Borrar de localStorage
+    // 1. Guardar ID en blocklist local (persiste aunque Firestore falle)
+    try{
+      const prev=JSON.parse(localStorage.getItem('wc2026_admin_deleted')||'[]');
+      localStorage.setItem('wc2026_admin_deleted',JSON.stringify([...new Set([...prev,id])]));
+    }catch(e){}
+    // 2. Borrar de localStorage de usuarios
     const updated=dbUsers.filter(u=>u.id!==id);
     await dbSave(updated);
     setDbUsers(updated);
-    // Borrar de Firestore
+    // 3. Borrar de Firestore (intento)
     if(fbDeleteUser) fbDeleteUser(id);
   };
 
