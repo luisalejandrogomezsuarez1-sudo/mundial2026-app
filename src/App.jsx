@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef, createContext, useContext } from "react";
 
 // ── Firebase ACTIVO ─────────────────────────────────────────────
-let fbSendMsg = null, fbSubscribeChat = null, fbSaveUser = null, fbGetAllUsers = null, fbGiftCoins = null, fbSaveGroup = null, fbGetGroupByCode = null;
+let fbSendMsg = null, fbSubscribeChat = null, fbSaveUser = null, fbGetAllUsers = null, fbGiftCoins = null, fbSaveGroup = null, fbGetGroupByCode = null, fbDeleteUser = null;
 const FB_ACTIVE = true;
 
 import('./firebase.js').then(fb => {
@@ -10,6 +10,7 @@ import('./firebase.js').then(fb => {
   fbSaveUser      = fb.saveUserToFirestore;
   fbGetAllUsers   = fb.getAllUsersFromFirestore;
   fbGiftCoins      = fb.giftCoinsInFirestore;
+  fbDeleteUser     = fb.deleteUserFromFirestore;
   fbSaveGroup      = fb.saveGroupToFirestore;
   fbGetGroupByCode = fb.getGroupByCode;
   // Expose globally
@@ -2741,8 +2742,15 @@ function PerfilScreen({user,onLogout,lang='es'}){
     }catch(e){}
   };
   const deleteUser=async id=>{
+    const target=dbUsers.find(u=>u.id===id);
+    const label=target?.name||target?.email||id;
+    if(!window.confirm(`¿Eliminar a "${label}"?\nEsta acción no se puede deshacer.`))return;
+    // Borrar de localStorage
     const updated=dbUsers.filter(u=>u.id!==id);
-    await dbSave(updated);setDbUsers(updated);
+    await dbSave(updated);
+    setDbUsers(updated);
+    // Borrar de Firestore
+    if(fbDeleteUser) fbDeleteUser(id);
   };
 
   // ── Share the app ────────────────────────────────

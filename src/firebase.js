@@ -7,7 +7,7 @@ import { initializeApp } from 'firebase/app';
 import {
   getFirestore, collection, addDoc, onSnapshot,
   query, orderBy, limit, serverTimestamp,
-  doc, setDoc, getDoc, getDocs, updateDoc, where
+  doc, setDoc, getDoc, getDocs, updateDoc, where, deleteDoc
 } from 'firebase/firestore';
 import {
   getAuth, GoogleAuthProvider, signInWithPopup,
@@ -158,6 +158,13 @@ export function subscribeToLiveDoc(docId, callback) {
     snap => { if (snap.exists()) callback(snap.data()); },
     err => console.warn(`live/${docId} snapshot error:`, err)
   );
+}
+
+export async function deleteUserFromFirestore(userId) {
+  if(!userId) return;
+  try {
+    await deleteDoc(doc(db, 'users', userId));
+  } catch(e) { console.warn('deleteUser error:', e); }
 }
 
 export default app;
