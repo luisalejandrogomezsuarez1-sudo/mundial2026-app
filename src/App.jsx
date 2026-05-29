@@ -58,21 +58,38 @@ const TRANSLATIONS={
     birthdate:'Fecha de nacimiento',nationality:'Nacionalidad',gender:'Género',
     have_account:'¿Ya tienes cuenta?',no_account:'¿No tienes cuenta?',
     google_login:'Continuar con Google',language:'Idioma',
+    login_subtitle:'Inicia sesión para vivir el Mundial',
+    register_subtitle:'Crea tu cuenta · Es gratis',
+    select_gender:'Selecciona tu género',
+    gender_male:'Masculino',gender_female:'Femenino',gender_other:'Otro',gender_prefer_not:'Prefiero no decir',
+    continue_with:'o continúa con',
+    sign_in:'INICIAR SESIÓN',sign_up:'CREAR CUENTA',
     // Home
     live_matches:'Partidos en Vivo',next_matches:'Próximos Partidos',
     see_all:'Ver todos →',countdown_title:'Cuenta Regresiva',
     days:'días',hours:'horas',minutes:'minutos',seconds:'segundos',
     wc_starts:'El Mundial comienza',live_soon:'Los marcadores en vivo aparecerán aquí',
+    live_now:'EN VIVO',updated_at:'Actualizado:',auto_refresh:'Auto-refresh 30s',
+    live_info:'Los goles, tarjetas y estadísticas se actualizarán en tiempo real.',
+    wc_date:'El Mundial FIFA 2026 comienza el 11 de junio de 2026',
+    wc_opening:'📍 Apertura: Estadio Azteca · Ciudad de México',
     // Matches
     matches_title:'PARTIDOS',all:'Todos',today:'Hoy',tomorrow:'Mañana',
     venues:'Sedes Oficiales',
+    calendar_title:'CALENDARIO',
+    no_matches_today:'No hay partidos hoy',no_matches_tomorrow:'No hay partidos mañana',
+    no_matches:'No hay partidos en este período',
+    today_live:'HOY · PARTIDOS EN CURSO',
     // Table
     table_title:'CLASIFICACIÓN',group_stage:'Fase de grupos',
     top_goals:'Más goles',best_defense:'Mejor defensa',leader:'Líder',
     bracket_title:'LLAVE ELIMINATORIA',auto_flags:'Las banderas aparecen conforme avanza el torneo',
     champion:'CAMPEÓN DEL MUNDO',
+    team_col:'Equipo',advancing:'ADV',top_2_qualify:'Top 2 clasifican a octavos',
+    round_32:'RONDA DE 32',round_16:'OCTAVOS',quarterfinals:'CUARTOS',semifinals:'SEMIFINALES',
     // Goals
     goals_title:'GOLEADORES',golden_boot:'Candidatos a la Bota de Oro del Mundial 2026',
+    fourth_onwards:'4° EN ADELANTE',
     // Bets
     bets_title:'MIS PRONÓSTICOS',long_term:'Partidos Mundial',
     per_match:'Por Partido',specials:'Especiales',stats:'Estadísticas',
@@ -81,17 +98,37 @@ const TRANSLATIONS={
     pay_card:'Tarjeta',pay_oxxo:'OXXO',pay_transfer:'Transferencia',
     pay_btn:'Pagar $20 MXN',payment_success:'¡PAGO EXITOSO!',
     coins_added:'monedas añadidas a tu cuenta',
+    world_champion_q:'¿Qué selección levantará la Copa?',
+    top_scorer_q:'Máximo goleador del torneo',
+    best_player_q:'Mejor jugador del Mundial',
+    group_winners:'GANADORES DE GRUPO',
+    draw:'Empate',goals_label:'GOLES',over:'Más +2.5',under:'Menos -2.5',
+    btts:'BTTS',both_score:'✓ Ambos anotan',not_both_score:'✗ No ambos',
+    double_chance:'DOBLE OPORT.',exact_score:'MARCADOR EXACTO',
+    first_scorer:'PRIMER GOLEADOR',handicap:'HÁNDICAP',
+    save_prediction:'GUARDAR PRONÓSTICO',prediction_saved:'PRONÓSTICO GUARDADO',
+    coins_enough:'Te alcanzan las monedas para todos tus pronósticos',
+    insufficient_balance:'Saldo insuficiente · Compra otro paquete',
+    cancel:'Cancelar',change:'Cambiar',
+    predictions_ready:'PRONÓSTICO LISTO PARA GUARDAR',predictions_incomplete:'COMPLETA TUS PRONÓSTICOS',
+    best_scorers:'MEJORES GOLEADORES DEL MUNDIAL',
     // Groups
     groups_title:'MIS GRUPOS',create_group:'Crear Grupo',join_group:'Unirse',
     join_code:'Código del grupo',group_name:'Nombre del grupo',
     ranking:'Ranking',predictions:'Pronósticos',members:'Miembros',
     report:'Reporte',chat:'Chat',lock:'Bloquear',
     group_code:'Código',copy:'Copiar',share_group:'Compartir grupo',
+    invite_friends:'Invita a tus amigos',copied:'¡Copiado!',
+    no_members:'Sin miembros aún',you:'TÚ',points:'PUNTOS',
+    delete_group:'ELIMINAR GRUPO',delete:'Eliminar',
+    locked_state:'🔒 Bloqueado',open_state:'⚡ Abierto',view_group:'Ver →',
+    write_message:'Escribe un mensaje...',
     // Profile
     profile_title:'MI PERFIL',share_app:'Compartir la App',
     admin_panel:'PANEL ADMIN',registered:'Registrados',with_package:'Con paquete',
     gift_coins:'Monedas regalo',no_package:'Sin paquete',
-    income:'Ingresos',
+    income:'Ingresos',share_link:'Compartir enlace',
+    active_session:'Sesión activa',my_account:'MI CUENTA',
     // Common
     loading:'Cargando...', error:'Error', retry:'Reintentar',
     tbd:'Por definir',active:'Activo',
@@ -104,17 +141,34 @@ const TRANSLATIONS={
     birthdate:'Date of birth',nationality:'Nationality',gender:'Gender',
     have_account:'Already have an account?',no_account:"Don't have an account?",
     google_login:'Continue with Google',language:'Language',
+    login_subtitle:'Sign in to experience the World Cup',
+    register_subtitle:'Create your account · It\'s free',
+    select_gender:'Select gender',
+    gender_male:'Male',gender_female:'Female',gender_other:'Other',gender_prefer_not:'Prefer not to say',
+    continue_with:'or continue with',
+    sign_in:'SIGN IN',sign_up:'CREATE ACCOUNT',
     live_matches:'Live Matches',next_matches:'Upcoming Matches',
     see_all:'See all →',countdown_title:'Countdown',
     days:'days',hours:'hours',minutes:'minutes',seconds:'seconds',
     wc_starts:'The World Cup starts',live_soon:'Live scores will appear here',
+    live_now:'LIVE',updated_at:'Updated:',auto_refresh:'Auto-refresh 30s',
+    live_info:'Goals, cards and stats will update in real time.',
+    wc_date:'FIFA World Cup 2026 begins June 11, 2026',
+    wc_opening:'📍 Opening: Estadio Azteca · Mexico City',
     matches_title:'MATCHES',all:'All',today:'Today',tomorrow:'Tomorrow',
     venues:'Official Venues',
+    calendar_title:'CALENDAR',
+    no_matches_today:'No matches today',no_matches_tomorrow:'No matches tomorrow',
+    no_matches:'No matches in this period',
+    today_live:'TODAY · LIVE MATCHES',
     table_title:'STANDINGS',group_stage:'Group Stage',
     top_goals:'Top scorer',best_defense:'Best defense',leader:'Leader',
     bracket_title:'KNOCKOUT BRACKET',auto_flags:'Flags update automatically as teams advance',
     champion:'WORLD CHAMPION',
+    team_col:'Team',advancing:'ADV',top_2_qualify:'Top 2 qualify to round of 16',
+    round_32:'ROUND OF 32',round_16:'ROUND OF 16',quarterfinals:'QUARTERFINALS',semifinals:'SEMIFINALS',
     goals_title:'SCORERS',golden_boot:'Golden Boot Candidates',
+    fourth_onwards:'4th ONWARDS',
     bets_title:'MY PREDICTIONS',long_term:'World Cup Matches',
     per_match:'Per Match',specials:'Specials',stats:'Statistics',
     world_champion:'World Champion',golden_ball:'Golden Ball',
@@ -122,14 +176,34 @@ const TRANSLATIONS={
     pay_card:'Card',pay_oxxo:'OXXO',pay_transfer:'Transfer',
     pay_btn:'Pay $20 MXN',payment_success:'PAYMENT SUCCESSFUL!',
     coins_added:'coins added to your account',
+    world_champion_q:'Which team will lift the Cup?',
+    top_scorer_q:'Top scorer of the tournament',
+    best_player_q:'Best player of the World Cup',
+    group_winners:'GROUP WINNERS',
+    draw:'Draw',goals_label:'GOALS',over:'Over +2.5',under:'Under -2.5',
+    btts:'BTTS',both_score:'✓ Both score',not_both_score:'✗ Not both',
+    double_chance:'DOUBLE CHANCE',exact_score:'EXACT SCORE',
+    first_scorer:'FIRST SCORER',handicap:'HANDICAP',
+    save_prediction:'SAVE PREDICTION',prediction_saved:'PREDICTION SAVED',
+    coins_enough:'You have enough coins for all your predictions',
+    insufficient_balance:'Insufficient balance · Buy another package',
+    cancel:'Cancel',change:'Change',
+    predictions_ready:'PREDICTION READY TO SAVE',predictions_incomplete:'COMPLETE YOUR PREDICTIONS',
+    best_scorers:'BEST WORLD CUP SCORERS',
     groups_title:'MY GROUPS',create_group:'Create Group',join_group:'Join',
     join_code:'Group code',group_name:'Group name',
     ranking:'Ranking',predictions:'Predictions',members:'Members',
     report:'Report',chat:'Chat',lock:'Lock',
     group_code:'Code',copy:'Copy',share_group:'Share group',
+    invite_friends:'Invite your friends',copied:'Copied!',
+    no_members:'No members yet',you:'YOU',points:'POINTS',
+    delete_group:'DELETE GROUP',delete:'Delete',
+    locked_state:'🔒 Locked',open_state:'⚡ Open',view_group:'View →',
+    write_message:'Write a message...',
     profile_title:'MY PROFILE',share_app:'Share the App',
     admin_panel:'ADMIN PANEL',registered:'Registered',with_package:'With package',
-    gift_coins:'Gift coins',no_package:'No package',income:'Income',
+    gift_coins:'Gift coins',no_package:'No package',income:'Income',share_link:'Share link',
+    active_session:'Active session',my_account:'MY ACCOUNT',
     loading:'Loading...',error:'Error',retry:'Retry',
     tbd:'TBD',active:'Active',
   },
@@ -141,17 +215,34 @@ const TRANSLATIONS={
     birthdate:'Data de nascimento',nationality:'Nacionalidade',gender:'Gênero',
     have_account:'Já tem conta?',no_account:'Não tem conta?',
     google_login:'Continuar com Google',language:'Idioma',
+    login_subtitle:'Entre para viver a Copa do Mundo',
+    register_subtitle:'Crie sua conta · É grátis',
+    select_gender:'Selecione o gênero',
+    gender_male:'Masculino',gender_female:'Feminino',gender_other:'Outro',gender_prefer_not:'Prefiro não dizer',
+    continue_with:'ou continue com',
+    sign_in:'ENTRAR',sign_up:'CRIAR CONTA',
     live_matches:'Jogos ao Vivo',next_matches:'Próximos Jogos',
     see_all:'Ver todos →',countdown_title:'Contagem Regressiva',
     days:'dias',hours:'horas',minutes:'minutos',seconds:'segundos',
     wc_starts:'A Copa começa',live_soon:'Os placares ao vivo aparecerão aqui',
+    live_now:'AO VIVO',updated_at:'Atualizado:',auto_refresh:'Atualização 30s',
+    live_info:'Gols, cartões e estatísticas serão atualizados em tempo real.',
+    wc_date:'A Copa do Mundo FIFA 2026 começa em 11 de junho de 2026',
+    wc_opening:'📍 Abertura: Estadio Azteca · Cidade do México',
     matches_title:'JOGOS',all:'Todos',today:'Hoje',tomorrow:'Amanhã',
     venues:'Estádios Oficiais',
+    calendar_title:'CALENDÁRIO',
+    no_matches_today:'Sem jogos hoje',no_matches_tomorrow:'Sem jogos amanhã',
+    no_matches:'Sem jogos neste período',
+    today_live:'HOJE · JOGOS AO VIVO',
     table_title:'CLASSIFICAÇÃO',group_stage:'Fase de grupos',
     top_goals:'Mais gols',best_defense:'Melhor defesa',leader:'Líder',
     bracket_title:'CHAVES ELIMINATÓRIAS',auto_flags:'As bandeiras aparecem conforme o torneio avança',
     champion:'CAMPEÃO MUNDIAL',
-    goals_title:'ARTILHEIROS',golden_boot:'Candidatos à Chuteira de Ouro',
+    team_col:'Equipe',advancing:'CLF',top_2_qualify:'Top 2 classificam para oitavas',
+    round_32:'RODADA DE 32',round_16:'OITAVAS',quarterfinals:'QUARTAS',semifinals:'SEMIFINAIS',
+    goals_title:'ARTILHEIROS',golden_boot:'Candidatos à Chuteira de Ouro da Copa 2026',
+    fourth_onwards:'4° EM DIANTE',
     bets_title:'MEUS PALPITES',long_term:'Jogos da Copa',
     per_match:'Por Jogo',specials:'Especiais',stats:'Estatísticas',
     world_champion:'Campeão Mundial',golden_ball:'Bola de Ouro',
@@ -159,14 +250,34 @@ const TRANSLATIONS={
     pay_card:'Cartão',pay_oxxo:'OXXO',pay_transfer:'Transferência',
     pay_btn:'Pagar $20 MXN',payment_success:'PAGAMENTO REALIZADO!',
     coins_added:'moedas adicionadas à sua conta',
+    world_champion_q:'Qual seleção vai levantar a Taça?',
+    top_scorer_q:'Artilheiro máximo do torneio',
+    best_player_q:'Melhor jogador da Copa',
+    group_winners:'CAMPEÕES DE GRUPO',
+    draw:'Empate',goals_label:'GOLS',over:'Mais +2.5',under:'Menos -2.5',
+    btts:'BTTS',both_score:'✓ Ambos marcam',not_both_score:'✗ Não ambos',
+    double_chance:'DUPLA CHANCE',exact_score:'PLACAR EXATO',
+    first_scorer:'PRIMEIRO GOLEADOR',handicap:'HANDICAP',
+    save_prediction:'SALVAR PALPITE',prediction_saved:'PALPITE SALVO',
+    coins_enough:'Você tem moedas suficientes para todos os palpites',
+    insufficient_balance:'Saldo insuficiente · Compre outro pacote',
+    cancel:'Cancelar',change:'Alterar',
+    predictions_ready:'PALPITE PRONTO PARA SALVAR',predictions_incomplete:'COMPLETE SEUS PALPITES',
+    best_scorers:'MELHORES ARTILHEIROS DA COPA',
     groups_title:'MEUS GRUPOS',create_group:'Criar Grupo',join_group:'Entrar',
     join_code:'Código do grupo',group_name:'Nome do grupo',
     ranking:'Classificação',predictions:'Palpites',members:'Membros',
     report:'Relatório',chat:'Chat',lock:'Bloquear',
     group_code:'Código',copy:'Copiar',share_group:'Compartilhar grupo',
+    invite_friends:'Convide seus amigos',copied:'Copiado!',
+    no_members:'Sem membros ainda',you:'VOCÊ',points:'PONTOS',
+    delete_group:'EXCLUIR GRUPO',delete:'Excluir',
+    locked_state:'🔒 Bloqueado',open_state:'⚡ Aberto',view_group:'Ver →',
+    write_message:'Escreva uma mensagem...',
     profile_title:'MEU PERFIL',share_app:'Compartilhar o App',
     admin_panel:'PAINEL ADMIN',registered:'Cadastrados',with_package:'Com pacote',
-    gift_coins:'Moedas presente',no_package:'Sem pacote',income:'Receita',
+    gift_coins:'Moedas presente',no_package:'Sem pacote',income:'Receita',share_link:'Compartilhar link',
+    active_session:'Sessão ativa',my_account:'MINHA CONTA',
     loading:'Carregando...',error:'Erro',retry:'Tentar novamente',
     tbd:'A definir',active:'Ativo',
   },
@@ -178,17 +289,34 @@ const TRANSLATIONS={
     birthdate:'出生日期',nationality:'国籍',gender:'性别',
     have_account:'已有账号？',no_account:'没有账号？',
     google_login:'使用Google继续',language:'语言',
+    login_subtitle:'登录体验世界杯',
+    register_subtitle:'创建账号 · 免费',
+    select_gender:'选择性别',
+    gender_male:'男',gender_female:'女',gender_other:'其他',gender_prefer_not:'不愿透露',
+    continue_with:'或使用以下方式继续',
+    sign_in:'登录',sign_up:'创建账号',
     live_matches:'直播赛事',next_matches:'即将开始',
     see_all:'查看全部 →',countdown_title:'倒计时',
     days:'天',hours:'小时',minutes:'分钟',seconds:'秒',
     wc_starts:'世界杯开幕',live_soon:'实时比分将显示在这里',
+    live_now:'直播',updated_at:'更新于:',auto_refresh:'30秒自动刷新',
+    live_info:'进球、黄牌和统计数据将实时更新。',
+    wc_date:'2026年FIFA世界杯将于2026年6月11日开幕',
+    wc_opening:'📍 开幕：阿兹特克球场 · 墨西哥城',
     matches_title:'赛程',all:'全部',today:'今天',tomorrow:'明天',
     venues:'官方球场',
+    calendar_title:'赛程表',
+    no_matches_today:'今天没有比赛',no_matches_tomorrow:'明天没有比赛',
+    no_matches:'此期间没有比赛',
+    today_live:'今天 · 进行中',
     table_title:'积分榜',group_stage:'小组赛阶段',
     top_goals:'进球最多',best_defense:'最佳防守',leader:'榜首',
     bracket_title:'淘汰赛对阵',auto_flags:'随着赛事推进自动显示国旗',
     champion:'世界冠军',
-    goals_title:'射手榜',golden_boot:'金靴奖候选人',
+    team_col:'球队',advancing:'晋级',top_2_qualify:'前2名晋级16强',
+    round_32:'32强',round_16:'16强',quarterfinals:'四分之一决赛',semifinals:'半决赛',
+    goals_title:'射手榜',golden_boot:'2026世界杯金靴奖候选人',
+    fourth_onwards:'第4名及以后',
     bets_title:'我的预测',long_term:'世界杯赛事',
     per_match:'按场次',specials:'特别预测',stats:'统计',
     world_champion:'世界冠军',golden_ball:'金球奖',
@@ -196,14 +324,34 @@ const TRANSLATIONS={
     pay_card:'银行卡',pay_oxxo:'OXXO',pay_transfer:'转账',
     pay_btn:'支付 $20 MXN',payment_success:'支付成功！',
     coins_added:'金币已添加到您的账户',
+    world_champion_q:'哪支球队将举起奖杯？',
+    top_scorer_q:'本届赛事最佳射手',
+    best_player_q:'世界杯最佳球员',
+    group_winners:'小组冠军',
+    draw:'平局',goals_label:'进球',over:'大 +2.5',under:'小 -2.5',
+    btts:'双方进球',both_score:'✓ 双方均进',not_both_score:'✗ 非双方',
+    double_chance:'双重机会',exact_score:'精确比分',
+    first_scorer:'首个进球者',handicap:'让球',
+    save_prediction:'保存预测',prediction_saved:'预测已保存',
+    coins_enough:'您的金币足以支付所有预测',
+    insufficient_balance:'余额不足 · 购买另一个套餐',
+    cancel:'取消',change:'更改',
+    predictions_ready:'预测准备好保存',predictions_incomplete:'完成您的预测',
+    best_scorers:'世界杯最佳射手',
     groups_title:'我的小组',create_group:'创建小组',join_group:'加入',
     join_code:'小组代码',group_name:'小组名称',
     ranking:'排名',predictions:'预测',members:'成员',
     report:'报告',chat:'聊天',lock:'锁定',
     group_code:'代码',copy:'复制',share_group:'分享小组',
+    invite_friends:'邀请你的朋友',copied:'已复制！',
+    no_members:'暂无成员',you:'你',points:'积分',
+    delete_group:'删除小组',delete:'删除',
+    locked_state:'🔒 已锁定',open_state:'⚡ 开放',view_group:'查看 →',
+    write_message:'输入消息...',
     profile_title:'我的档案',share_app:'分享应用',
     admin_panel:'管理面板',registered:'已注册',with_package:'有套餐',
-    gift_coins:'赠送金币',no_package:'无套餐',income:'收入',
+    gift_coins:'赠送金币',no_package:'无套餐',income:'收入',share_link:'分享链接',
+    active_session:'会话活跃',my_account:'我的账户',
     loading:'加载中...',error:'错误',retry:'重试',
     tbd:'待定',active:'活跃',
   },
@@ -215,17 +363,34 @@ const TRANSLATIONS={
     birthdate:'생년월일',nationality:'국적',gender:'성별',
     have_account:'계정이 있으신가요?',no_account:'계정이 없으신가요?',
     google_login:'Google로 계속하기',language:'언어',
+    login_subtitle:'월드컵을 함께 즐기려면 로그인하세요',
+    register_subtitle:'계정 만들기 · 무료',
+    select_gender:'성별 선택',
+    gender_male:'남성',gender_female:'여성',gender_other:'기타',gender_prefer_not:'말하고 싶지 않음',
+    continue_with:'또는 계속하기',
+    sign_in:'로그인',sign_up:'계정 만들기',
     live_matches:'실시간 경기',next_matches:'예정 경기',
     see_all:'전체 보기 →',countdown_title:'카운트다운',
     days:'일',hours:'시간',minutes:'분',seconds:'초',
     wc_starts:'월드컵 시작',live_soon:'실시간 점수가 여기에 표시됩니다',
+    live_now:'생중계',updated_at:'업데이트:',auto_refresh:'30초 자동 새로고침',
+    live_info:'골, 카드, 통계가 실시간으로 업데이트됩니다.',
+    wc_date:'2026 FIFA 월드컵은 2026년 6월 11일 시작됩니다',
+    wc_opening:'📍 개막: 에스타디오 아스테카 · 멕시코시티',
     matches_title:'경기',all:'전체',today:'오늘',tomorrow:'내일',
     venues:'공식 경기장',
+    calendar_title:'일정',
+    no_matches_today:'오늘 경기 없음',no_matches_tomorrow:'내일 경기 없음',
+    no_matches:'이 기간에 경기 없음',
+    today_live:'오늘 · 진행 중',
     table_title:'순위표',group_stage:'조별 리그',
     top_goals:'최다 득점',best_defense:'최고 수비',leader:'선두',
     bracket_title:'토너먼트 대진표',auto_flags:'경기 진행에 따라 국기가 자동으로 표시됩니다',
     champion:'월드컵 우승팀',
-    goals_title:'득점왕',golden_boot:'골든 부트 후보',
+    team_col:'팀',advancing:'진출',top_2_qualify:'상위 2팀이 16강 진출',
+    round_32:'32강',round_16:'16강',quarterfinals:'8강',semifinals:'4강',
+    goals_title:'득점왕',golden_boot:'2026 월드컵 골든 부트 후보',
+    fourth_onwards:'4위 이후',
     bets_title:'내 예측',long_term:'월드컵 경기',
     per_match:'경기별',specials:'특별 예측',stats:'통계',
     world_champion:'월드 챔피언',golden_ball:'골든 볼',
@@ -233,14 +398,34 @@ const TRANSLATIONS={
     pay_card:'카드',pay_oxxo:'OXXO',pay_transfer:'이체',
     pay_btn:'$20 MXN 결제',payment_success:'결제 완료!',
     coins_added:'코인이 계정에 추가되었습니다',
+    world_champion_q:'어떤 팀이 우승컵을 들어올릴까요?',
+    top_scorer_q:'대회 최다 득점자',
+    best_player_q:'월드컵 최우수 선수',
+    group_winners:'조 우승팀',
+    draw:'무승부',goals_label:'골',over:'오버 +2.5',under:'언더 -2.5',
+    btts:'양팀 득점',both_score:'✓ 양팀 득점',not_both_score:'✗ 양팀 미득점',
+    double_chance:'더블 찬스',exact_score:'정확한 스코어',
+    first_scorer:'첫 번째 득점자',handicap:'핸디캡',
+    save_prediction:'예측 저장',prediction_saved:'예측 저장됨',
+    coins_enough:'모든 예측에 충분한 코인이 있습니다',
+    insufficient_balance:'잔액 부족 · 패키지 추가 구매',
+    cancel:'취소',change:'변경',
+    predictions_ready:'저장 준비 완료',predictions_incomplete:'예측을 완료하세요',
+    best_scorers:'월드컵 최다 득점자',
     groups_title:'내 그룹',create_group:'그룹 만들기',join_group:'참가',
     join_code:'그룹 코드',group_name:'그룹 이름',
     ranking:'순위',predictions:'예측',members:'멤버',
     report:'보고서',chat:'채팅',lock:'잠금',
     group_code:'코드',copy:'복사',share_group:'그룹 공유',
+    invite_friends:'친구를 초대하세요',copied:'복사됨!',
+    no_members:'아직 멤버 없음',you:'나',points:'점수',
+    delete_group:'그룹 삭제',delete:'삭제',
+    locked_state:'🔒 잠김',open_state:'⚡ 열림',view_group:'보기 →',
+    write_message:'메시지를 입력하세요...',
     profile_title:'내 프로필',share_app:'앱 공유',
     admin_panel:'관리자 패널',registered:'등록됨',with_package:'패키지 보유',
-    gift_coins:'코인 선물',no_package:'패키지 없음',income:'수입',
+    gift_coins:'코인 선물',no_package:'패키지 없음',income:'수입',share_link:'링크 공유',
+    active_session:'세션 활성',my_account:'내 계정',
     loading:'로딩 중...',error:'오류',retry:'다시 시도',
     tbd:'미정',active:'활성',
   },
@@ -252,17 +437,34 @@ const TRANSLATIONS={
     birthdate:'Date de naissance',nationality:'Nationalité',gender:'Genre',
     have_account:'Déjà un compte?',no_account:'Pas de compte?',
     google_login:'Continuer avec Google',language:'Langue',
+    login_subtitle:'Connectez-vous pour vivre la Coupe du Monde',
+    register_subtitle:'Créez votre compte · Gratuit',
+    select_gender:'Sélectionnez votre genre',
+    gender_male:'Masculin',gender_female:'Féminin',gender_other:'Autre',gender_prefer_not:'Préfère ne pas dire',
+    continue_with:'ou continuer avec',
+    sign_in:'SE CONNECTER',sign_up:'CRÉER UN COMPTE',
     live_matches:'Matchs en Direct',next_matches:'Prochains Matchs',
     see_all:'Voir tout →',countdown_title:'Compte à Rebours',
     days:'jours',hours:'heures',minutes:'minutes',seconds:'secondes',
     wc_starts:'La Coupe du Monde commence',live_soon:'Les scores en direct apparaîtront ici',
+    live_now:'EN DIRECT',updated_at:'Mis à jour:',auto_refresh:'Actualisation 30s',
+    live_info:'Les buts, cartons et statistiques seront mis à jour en temps réel.',
+    wc_date:'La Coupe du Monde FIFA 2026 commence le 11 juin 2026',
+    wc_opening:'📍 Ouverture: Estadio Azteca · Mexico',
     matches_title:'MATCHS',all:'Tous',today:"Aujourd'hui",tomorrow:'Demain',
     venues:'Stades Officiels',
+    calendar_title:'CALENDRIER',
+    no_matches_today:"Pas de matchs aujourd'hui",no_matches_tomorrow:'Pas de matchs demain',
+    no_matches:'Pas de matchs sur cette période',
+    today_live:"AUJOURD'HUI · MATCHS EN COURS",
     table_title:'CLASSEMENT',group_stage:'Phase de groupes',
     top_goals:'Meilleur buteur',best_defense:'Meilleure défense',leader:'Leader',
     bracket_title:'TABLEAU ÉLIMINATOIRE',auto_flags:'Les drapeaux se mettent à jour automatiquement',
     champion:'CHAMPION DU MONDE',
-    goals_title:'BUTEURS',golden_boot:"Candidats au Soulier d'Or",
+    team_col:'Équipe',advancing:'QUAL',top_2_qualify:'Les 2 premiers se qualifient',
+    round_32:'TOUR DE 32',round_16:'HUITIÈMES',quarterfinals:'QUARTS',semifinals:'DEMIS',
+    goals_title:'BUTEURS',golden_boot:"Candidats au Soulier d'Or de la Coupe 2026",
+    fourth_onwards:'4e ET PLUS',
     bets_title:'MES PRONOSTICS',long_term:'Matchs Coupe du Monde',
     per_match:'Par Match',specials:'Spéciaux',stats:'Statistiques',
     world_champion:'Champion du Monde',golden_ball:"Ballon d'Or",
@@ -270,14 +472,34 @@ const TRANSLATIONS={
     pay_card:'Carte',pay_oxxo:'OXXO',pay_transfer:'Virement',
     pay_btn:'Payer $20 MXN',payment_success:'PAIEMENT RÉUSSI!',
     coins_added:'pièces ajoutées à votre compte',
+    world_champion_q:'Quelle équipe soulèvera le trophée?',
+    top_scorer_q:'Meilleur buteur du tournoi',
+    best_player_q:'Meilleur joueur de la Coupe du Monde',
+    group_winners:'VAINQUEURS DE GROUPE',
+    draw:'Match nul',goals_label:'BUTS',over:'Plus +2.5',under:'Moins -2.5',
+    btts:'Les deux marquent',both_score:'✓ Les deux marquent',not_both_score:'✗ Pas les deux',
+    double_chance:'DOUBLE CHANCE',exact_score:'SCORE EXACT',
+    first_scorer:'PREMIER BUTEUR',handicap:'HANDICAP',
+    save_prediction:'ENREGISTRER LE PRONOSTIC',prediction_saved:'PRONOSTIC ENREGISTRÉ',
+    coins_enough:'Vous avez assez de pièces pour tous vos pronostics',
+    insufficient_balance:'Solde insuffisant · Achetez un autre pack',
+    cancel:'Annuler',change:'Modifier',
+    predictions_ready:'PRONOSTIC PRÊT À ENREGISTRER',predictions_incomplete:'COMPLÉTEZ VOS PRONOSTICS',
+    best_scorers:'MEILLEURS BUTEURS DE LA COUPE',
     groups_title:'MES GROUPES',create_group:'Créer un Groupe',join_group:'Rejoindre',
     join_code:'Code du groupe',group_name:'Nom du groupe',
     ranking:'Classement',predictions:'Pronostics',members:'Membres',
     report:'Rapport',chat:'Chat',lock:'Verrouiller',
     group_code:'Code',copy:'Copier',share_group:'Partager le groupe',
+    invite_friends:'Invitez vos amis',copied:'Copié!',
+    no_members:'Pas encore de membres',you:'MOI',points:'POINTS',
+    delete_group:'SUPPRIMER LE GROUPE',delete:'Supprimer',
+    locked_state:'🔒 Verrouillé',open_state:'⚡ Ouvert',view_group:'Voir →',
+    write_message:'Écrire un message...',
     profile_title:'MON PROFIL',share_app:"Partager l'App",
     admin_panel:'PANNEAU ADMIN',registered:'Inscrits',with_package:'Avec forfait',
-    gift_coins:'Pièces offertes',no_package:'Sans forfait',income:'Revenus',
+    gift_coins:'Pièces offertes',no_package:'Sans forfait',income:'Revenus',share_link:'Partager le lien',
+    active_session:'Session active',my_account:'MON COMPTE',
     loading:'Chargement...',error:'Erreur',retry:'Réessayer',
     tbd:'À déterminer',active:'Actif',
   },
@@ -1300,6 +1522,7 @@ function Auth({onLogin,onLangChange=()=>{}}){
     onLogin(gUser);
   };
 
+  const t=useLang();
   return(
     <div style={{height:'100%',overflowY:'auto',background:'linear-gradient(160deg,#0D1A2E 0%,#040C1E 100%)'}}>
       <div style={{padding:'40px 24px 18px',textAlign:'center'}}>
@@ -1309,7 +1532,7 @@ function Auth({onLogin,onLangChange=()=>{}}){
             border:'2px solid rgba(246,201,14,.3)'}}/>
         <div style={{fontFamily:'var(--ff)',fontSize:32,letterSpacing:2,color:'var(--gold)',marginTop:10,lineHeight:1}}>MUNDIAL 2026</div>
         <div style={{fontSize:13,color:'var(--muted)',marginTop:6}}>
-          {mode==='login'?'Inicia sesión para vivir el Mundial':'Crea tu cuenta · Es gratis'}
+          {mode==='login'?t.login_subtitle:t.register_subtitle}
         </div>
       </div>
 
@@ -1321,20 +1544,19 @@ function Auth({onLogin,onLangChange=()=>{}}){
           </div>}
 
         {mode==='reg'&&
-          <input className="inp" placeholder="Nombre completo" value={f.name} onChange={set('name')}/>}
-        <input className="inp" placeholder="Correo o usuario" type="text" value={f.email} onChange={set('email')}/>
-        <input className="inp" placeholder="Contraseña" type="password" value={f.pass} onChange={set('pass')}/>
+          <input className="inp" placeholder={t.name} value={f.name} onChange={set('name')}/>}
+        <input className="inp" placeholder={t.email} type="text" value={f.email} onChange={set('email')}/>
+        <input className="inp" placeholder={t.password} type="password" value={f.pass} onChange={set('pass')}/>
 
         {mode==='reg'&&<>
           <div>
-            <div style={{fontSize:11,color:'var(--muted)',marginBottom:5,paddingLeft:2}}>Fecha de nacimiento</div>
+            <div style={{fontSize:11,color:'var(--muted)',marginBottom:5,paddingLeft:2}}>{t.birthdate}</div>
             <input className="inp" type="date" value={f.bd} onChange={set('bd')}
               style={{colorScheme:'dark'}}/>
           </div>
-          <input className="inp" placeholder="Nacionalidad (ej. Mexicano/a)" value={f.nat}
+          <input className="inp" placeholder={t.nationality} value={f.nat}
             onChange={e=>{
               set('nat')(e);
-              // Auto-detect language from nationality
               const nat=e.target.value.trim();
               const suggestedLang=Object.keys(LANG_BY_NAT).find(k=>
                 nat.toLowerCase().includes(k.toLowerCase())
@@ -1345,11 +1567,10 @@ function Auth({onLogin,onLangChange=()=>{}}){
                 onLangChange(lk);
               }
             }}/>
-          {/* Language selector — appears in registration */}
           {mode==='reg'&&(
             <div>
               <div style={{fontSize:11,color:'var(--muted)',marginBottom:6,paddingLeft:2}}>
-                🌐 Idioma de la app / App language
+                🌐 {t.language}
               </div>
               <div style={{display:'flex',gap:6}}>
                 {Object.entries(LANG_NAMES).map(([lk,ln])=>(
@@ -1368,9 +1589,9 @@ function Auth({onLogin,onLangChange=()=>{}}){
             </div>
           )}
           <select className="inp" value={f.gen} onChange={set('gen')} style={{appearance:'none',WebkitAppearance:'none'}}>
-            <option value="">Selecciona tu género</option>
-            <option>Masculino</option><option>Femenino</option>
-            <option>Otro</option><option>Prefiero no decir</option>
+            <option value="">{t.select_gender}</option>
+            <option>{t.gender_male}</option><option>{t.gender_female}</option>
+            <option>{t.gender_other}</option><option>{t.gender_prefer_not}</option>
           </select>
         </>}
 
@@ -1379,12 +1600,12 @@ function Auth({onLogin,onLangChange=()=>{}}){
           {loading
             ? <span style={{display:'inline-block',width:18,height:18,border:'2.5px solid #000',borderTopColor:'transparent',borderRadius:'50%',animation:'spin .7s linear infinite'}}/>
             : null}
-          {mode==='login'?'INICIAR SESIÓN':'CREAR CUENTA'}
+          {mode==='login'?t.sign_in:t.sign_up}
         </button>
 
         <div style={{display:'flex',alignItems:'center',gap:12,margin:'2px 0'}}>
           <div style={{flex:1,height:1,background:'rgba(255,255,255,.08)'}}/>
-          <span style={{fontSize:12,color:'var(--muted)'}}>o continúa con</span>
+          <span style={{fontSize:12,color:'var(--muted)'}}>{t.continue_with}</span>
           <div style={{flex:1,height:1,background:'rgba(255,255,255,.08)'}}/>
         </div>
 
@@ -1395,23 +1616,18 @@ function Auth({onLogin,onLangChange=()=>{}}){
             <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
             <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
           </svg>
-          Continuar con Google
+          {t.google_login}
         </button>
 
         <div style={{textAlign:'center',marginTop:6}}>
           <span style={{fontSize:14,color:'var(--muted)'}}>
-            {mode==='login'?'¿Sin cuenta? ':'¿Ya tienes cuenta? '}
+            {mode==='login'?t.no_account+' ':t.have_account+' '}
           </span>
           <span style={{fontSize:14,color:'var(--gold)',fontWeight:600,cursor:'pointer'}}
             onClick={()=>{setMode(mode==='login'?'reg':'login');setErr('');}}>
-            {mode==='login'?'Regístrate gratis':'Inicia sesión'}
+            {mode==='login'?t.register:t.login}
           </span>
         </div>
-
-        {mode==='reg'&&
-          <div style={{fontSize:11,color:'var(--muted)',textAlign:'center',lineHeight:1.5,marginTop:4}}>
-            Al registrarte aceptas que tus datos se almacenen de forma segura conforme a las políticas de privacidad FIFA 2026. Puedes solicitar su eliminación en cualquier momento.
-          </div>}
       </div>
     </div>
   );
@@ -1854,18 +2070,18 @@ function HomeScreen({onMatch,onGoToCal}){
           borderRadius:14,border:'1px dashed rgba(246,201,14,.2)',padding:'14px 16px',
           textAlign:'center'}}>
           <div style={{fontSize:13,color:'var(--gold)',fontWeight:700,marginBottom:4}}>
-            ⏳ Los marcadores en vivo aparecerán aquí
+            ⏳ {t.live_soon}
           </div>
           <div style={{fontSize:11,color:'var(--dim)',lineHeight:1.7}}>
-            El Mundial comienza el <strong style={{color:'var(--txt)'}}>11 de junio de 2026</strong>.
-            <br/>Los goles, tarjetas y estadísticas se actualizarán en tiempo real.
+            {t.wc_starts} <strong style={{color:'var(--txt)'}}>11 Jun 2026</strong>.
+            <br/>{t.live_info}
           </div>
         </div>
       )}
 
       <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'6px 16px 8px'}}>
-        <div style={{fontFamily:'var(--ff)',fontSize:22,letterSpacing:1}}>Próximos Partidos</div>
-        <span onClick={onGoToCal} style={{fontSize:12,color:'var(--gold)',fontWeight:600,cursor:'pointer'}}>Ver todos →</span>
+        <div style={{fontFamily:'var(--ff)',fontSize:22,letterSpacing:1}}>{t.next_matches}</div>
+        <span onClick={onGoToCal} style={{fontSize:12,color:'var(--gold)',fontWeight:600,cursor:'pointer'}}>{t.see_all}</span>
       </div>
       {NEXT_MATCHES.slice(0,4).map(m=><NextCard key={m.id} m={m}/>)}
     </div>
@@ -1934,23 +2150,23 @@ function CalScreen(){
 
   // Date label helper
   const dateLabel=iso=>{
-    if(iso===todayISO)return'📅 HOY';
-    if(iso===tomorrowISO)return'📅 MAÑANA';
+    if(iso===todayISO)return'📅 '+t.today.toUpperCase();
+    if(iso===tomorrowISO)return'📅 '+t.tomorrow.toUpperCase();
     return'📅 '+new Date(iso+'T00:00:00').toLocaleDateString('es',{day:'numeric',month:'short'}).toUpperCase();
   };
 
   return(
     <div className="scr fin">
       <div style={{padding:'18px 16px 6px'}}>
-        <div style={{fontFamily:'var(--ff)',fontSize:28,letterSpacing:2}}>CALENDARIO</div>
+        <div style={{fontFamily:'var(--ff)',fontSize:28,letterSpacing:2}}>{t.calendar_title}</div>
         <div style={{fontSize:12,color:'var(--muted)'}}>
-          Mundial FIFA 2026 · {matches.length} partidos programados
+          Mundial 2026 · {matches.length} {t.matches_title.toLowerCase()}
         </div>
       </div>
 
-      {/* Filter tabs — solo Todos + fechas reales de partidos */}
+      {/* Filter tabs */}
       <div style={{display:'flex',gap:8,padding:'4px 16px 10px',overflowX:'auto'}}>
-        {[['todos','Todos'],
+        {[['todos',t.all],
           ...allDates.map(d=>[d,new Date(d+'T00:00:00').toLocaleDateString('es',{day:'numeric',month:'short'})])
         ].map(([k,l])=>(
           <button key={k} className={`tpill ${fil===k?'on':''}`} onClick={()=>setFil(k)}>{l}</button>
@@ -1962,8 +2178,8 @@ function CalScreen(){
         <div>
           <div style={{padding:'4px 16px 7px',fontSize:12,fontWeight:700,
             color:'var(--muted)',letterSpacing:.8,display:'flex',alignItems:'center',gap:6}}>
-            <span className="live" style={{fontSize:9}}><span className="ldot"/>EN VIVO</span>
-            HOY · PARTIDOS EN CURSO
+            <span className="live" style={{fontSize:9}}><span className="ldot"/>{t.live_now}</span>
+            {t.today_live}
           </div>
           {LIVE_MATCHES.map(m=>(
             <div key={m.id} style={{margin:'0 16px 10px',background:'var(--surf)',
@@ -1999,13 +2215,12 @@ function CalScreen(){
         <div style={{textAlign:'center',padding:'40px 24px',color:'var(--muted)'}}>
           <div style={{fontSize:36,marginBottom:10}}>📅</div>
           <div style={{fontSize:14,fontWeight:600,marginBottom:6}}>
-            {fil==='hoy'?'No hay partidos hoy':
-             fil==='manana'?'No hay partidos mañana':
-             'No hay partidos en este período'}
+            {fil==='hoy'?t.no_matches_today:
+             fil==='manana'?t.no_matches_tomorrow:
+             t.no_matches}
           </div>
           <div style={{fontSize:12,lineHeight:1.6}}>
-            El Mundial FIFA 2026 comienza el <strong style={{color:'var(--gold)'}}>11 de junio de 2026</strong><br/>
-            📍 Apertura: Estadio Azteca · Ciudad de México
+            {t.wc_date}<br/>{t.wc_opening}
           </div>
         </div>
       )}
@@ -2063,7 +2278,7 @@ function BracketSlot({slot,highlight=false}){
         <span style={{fontSize:11,fontWeight:slot.winner===slot.home?.name?.slice(0,8)?700:500,
           color:slot.winner===slot.home?.name?.slice(0,8)?'var(--gold)':'var(--txt)',
           whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis',maxWidth:90}}>
-          {slot?.home||<span style={{color:'var(--muted)',fontStyle:'italic'}}>Por definir</span>}
+          {slot?.home||<span style={{color:'var(--muted)',fontStyle:'italic'}}>{t.tbd}</span>}
         </span>
       </div>
       <div style={{height:1,background:'var(--br)',marginBottom:5}}/>
@@ -2074,7 +2289,7 @@ function BracketSlot({slot,highlight=false}){
         <span style={{fontSize:11,fontWeight:slot.winner===slot.away?.name?.slice(0,8)?700:500,
           color:slot.winner===slot.away?.name?.slice(0,8)?'var(--gold)':'var(--txt)',
           whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis',maxWidth:90}}>
-          {slot?.away||<span style={{color:'var(--muted)',fontStyle:'italic'}}>Por definir</span>}
+          {slot?.away||<span style={{color:'var(--muted)',fontStyle:'italic'}}>{t.tbd}</span>}
         </span>
       </div>
       {/* Date/venue */}
@@ -2127,10 +2342,10 @@ function BracketView({bracket}){
           </div>
         </div>
       )}
-      <BracketRound title="RONDA DE 32"  slots={bracket.r32||[]}  color='var(--acc)'   icon='⚔️'/>
-      <BracketRound title="OCTAVOS"      slots={bracket.r16||[]}  color='#4F8EF7'      icon='🎯'/>
-      <BracketRound title="CUARTOS"      slots={bracket.qf||[]}   color='var(--grn)'   icon='⚡'/>
-      <BracketRound title="SEMIFINALES"  slots={bracket.sf||[]}   color='#A855F7'      icon='⭐'/>
+      <BracketRound title={t.round_32}      slots={bracket.r32||[]}  color='var(--acc)'   icon='⚔️'/>
+      <BracketRound title={t.round_16}      slots={bracket.r16||[]}  color='#4F8EF7'      icon='🎯'/>
+      <BracketRound title={t.quarterfinals} slots={bracket.qf||[]}   color='var(--grn)'   icon='⚡'/>
+      <BracketRound title={t.semifinals}    slots={bracket.sf||[]}   color='#A855F7'      icon='⭐'/>
       <BracketRound title="3er LUGAR"    slots={[bracket.tercero||{}]} color='#CD7F32' icon='🥉'/>
       <BracketRound title="🏆 GRAN FINAL" slots={[bracket.final||{}]}  color='var(--gold)' icon=''/>
     </div>
@@ -2221,8 +2436,8 @@ function TablaScreen(){
   return(
     <div className="scr fin">
       <div style={{padding:'18px 16px 6px'}}>
-        <div style={{fontFamily:'var(--ff)',fontSize:28,letterSpacing:2}}>CLASIFICACIÓN</div>
-        <div style={{fontSize:12,color:'var(--muted)'}}>Fase de grupos · FIFA World Cup 2026</div>
+        <div style={{fontFamily:'var(--ff)',fontSize:28,letterSpacing:2}}>{t.table_title}</div>
+        <div style={{fontSize:12,color:'var(--muted)'}}>{t.group_stage} · Mundial 2026</div>
       </div>
       <div style={{display:'flex',gap:8,padding:'4px 16px 10px',overflowX:'auto'}}>
         {GROUPS.map((g,i)=>(
@@ -2233,7 +2448,7 @@ function TablaScreen(){
         <div style={{background:'var(--surf)',borderRadius:'14px 14px 0 0',border:'1px solid var(--br)',borderBottom:'none'}}>
           <div style={{display:'flex',padding:'9px 14px',fontSize:10,fontWeight:700,
             color:'var(--muted)',letterSpacing:.8,textTransform:'uppercase'}}>
-            <div style={{flex:1}}>Equipo</div>
+            <div style={{flex:1}}>{t.team_col}</div>
             {hdrs.map(h=><div key={h} style={{width:26,textAlign:'center'}}>{h}</div>)}
           </div>
           {sorted.map((t,i)=>{
@@ -2251,7 +2466,7 @@ function TablaScreen(){
                   <span style={{fontSize:17}}>{FLAGS[t.n]||'🏳️'}</span>
                   <span style={{fontSize:12,fontWeight:600}}>{t.n}</span>
                   {i<2&&<span style={{fontSize:9,background:'rgba(30,198,108,.15)',color:'var(--grn)',
-                    padding:'1px 5px',borderRadius:4,fontWeight:700,flexShrink:0}}>ADV</span>}
+                    padding:'1px 5px',borderRadius:4,fontWeight:700,flexShrink:0}}>{t.advancing}</span>}
                 </div>
                 {vals.map((v,vi)=>(
                   <div key={vi} style={{width:26,textAlign:'center',fontSize:12,
@@ -2267,9 +2482,9 @@ function TablaScreen(){
         <div style={{background:'var(--surf)',borderRadius:'0 0 14px 14px',border:'1px solid var(--br)',
           borderTop:'none',padding:'9px 14px'}}>
           <div style={{display:'flex',gap:16,fontSize:12,color:'var(--muted)',flexWrap:'wrap'}}>
-            <span><span style={{color:'var(--gold)'}}>■</span> 1° lugar</span>
-            <span><span style={{color:'var(--grn)'}}>■</span> 2° avanza</span>
-            <span>Top 2 clasifican a octavos</span>
+            <span><span style={{color:'var(--gold)'}}>■</span> 1° {t.leader}</span>
+            <span><span style={{color:'var(--grn)'}}>■</span> 2° {t.advancing}</span>
+            <span>{t.top_2_qualify}</span>
           </div>
         </div>
       </div>
@@ -2282,9 +2497,9 @@ function TablaScreen(){
         return(
           <div style={{display:'flex',gap:10,padding:'14px 16px',overflowX:'auto'}}>
             {[
-              {l:'Más goles',    v:`${FLAGS[topScor.n]||'🏴'} ${topScor.n} · ${topScor.gf}`, ic:'⚽'},
-              {l:'Mejor defensa',v:`${FLAGS[bestDef.n]||'🏴'} ${bestDef.n} · ${bestDef.gc} GC`,ic:'🛡️'},
-              {l:'Líder '+grp.name, v:`${FLAGS[leader.n]||'🏴'} ${leader.n} · ${leader.pts} pts`,ic:'🥇'},
+              {l:t.top_goals,    v:`${FLAGS[topScor.n]||'🏴'} ${topScor.n} · ${topScor.gf}`, ic:'⚽'},
+              {l:t.best_defense, v:`${FLAGS[bestDef.n]||'🏴'} ${bestDef.n} · ${bestDef.gc} GC`,ic:'🛡️'},
+              {l:t.leader+' '+grp.name, v:`${FLAGS[leader.n]||'🏴'} ${leader.n} · ${leader.pts} pts`,ic:'🥇'},
             ].map(s=>(
               <div key={s.l} style={{flexShrink:0,background:'var(--surf)',borderRadius:12,
                 padding:'10px 14px',border:'1px solid var(--br)',minWidth:130}}>
@@ -2461,7 +2676,7 @@ function GolesScreen(){
       {rest.length>0&&(
         <div style={{padding:'0 12px 24px'}}>
           <div style={{fontSize:11,color:'var(--muted)',fontWeight:700,letterSpacing:.8,
-            marginBottom:10,paddingLeft:2}}>4° EN ADELANTE</div>
+            marginBottom:10,paddingLeft:2}}>{t.fourth_onwards}</div>
           <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:10}}>
             {rest.map((p,i)=>(
               <JerseyCard key={p.n} p={p} rank={i+4} size="sm"/>
@@ -2592,7 +2807,7 @@ function PerfilScreen({user,onLogout,lang='es'}){
           <div style={{display:'inline-flex',alignItems:'center',gap:6,marginTop:10,
             background:'rgba(30,198,108,.1)',borderRadius:20,padding:'4px 14px'}}>
             <span style={{width:7,height:7,borderRadius:'50%',background:'var(--grn)',display:'inline-block'}}/>
-            <span style={{fontSize:12,color:'var(--grn)',fontWeight:600}}>Sesión activa</span>
+            <span style={{fontSize:12,color:'var(--grn)',fontWeight:600}}>{t.active_session}</span>
           </div>
         )}
       </div>
@@ -2871,7 +3086,7 @@ function PerfilScreen({user,onLogout,lang='es'}){
           </div>
         )}
 
-        <div style={{fontFamily:'var(--ff)',fontSize:16,letterSpacing:1,color:'var(--muted)',marginBottom:10}}>MI CUENTA</div>
+        <div style={{fontFamily:'var(--ff)',fontSize:16,letterSpacing:1,color:'var(--muted)',marginBottom:10}}>{t.my_account}</div>
         {[['👤','Nombre',user.name||'—'],['📧','Correo electrónico',user.email],
           ['🎂','Fecha de nacimiento',user.bd||'—'],['🌎','Nacionalidad',user.nat||'—'],['⚧','Género',user.gen||'—']].map(([ic,lb,vl])=>(
           <div key={lb} style={{display:'flex',alignItems:'center',gap:12,padding:'11px 14px',
@@ -2933,7 +3148,7 @@ function PerfilScreen({user,onLogout,lang='es'}){
               cursor:'pointer',transition:'opacity .15s'}}
               onMouseEnter={e=>e.currentTarget.style.opacity='.85'}
               onMouseLeave={e=>e.currentTarget.style.opacity='1'}>
-              🔗 Compartir enlace
+              🔗 {t.share_link}
             </button>
             <button onClick={shareWhatsApp} style={{flex:1,background:'#25D366',
               border:'none',borderRadius:10,padding:'11px 0',
@@ -2986,7 +3201,7 @@ function PerfilScreen({user,onLogout,lang='es'}){
           cursor:'pointer',fontFamily:'var(--fb)',transition:'all .2s'}}
           onMouseEnter={e=>e.currentTarget.style.background='rgba(229,62,62,.18)'}
           onMouseLeave={e=>e.currentTarget.style.background='rgba(229,62,62,.1)'}>
-          🚪 Cerrar sesión
+          🚪 {t.logout}
         </button>
       </div>
     </div>
@@ -3270,9 +3485,9 @@ function GruposScreen({user,userBets,credito,onPagar}){
               </div>
               <div style={{textAlign:'right',flexShrink:0,marginLeft:8}}>
                 {locked
-                  ?<div style={{fontSize:12,color:'var(--grn)',fontWeight:700}}>🔒 Bloqueado</div>
-                  :<div style={{fontSize:12,color:'var(--gold)',fontWeight:700}}>⚡ Abierto</div>}
-                <div style={{fontSize:11,color:'var(--muted)',marginTop:2}}>Ver →</div>
+                  ?<div style={{fontSize:12,color:'var(--grn)',fontWeight:700}}>{t.locked_state}</div>
+                  :<div style={{fontSize:12,color:'var(--gold)',fontWeight:700}}>{t.open_state}</div>}
+                <div style={{fontSize:11,color:'var(--muted)',marginTop:2}}>{t.view_group}</div>
               </div>
             </div>
             <div style={{padding:'8px 14px',borderTop:'1px solid var(--br)',
@@ -3446,7 +3661,7 @@ function GruposScreen({user,userBets,credito,onPagar}){
                   maxWidth:320,width:'100%',border:'1px solid rgba(229,62,62,.3)'}}>
                   <div style={{fontSize:32,textAlign:'center',marginBottom:12}}>🗑️</div>
                   <div style={{fontFamily:'var(--ff)',fontSize:18,textAlign:'center',
-                    marginBottom:8,letterSpacing:1}}>ELIMINAR GRUPO</div>
+                    marginBottom:8,letterSpacing:1}}>{t.delete_group}</div>
                   <div style={{fontSize:13,color:'var(--muted)',textAlign:'center',
                     lineHeight:1.6,marginBottom:20}}>
                     ¿Estás seguro que quieres eliminar <strong style={{color:'var(--txt)'}}>"{selGroup.name}"</strong>?
@@ -3487,7 +3702,7 @@ function GruposScreen({user,userBets,credito,onPagar}){
               {allM.length===0&&(
                 <div style={{textAlign:'center',padding:'40px 24px',color:'var(--muted)'}}>
                   <div style={{fontSize:36,marginBottom:10}}>👥</div>
-                  <div style={{fontSize:13,fontWeight:600,marginBottom:6}}>Sin miembros aún</div>
+                  <div style={{fontSize:13,fontWeight:600,marginBottom:6}}>{t.no_members}</div>
                   <div style={{fontSize:12}}>Comparte el código <strong style={{color:'var(--gold)'}}>{selGroup.code}</strong></div>
                 </div>
               )}
@@ -3516,7 +3731,7 @@ function GruposScreen({user,userBets,credito,onPagar}){
                     <div style={{fontWeight:700,fontSize:14,display:'flex',alignItems:'center',gap:6}}>
                       {m.name}
                       {m.id==='user'&&<span style={{fontSize:9,background:'rgba(246,201,14,.15)',
-                        color:'var(--gold)',padding:'1px 6px',borderRadius:9,fontWeight:700}}>TÚ</span>}
+                        color:'var(--gold)',padding:'1px 6px',borderRadius:9,fontWeight:700}}>{t.you}</span>}
                     </div>
                     <div style={{fontSize:11,color:'var(--muted)',marginTop:1}}>
                       {(m.bets||[]).length} pronósticos · {m.locked
@@ -3527,7 +3742,7 @@ function GruposScreen({user,userBets,credito,onPagar}){
                   <div style={{textAlign:'right',flexShrink:0}}>
                     <div style={{fontFamily:'var(--ff)',fontSize:30,lineHeight:1,
                       color:i===0?'var(--gold)':i===1?'#C0C0C0':i===2?'#CD7F32':'var(--txt)'}}>{m.pts||0}</div>
-                    <div style={{fontSize:9,color:'var(--muted)',fontWeight:700}}>PUNTOS</div>
+                    <div style={{fontSize:9,color:'var(--muted)',fontWeight:700}}>{t.points}</div>
                   </div>
                 </div>
               ))}
@@ -3621,7 +3836,7 @@ function GruposScreen({user,userBets,credito,onPagar}){
                         <button onClick={()=>setConfirmLock(false)}
                           style={{flex:1,background:'rgba(255,255,255,.08)',border:'1px solid var(--br)',
                             color:'var(--txt)',borderRadius:10,padding:'12px 8px',fontSize:13,
-                            fontWeight:600,cursor:'pointer',fontFamily:'var(--fb)'}}>Cancelar</button>
+                            fontWeight:600,cursor:'pointer',fontFamily:'var(--fb)'}}>{t.cancel}</button>
                         <button onClick={()=>lockBets(gid)}
                           style={{flex:1,background:'var(--red)',border:'none',
                             color:'#fff',borderRadius:10,padding:'12px 8px',fontSize:13,
@@ -3831,7 +4046,7 @@ function GruposScreen({user,userBets,credito,onPagar}){
                   value={chatInput}
                   onChange={e=>setChatInput(e.target.value)}
                   onKeyDown={e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg(gid);}}}
-                  placeholder="Escribe un mensaje..."
+                  placeholder={t.write_message}
                   rows={1}
                   style={{flex:1,background:'var(--surf2)',border:'1.5px solid var(--br)',
                     borderRadius:12,padding:'10px 14px',color:'var(--txt)',
@@ -4232,7 +4447,7 @@ function BetsScreen({bets,placeBet,credito,onPagar,onReset,betsSaved=false,onSav
       <div style={{margin:'0 16px 13px',background:'var(--surf)',borderRadius:14,border:'1px solid var(--br)',overflow:'hidden'}}>
         <SecHead icon="🏆" title="CAMPEÓN DEL MUNDO" betId="campeon"/>
         <div style={{padding:'10px 14px'}}>
-          <div style={{fontSize:12,color:'var(--muted)',marginBottom:8}}>¿Qué selección levantará la Copa?</div>
+          <div style={{fontSize:12,color:'var(--muted)',marginBottom:8}}>{t.world_champion_q}</div>
           <div style={{display:'flex',flexWrap:'wrap',gap:5}}>
             {CAMPEON_OPTS.map(o=>(
               <SmBtn key={o.v} id="campeon" category="Campeón del Mundo" val={o.v} odds={o.odds}
@@ -4247,7 +4462,7 @@ function BetsScreen({bets,placeBet,credito,onPagar,onReset,betsSaved=false,onSav
       <div style={{margin:'0 16px 13px',background:'var(--surf)',borderRadius:14,border:'1px solid var(--br)',overflow:'hidden'}}>
         <SecHead icon="⚽" title="BOTA DE ORO" betId="bota-oro"/>
         <div style={{padding:'10px 14px'}}>
-          <div style={{fontSize:12,color:'var(--muted)',marginBottom:8}}>Máximo goleador del torneo</div>
+          <div style={{fontSize:12,color:'var(--muted)',marginBottom:8}}>{t.top_scorer_q}</div>
           <div style={{display:'flex',flexWrap:'wrap',gap:5}}>
             {BOTA_ORO_OPTS.map(o=>(
               <SmBtn key={o.v} id="bota-oro" category="Bota de Oro" val={o.v} odds={o.odds}
@@ -4262,7 +4477,7 @@ function BetsScreen({bets,placeBet,credito,onPagar,onReset,betsSaved=false,onSav
       <div style={{margin:'0 16px 13px',background:'var(--surf)',borderRadius:14,border:'1px solid var(--br)',overflow:'hidden'}}>
         <SecHead icon="🌟" title="BALÓN DE ORO" betId="balon-oro"/>
         <div style={{padding:'10px 14px'}}>
-          <div style={{fontSize:12,color:'var(--muted)',marginBottom:8}}>Mejor jugador del Mundial</div>
+          <div style={{fontSize:12,color:'var(--muted)',marginBottom:8}}>{t.best_player_q}</div>
           <div style={{display:'flex',flexWrap:'wrap',gap:5}}>
             {BALON_ORO_OPTS.map(o=>(
               <SmBtn key={o.v} id="balon-oro" category="Balón de Oro" val={o.v} odds={o.odds}
@@ -4274,7 +4489,7 @@ function BetsScreen({bets,placeBet,credito,onPagar,onReset,betsSaved=false,onSav
       </div>
 
       {/* Ganadores de Grupo */}
-      <div style={{margin:'0 16px 6px',fontFamily:'var(--ff)',fontSize:17,letterSpacing:1,paddingLeft:2}}>🏅 GANADORES DE GRUPO</div>
+      <div style={{margin:'0 16px 6px',fontFamily:'var(--ff)',fontSize:17,letterSpacing:1,paddingLeft:2}}>🏅 {t.group_winners}</div>
       {GRP_WIN.map(grp=>{
         const gid=`grp-${grp.g.replace(' ','')}`;
         const gb=getBet(gid);
@@ -4326,7 +4541,7 @@ function BetsScreen({bets,placeBet,credito,onPagar,onReset,betsSaved=false,onSav
                   <OBtn id={`m${mid}-1x2`} category="1X2" val="1" odds={o[0]}
                     display={`① ${m.home.substring(0,6)}`}/>
                   <OBtn id={`m${mid}-1x2`} category="1X2" val="X" odds={o[1]}
-                    display="✕ Empate"/>
+                    display={`✕ ${t.draw}`}/>
                   <OBtn id={`m${mid}-1x2`} category="1X2" val="2" odds={o[2]}
                     display={`② ${m.away.substring(0,6)}`}/>
                 </div>
@@ -4381,7 +4596,7 @@ function BetsScreen({bets,placeBet,credito,onPagar,onReset,betsSaved=false,onSav
           <span style={{fontSize:20}}>🥇</span>
           <div>
             <div style={{fontFamily:'var(--ff)',fontSize:16,letterSpacing:1,color:'var(--gold)'}}>
-              MEJORES GOLEADORES DEL MUNDIAL
+              {t.best_scorers}
             </div>
             <div style={{fontSize:10,color:'var(--muted)'}}>
               Selecciona al 1°, 2° y 3° goleador · 8🪙 cada uno · Total: 24🪙
@@ -4582,8 +4797,8 @@ function BetsScreen({bets,placeBet,credito,onPagar,onReset,betsSaved=false,onSav
               </div>
               <div style={{fontSize:10,color:'var(--muted)',marginTop:5}}>
                 {coinsLeft>=0
-                  ?'✅ Te alcanzan las monedas para todos tus pronósticos'
-                  :'⚠️ Saldo insuficiente · Compra otro paquete'}
+                  ?'✅ '+t.coins_enough
+                  :'⚠️ '+t.insufficient_balance}
               </div>
             </>
           )}
@@ -4663,7 +4878,7 @@ function BetsScreen({bets,placeBet,credito,onPagar,onReset,betsSaved=false,onSav
             /* Estado: PENDIENTE GUARDAR */
             <div>
               <div style={{fontFamily:'var(--ff)',fontSize:18,letterSpacing:1,marginBottom:8}}>
-                {coinsLeft===0?'✅ PRONÓSTICO LISTO PARA GUARDAR':'⏳ COMPLETA TUS PRONÓSTICOS'}
+                {coinsLeft===0?'✅ '+t.predictions_ready:'⏳ '+t.predictions_incomplete}
               </div>
               <div style={{fontSize:12,color:'var(--muted)',lineHeight:1.6,marginBottom:12}}>
                 {coinsLeft===0
@@ -4693,7 +4908,7 @@ function BetsScreen({bets,placeBet,credito,onPagar,onReset,betsSaved=false,onSav
                   fontFamily:'var(--ff)',letterSpacing:1,
                   boxShadow:coinsLeft===0&&bets.length>0?'0 4px 20px rgba(246,201,14,.4)':'none',
                   transition:'all .3s',marginBottom:10}}>
-                💾 GUARDAR PRONÓSTICO
+                💾 {t.save_prediction}
               </button>
               <div style={{fontSize:10,color:'var(--muted)',lineHeight:1.5}}>
                 🔒 Una vez guardado, los pronósticos <strong style={{color:'var(--txt)'}}>no se podrán modificar</strong>.<br/>
