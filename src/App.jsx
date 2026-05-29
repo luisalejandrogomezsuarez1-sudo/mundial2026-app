@@ -995,9 +995,9 @@ const DEMO_MEMBERS=[
 // ── Coin System ───────────────────────────────────
 const COINS_PER_PAGO=1000; // 1 pago de $20 MXN = 1000 monedas
 // 72 partidos × (1X2:7 + BTTS:6=13) = 936
-// Fijos: campeon:6 + bota:6 + balon:4 + gol1:15 + gol2:4 + gol3:5 + grupos(12×2):24 = 64
-// Total: 936 + 64 = 1000 exacto ✓
-const COIN_COSTS={campeon:6,'bota-oro':6,'balon-oro':4,
+// Fijos: campeon:12 + bota:6 + balon:4 + gol1:15 + gol2:4 + gol3:5 + grupos(12×2):24 = 70
+// Total: 936 + 70 = 1006 (ajustado por prueba real del usuario)
+const COIN_COSTS={campeon:12,'bota-oro':6,'balon-oro':4,
   'goleador-1':15,'goleador-2':4,'goleador-3':5};
 const getBetCost=id=>{
   if(COIN_COSTS[id]!==undefined)return COIN_COSTS[id];
