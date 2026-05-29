@@ -2369,12 +2369,14 @@ function GolesScreen(){
           borderRadius:10,boxShadow:'0 2px 8px rgba(0,0,0,.3)',whiteSpace:'nowrap'}}>
           {rank<=3?medal[rank]:`#${rank}`}
         </div>
-        {/* Geometric SVG jersey */}
+        {/* Team flag */}
         <div style={{width:'100%',aspectRatio:'1/1.15',borderRadius:10,overflow:'hidden',
           border:`2px solid ${rank<=3?rankColors[rank]+'66':'var(--br)'}`,
           boxShadow:`0 4px 16px rgba(0,0,0,.3)`,marginTop:8,
           display:'flex',alignItems:'center',justifyContent:'center',background:'var(--surf2)'}}>
-          <PlayerPhoto name={p.n} team={p.team} sz={sz}/>
+          <span style={{fontSize:sz*0.55,lineHeight:1,filter:'drop-shadow(0 4px 10px rgba(0,0,0,.5))'}}>
+            {FLAGS[p.team]||'🏳'}
+          </span>
         </div>
         {/* Stats bar */}
         <div style={{width:'100%',background:'var(--surf)',borderRadius:'0 0 8px 8px',
