@@ -2711,21 +2711,22 @@ function PerfilScreen({user,onLogout,lang='es'}){
   const [fbStatus,setFbStatus]=useState('waiting'); // waiting | ready | error
   const [shareMsg,setShareMsg]=useState('');
 
+  // Fuera del useEffect para que refreshAdminUsers y el botón 🔄 puedan usarlo
+  const getDeletedIds=()=>{try{return JSON.parse(localStorage.getItem('wc2026_admin_deleted')||'[]');}catch{return[];}};
+  const mergeUsers=(local,fs)=>{
+    const deleted=new Set(getDeletedIds());
+    const merged=[...local].filter(u=>!deleted.has(u.id));
+    fs.forEach(fu=>{
+      if(deleted.has(fu.id)) return;
+      const idx=merged.findIndex(lu=>lu.email?.toLowerCase()===fu.email?.toLowerCase());
+      if(idx>=0) merged[idx]={...merged[idx],...fu};
+      else merged.push(fu);
+    });
+    return merged;
+  };
+
   useEffect(()=>{
     if(!user.isAdmin) return;
-
-    const getDeletedIds=()=>{try{return JSON.parse(localStorage.getItem('wc2026_admin_deleted')||'[]');}catch{return[];}};
-    const mergeUsers=(local,fs)=>{
-      const deleted=new Set(getDeletedIds());
-      const merged=[...local].filter(u=>!deleted.has(u.id));
-      fs.forEach(fu=>{
-        if(deleted.has(fu.id)) return; // ignorar eliminados
-        const idx=merged.findIndex(lu=>lu.email?.toLowerCase()===fu.email?.toLowerCase());
-        if(idx>=0) merged[idx]={...merged[idx],...fu};
-        else merged.push(fu);
-      });
-      return merged;
-    };
 
     // Step 1: Load local users immediately so panel isn't empty
     dbLoad().then(local=>{
@@ -2907,16 +2908,12 @@ function PerfilScreen({user,onLogout,lang='es'}){
                 </div>
                 <button onClick={async()=>{
                   setDbLoaded(false);
-                  const localUsers = await dbLoad();
-                  let fsUsers = [];
-                  const fn=fbGetAllUsers||window._fbGetAllUsers;if(fn){try{fsUsers=await fn();}catch(e){}}
-                  const merged=[...localUsers];
-                  fsUsers.forEach(fu=>{
-                    const idx=merged.findIndex(lu=>lu.email?.toLowerCase()===fu.email?.toLowerCase());
-                    if(idx>=0)merged[idx]={...merged[idx],...fu};
-                    else merged.push(fu);
-                  });
-                  setDbUsers(merged);setDbLoaded(true);
+                  const local=await dbLoad();
+                  let fs=[];
+                  const fn=fbGetAllUsers||window._fbGetAllUsers;
+                  if(fn){try{fs=await getAllUsersCached(fn,0);}catch(e){}}
+                  setDbUsers(mergeUsers(local,fs));
+                  setDbLoaded(true);
                 }}
                   style={{background:'rgba(79,142,247,.12)',border:'none',color:'var(--acc)',
                     borderRadius:8,padding:'5px 10px',fontSize:11,fontWeight:700,
