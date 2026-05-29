@@ -3197,7 +3197,7 @@ function PerfilScreen({user,onLogout,lang='es'}){
 }
 
 // ── Groups Screen ─────────────────────────────────
-function GruposScreen({user,userBets,credito,onPagar}){
+function GruposScreen({user,userBets,credito,creditoLoading,onPagar}){
   const t=useLang();
   // ── PAYMENT GATE: must pay to access groups ──────────────────
   const [view,setView]=useState('list');
@@ -3267,6 +3267,12 @@ function GruposScreen({user,userBets,credito,onPagar}){
     const interval=setInterval(fetchMsgs,15000); // poll every 15s (ahorra 80% lecturas)
     return()=>clearInterval(interval);
   },[selGroup?.code]);
+  if(!credito&&creditoLoading) return(
+    <div className="scr fin" style={{display:'flex',alignItems:'center',justifyContent:'center',flexDirection:'column',gap:12}}>
+      <div style={{width:32,height:32,border:'3px solid var(--gold)',borderTopColor:'transparent',borderRadius:'50%',animation:'spin .8s linear infinite'}}/>
+      <div style={{fontSize:13,color:'var(--muted)'}}>Verificando acceso…</div>
+    </div>
+  );
   if(!credito) return(
     <div className="scr fin" style={{display:'flex',flexDirection:'column',
       alignItems:'center',justifyContent:'center',padding:'32px 24px',
@@ -4335,7 +4341,7 @@ function PagoScreen({onExito,onCancelar,esReset=false}){
 }
 
 // ── Bets Screen ───────────────────────────────────
-function BetsScreen({bets,placeBet,credito,onPagar,onReset,betsSaved=false,onSave,currentUser}){
+function BetsScreen({bets,placeBet,credito,creditoLoading,onPagar,onReset,betsSaved=false,onSave,currentUser}){
   const t=useLang();
   const [tab,setTab]=useState('largo');
   const [exact,setExact]=useState({});
@@ -4343,6 +4349,12 @@ function BetsScreen({bets,placeBet,credito,onPagar,onReset,betsSaved=false,onSav
   const [confirmReset,setConfirmReset]=useState(false);
 
   // ── Payment gates ──
+  if(!credito&&creditoLoading) return(
+    <div className="scr fin" style={{display:'flex',alignItems:'center',justifyContent:'center',flexDirection:'column',gap:12}}>
+      <div style={{width:32,height:32,border:'3px solid var(--gold)',borderTopColor:'transparent',borderRadius:'50%',animation:'spin .8s linear infinite'}}/>
+      <div style={{fontSize:13,color:'var(--muted)'}}>Verificando acceso…</div>
+    </div>
+  );
   if(!credito) return <PagoScreen onExito={onPagar}/>;
   if(showReset) return(
     <PagoScreen
@@ -5047,6 +5059,7 @@ export default function App(){
     catch(e){}
   };
   const [credito,setCredito]=useState(null);
+  const [creditoLoading,setCreditoLoading]=useState(false);
   const [betsSaved,setBetsSaved]=useState(false); // predictions locked after saving
   // credito = {coins:1000, paquetes:N, paidAt:timestamp} | null
 
@@ -5141,6 +5154,7 @@ export default function App(){
         setCredito({coins:COINS_PER_PAGO,paquetes:dbUser.paquetes,paidAt:Date.now()});
       } else {
         // Fallback: verificar Firestore — el admin pudo haber regalado monedas desde otro dispositivo
+        setCreditoLoading(true);
         const checkFirestoreCredit=async(attempts=0)=>{
           const getFn=fbGetAllUsers||window._fbGetAllUsers;
           if(getFn){
@@ -5157,7 +5171,9 @@ export default function App(){
                 setCredito({coins:COINS_PER_PAGO,paquetes:fsUser.paquetes,paidAt:Date.now()});
               }
             }catch(e){console.warn('checkFirestoreCredit error:',e);}
+            setCreditoLoading(false);
           } else if(attempts<10){ setTimeout(()=>checkFirestoreCredit(attempts+1),800); }
+          else { setCreditoLoading(false); }
         };
         checkFirestoreCredit();
       }
@@ -5262,11 +5278,11 @@ export default function App(){
           {tab==='tabla'      &&<TablaScreen/>}
           {tab==='goles'      &&<GolesScreen/>}
           {tab==='pronostico' &&<BetsScreen bets={userBets} placeBet={placeBet}
-                                  credito={credito} onPagar={onPagar} onReset={onReset}
+                                  credito={credito} creditoLoading={creditoLoading} onPagar={onPagar} onReset={onReset}
                                   betsSaved={betsSaved}
                                   onSave={()=>{setBetsSaved(true);if(user?.id)localStorage.setItem('wc2026_saved_'+user.id,'true');}}
                                   currentUser={user}/>}
-          {tab==='grupos'     &&<GruposScreen user={user} userBets={userBets} credito={credito} onPagar={onPagar}/>}
+          {tab==='grupos'     &&<GruposScreen user={user} userBets={userBets} credito={credito} creditoLoading={creditoLoading} onPagar={onPagar}/>}
           {tab==='perfil'     &&<PerfilScreen user={user} onLogout={logout} lang={lang}/>}
           {/* Bottom nav */}
           <div className="bnav">
