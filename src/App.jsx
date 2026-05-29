@@ -2935,26 +2935,26 @@ function PerfilScreen({user,onLogout,lang='es'}){
               )}
               {dbLoaded&&dbUsers.map((u,i)=>(
                 <div key={u.id||i} style={{
-                  padding:'8px 14px',borderBottom:'1px solid rgba(255,255,255,.04)',
+                  padding:'5px 14px',borderBottom:'1px solid rgba(255,255,255,.04)',
                   background:u.paquetes>0?'rgba(246,201,14,.02)':'transparent'}}>
                   {/* Fila 1: avatar + nombre + correo (ancho completo) */}
-                  <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:5}}>
-                    <div style={{width:30,height:30,borderRadius:'50%',flexShrink:0,
+                  <div style={{display:'flex',alignItems:'center',gap:7,marginBottom:3}}>
+                    <div style={{width:24,height:24,borderRadius:'50%',flexShrink:0,
                       background:u.paquetes>0?'rgba(246,201,14,.15)':'rgba(79,142,247,.12)',
                       border:`1.5px solid ${u.paquetes>0?'rgba(246,201,14,.3)':'rgba(79,142,247,.25)'}`,
                       display:'flex',alignItems:'center',justifyContent:'center',
-                      fontSize:12,fontWeight:700,color:'#fff'}}>
+                      fontSize:10,fontWeight:700,color:'#fff'}}>
                       {(u.name||u.email||'?')[0].toUpperCase()}
                     </div>
                     <div style={{flex:1,minWidth:0}}>
-                      <div style={{fontSize:12,fontWeight:700,color:'var(--txt)',lineHeight:1.3}}>
+                      <div style={{fontSize:11,fontWeight:700,color:'var(--txt)',lineHeight:1.2}}>
                         {u.name||'Sin nombre'}
                         {u.google&&<span style={{marginLeft:4,fontSize:8,color:'var(--acc)',fontWeight:700}}>G</span>}
                         {u.gifted&&<span style={{marginLeft:4,fontSize:8,background:'rgba(246,201,14,.2)',
                           color:'var(--gold)',padding:'1px 4px',borderRadius:4,fontWeight:700}}>🎁GRATIS</span>}
                       </div>
-                      <div style={{fontSize:10,color:'var(--acc)',marginTop:1,
-                        wordBreak:'break-all',lineHeight:1.3}}>{u.email}</div>
+                      <div style={{fontSize:9,color:'var(--acc)',
+                        wordBreak:'break-all',lineHeight:1.2}}>{u.email}</div>
                     </div>
                   </div>
                   {/* Fila 2: stats + botones */}
