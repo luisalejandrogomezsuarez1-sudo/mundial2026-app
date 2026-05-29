@@ -2934,94 +2934,96 @@ function PerfilScreen({user,onLogout,lang='es'}){
                 </div>
               )}
               {dbLoaded&&dbUsers.map((u,i)=>(
-                <div key={u.id||i} style={{display:'flex',alignItems:'center',gap:8,
+                <div key={u.id||i} style={{
                   padding:'8px 14px',borderBottom:'1px solid rgba(255,255,255,.04)',
                   background:u.paquetes>0?'rgba(246,201,14,.02)':'transparent'}}>
-                  {/* Avatar */}
-                  <div style={{width:30,height:30,borderRadius:'50%',
-                    background:u.paquetes>0?'rgba(246,201,14,.15)':'rgba(79,142,247,.12)',
-                    border:`1.5px solid ${u.paquetes>0?'rgba(246,201,14,.3)':'rgba(79,142,247,.25)'}`,
-                    display:'flex',alignItems:'center',justifyContent:'center',
-                    fontSize:12,fontWeight:700,color:'#fff',flexShrink:0}}>
-                    {(u.name||u.email||'?')[0].toUpperCase()}
-                  </div>
-                  {/* Info */}
-                  <div style={{flex:1,minWidth:0}}>
-                    <div style={{fontSize:12,fontWeight:700,overflow:'hidden',
-                      textOverflow:'ellipsis',whiteSpace:'nowrap'}}>
-                      {u.name||'Sin nombre'}
-                      {u.google&&<span style={{marginLeft:4,fontSize:8,color:'var(--acc)',fontWeight:700}}>G</span>}
-                      {u.gifted&&<span style={{marginLeft:4,fontSize:8,background:'rgba(246,201,14,.2)',
-                        color:'var(--gold)',padding:'1px 4px',borderRadius:4,fontWeight:700}}>🎁GRATIS</span>}
+                  {/* Fila 1: avatar + nombre + correo (ancho completo) */}
+                  <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:5}}>
+                    <div style={{width:30,height:30,borderRadius:'50%',flexShrink:0,
+                      background:u.paquetes>0?'rgba(246,201,14,.15)':'rgba(79,142,247,.12)',
+                      border:`1.5px solid ${u.paquetes>0?'rgba(246,201,14,.3)':'rgba(79,142,247,.25)'}`,
+                      display:'flex',alignItems:'center',justifyContent:'center',
+                      fontSize:12,fontWeight:700,color:'#fff'}}>
+                      {(u.name||u.email||'?')[0].toUpperCase()}
                     </div>
-                    <div style={{fontSize:10,color:'var(--acc)',overflow:'hidden',
-                      textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{u.email}</div>
-                  </div>
-                  {/* Paquetes */}
-                  <div style={{width:50,textAlign:'center',flexShrink:0}}>
-                    <div style={{fontFamily:'var(--ff)',fontSize:16,
-                      color:u.paquetes>0?'var(--gold)':'var(--muted)',lineHeight:1}}>
-                      {u.paquetes||0}
-                    </div>
-                    <div style={{fontSize:8,color:'var(--muted)',fontWeight:600}}>paq.</div>
-                  </div>
-                  {/* Total pagado */}
-                  <div style={{width:60,textAlign:'center',flexShrink:0}}>
-                    <div style={{fontSize:12,fontWeight:700,
-                      color:u.totalPagado>0?'var(--grn)':'var(--muted)'}}>
-                      {u.totalPagado>0?'$'+(u.totalPagado||0):'—'}
-                    </div>
-                    <div style={{fontSize:8,color:'var(--muted)',fontWeight:600}}>MXN</div>
-                  </div>
-                  {/* Last payment */}
-                  <div style={{width:50,textAlign:'center',flexShrink:0}}>
-                    <div style={{fontSize:9,color:'var(--dim)',lineHeight:1.3}}>
-                      {u.lastPayment
-                        ?new Date(u.lastPayment).toLocaleDateString('es',{day:'numeric',month:'short'})
-                        :'—'}
+                    <div style={{flex:1,minWidth:0}}>
+                      <div style={{fontSize:12,fontWeight:700,color:'var(--txt)',lineHeight:1.3}}>
+                        {u.name||'Sin nombre'}
+                        {u.google&&<span style={{marginLeft:4,fontSize:8,color:'var(--acc)',fontWeight:700}}>G</span>}
+                        {u.gifted&&<span style={{marginLeft:4,fontSize:8,background:'rgba(246,201,14,.2)',
+                          color:'var(--gold)',padding:'1px 4px',borderRadius:4,fontWeight:700}}>🎁GRATIS</span>}
+                      </div>
+                      <div style={{fontSize:10,color:'var(--acc)',marginTop:1,
+                        wordBreak:'break-all',lineHeight:1.3}}>{u.email}</div>
                     </div>
                   </div>
-                  {/* Gift coins — admin inputs custom amount */}
-                  <button
-                    onClick={async()=>{
-                      if(u.gifted){
-                        // Revoke
-                        if(!window.confirm(`¿Quitar monedas a ${u.name||u.email}?`))return;
-                        const ok=await dbRevokeGift(u.email);
-                        if(ok){
-                          if(fbGiftCoins&&u.id) fbGiftCoins(u.id,false);
-                          const updated=await dbLoad();setDbUsers(updated);
+                  {/* Fila 2: stats + botones */}
+                  <div style={{display:'flex',alignItems:'center',gap:8,paddingLeft:38}}>
+                    {/* Paquetes */}
+                    <div style={{textAlign:'center',flexShrink:0,minWidth:36}}>
+                      <div style={{fontFamily:'var(--ff)',fontSize:14,
+                        color:u.paquetes>0?'var(--gold)':'var(--muted)',lineHeight:1}}>
+                        {u.paquetes||0}
+                      </div>
+                      <div style={{fontSize:8,color:'var(--muted)',fontWeight:600}}>paq.</div>
+                    </div>
+                    {/* Total pagado */}
+                    <div style={{textAlign:'center',flexShrink:0,minWidth:44}}>
+                      <div style={{fontSize:11,fontWeight:700,
+                        color:u.totalPagado>0?'var(--grn)':'var(--muted)'}}>
+                        {u.totalPagado>0?'$'+(u.totalPagado||0):'—'}
+                      </div>
+                      <div style={{fontSize:8,color:'var(--muted)',fontWeight:600}}>MXN</div>
+                    </div>
+                    {/* Last payment */}
+                    <div style={{textAlign:'center',flexShrink:0,minWidth:40}}>
+                      <div style={{fontSize:9,color:'var(--dim)',lineHeight:1.3}}>
+                        {u.lastPayment
+                          ?new Date(u.lastPayment).toLocaleDateString('es',{day:'numeric',month:'short'})
+                          :'—'}
+                      </div>
+                    </div>
+                    <div style={{flex:1}}/>
+                    {/* Gift coins */}
+                    <button
+                      onClick={async()=>{
+                        if(u.gifted){
+                          if(!window.confirm(`¿Quitar monedas a ${u.name||u.email}?`))return;
+                          const ok=await dbRevokeGift(u.email);
+                          if(ok){
+                            if(fbGiftCoins&&u.id) fbGiftCoins(u.id,false);
+                            const updated=await dbLoad();setDbUsers(updated);
+                          }
+                        } else {
+                          const raw=window.prompt(`¿Cuántas monedas regalar a ${u.name||u.email}?\n(mínimo 1, máximo 99999)`, '1000');
+                          if(!raw) return;
+                          const amount=parseInt(raw,10);
+                          if(isNaN(amount)||amount<1||amount>99999){
+                            alert('Cantidad inválida. Ingresa un número entre 1 y 99,999.');return;
+                          }
+                          const ok=await dbGiftCoins(u.email,amount);
+                          if(ok){
+                            if(fbGiftCoins&&u.id) fbGiftCoins(u.id,true,amount);
+                            alert(`✅ ${amount} monedas regaladas a ${u.name||u.email}`);
+                            const updated=await dbLoad();setDbUsers(updated);
+                          }
                         }
-                      } else {
-                        // Gift — ask amount
-                        const raw=window.prompt(`¿Cuántas monedas regalar a ${u.name||u.email}?\n(mínimo 1, máximo 99999)`, '1000');
-                        if(!raw) return;
-                        const amount=parseInt(raw,10);
-                        if(isNaN(amount)||amount<1||amount>99999){
-                          alert('Cantidad inválida. Ingresa un número entre 1 y 99,999.');return;
-                        }
-                        const ok=await dbGiftCoins(u.email,amount);
-                        if(ok){
-                          if(fbGiftCoins&&u.id) fbGiftCoins(u.id,true,amount);
-                          alert(`✅ ${amount} monedas regaladas a ${u.name||u.email}`);
-                          const updated=await dbLoad();setDbUsers(updated);
-                        }
-                      }
-                    }}
-                    title={u.gifted?`Quitar monedas (tiene ${u.giftedCoins||1000}🪙)`:'Regalar monedas (ingresarás el monto)'}
-                    style={{width:28,flexShrink:0,
-                      background:u.gifted?'rgba(30,198,108,.15)':'rgba(246,201,14,.12)',
-                      border:`1px solid ${u.gifted?'rgba(30,198,108,.3)':'rgba(246,201,14,.3)'}`,
-                      color:u.gifted?'var(--grn)':'var(--gold)',
-                      borderRadius:5,padding:'3px 4px',
-                      fontSize:11,cursor:'pointer',fontFamily:'var(--fb)'}}>
-                    🎁
-                  </button>
-                  {/* Delete */}
-                  <button onClick={()=>deleteUser(u.id)}
-                    style={{width:24,flexShrink:0,background:'rgba(229,62,62,.1)',
-                      border:'none',color:'#FC8181',borderRadius:5,padding:'3px 5px',
-                      fontSize:10,cursor:'pointer',fontFamily:'var(--fb)'}}>✕</button>
+                      }}
+                      title={u.gifted?`Quitar monedas (tiene ${u.giftedCoins||1000}🪙)`:'Regalar monedas'}
+                      style={{width:28,flexShrink:0,
+                        background:u.gifted?'rgba(30,198,108,.15)':'rgba(246,201,14,.12)',
+                        border:`1px solid ${u.gifted?'rgba(30,198,108,.3)':'rgba(246,201,14,.3)'}`,
+                        color:u.gifted?'var(--grn)':'var(--gold)',
+                        borderRadius:5,padding:'3px 4px',
+                        fontSize:11,cursor:'pointer',fontFamily:'var(--fb)'}}>
+                      🎁
+                    </button>
+                    {/* Delete */}
+                    <button onClick={()=>deleteUser(u.id)}
+                      style={{width:24,flexShrink:0,background:'rgba(229,62,62,.1)',
+                        border:'none',color:'#FC8181',borderRadius:5,padding:'3px 5px',
+                        fontSize:10,cursor:'pointer',fontFamily:'var(--fb)'}}>✕</button>
+                  </div>
                 </div>
               ))}
             </div>
