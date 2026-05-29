@@ -699,7 +699,7 @@ const COLS={
   'Túnez':'#E70013','Irán':'#239F40','Egipto':'#CE1126','Nueva Zelanda':'#00247D',
   'Arabia Saudita':'#006C35','Cabo Verde':'#003893','Argelia':'#006233',
   'Jordania':'#007A3D','Austria':'#ED2939','Uzbekistán':'#1EB53A',
-  'Panamá':'#DA121A','Portugal':'#006600','Noruega':'#EF2B2D',
+  'Panamá':'#DA121A',
 };
 
 const LIVE_MATCHES=[];
