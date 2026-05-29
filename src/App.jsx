@@ -2264,6 +2264,7 @@ function CalScreen(){
 
 // ── Bracket View Component ────────────────────────
 function BracketSlot({slot,highlight=false}){
+  const t=useLang();
   const hasTeams = slot?.home||slot?.away;
   const isWon    = !!slot?.winner;
   return(
