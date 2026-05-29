@@ -1495,6 +1495,26 @@ function Auth({onLogin,onLangChange=()=>{}}){
         setErr('Correo o contraseña incorrectos');
         return;
       }
+      // Verificar en Firestore si la cuenta fue eliminada por admin
+      if(found.id){
+        const getFn=window._fbGetUser;
+        if(getFn){
+          try{
+            const fsUser=await getFn(found.id);
+            if(fsUser?.deleted||fsUser?.forceDelete){
+              // Limpiar datos locales del usuario eliminado
+              const allDB=await dbLoad();
+              await dbSave(allDB.filter(x=>x.id!==found.id));
+              ['wc2026_bets_','wc2026_saved_','wc2026_groups_','wc2026_session_'].forEach(k=>{
+                try{localStorage.removeItem(k+found.id);}catch(e){}
+              });
+              setLoading(false);
+              setErr('Esta cuenta ha sido desactivada. Contacta al administrador.');
+              return;
+            }
+          }catch(e){/* si falla la verificación, permitir login */}
+        }
+      }
       setLoading(false);
       onLogin(found);
     }

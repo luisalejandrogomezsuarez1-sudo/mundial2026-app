@@ -163,7 +163,13 @@ export function subscribeToLiveDoc(docId, callback) {
 export async function deleteUserFromFirestore(userId) {
   if(!userId) return;
   try {
-    await deleteDoc(doc(db, 'users', userId));
+    // Marcar como eliminado en vez de borrar el documento.
+    // El flag forceDelete hace que checkAdminFlags expulse al usuario al abrir la app.
+    await setDoc(doc(db,'users', userId), {
+      forceDelete: true,
+      deleted:     true,
+      deletedAt:   new Date().toISOString(),
+    }, { merge: true });
   } catch(e) { console.warn('deleteUser error:', e); }
 }
 
