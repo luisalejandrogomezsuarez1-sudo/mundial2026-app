@@ -995,13 +995,13 @@ const DEMO_MEMBERS=[
 // ── Coin System ───────────────────────────────────
 const COINS_PER_PAGO=1000; // 1 pago de $20 MXN = 1000 monedas
 // 72 partidos × (1X2:7 + BTTS:6=13) = 936
-// Fijos: campeon:6 + bota:6 + balon:4 + goles(3×4):12 + grupos(12×3):36 = 64
+// Fijos: campeon:6 + bota:6 + balon:4 + gol1:15 + gol2:4 + gol3:5 + grupos(12×2):24 = 64
 // Total: 936 + 64 = 1000 exacto ✓
 const COIN_COSTS={campeon:6,'bota-oro':6,'balon-oro':4,
-  'goleador-1':4,'goleador-2':4,'goleador-3':4};
+  'goleador-1':15,'goleador-2':4,'goleador-3':5};
 const getBetCost=id=>{
   if(COIN_COSTS[id]!==undefined)return COIN_COSTS[id];
-  if(id.startsWith('grp-'))return 3;           // 12×3=36
+  if(id.startsWith('grp-'))return 2;           // 12×2=24
   if(id.endsWith('-1x2'))return 7;             // 72×7=504
   if(id.endsWith('-btts'))return 6;            // 72×6=432
   // Tipos deprecados — ya no aparecen en UI, no deben contar monedas
@@ -3427,9 +3427,40 @@ function GruposScreen({user,userBets,credito,creditoLoading,onPagar}){
     }
   };
 
+  // ── Grupo demo con 15 miembros simulados ──
+  const DEMO_GROUP={
+    id:'demo-wc26-amigos',code:'WC26-AMIGOS',
+    name:'Los Compadres del Mundial 🌟',
+    desc:'Grupo de ejemplo con simulación real de puntos',
+    created:Date.now()-86400000*15,
+    ownerId:'dm1',
+    members:[
+      {id:'dm1', name:'Carlos García',    ini:'C', col:'#F6C90E', pts:247, locked:true, lockedAt:Date.now()-86400000*8, bets:[], correct:62, total:72},
+      {id:'dm2', name:'María Rodríguez',  ini:'M', col:'#FF6B6B', pts:231, locked:true, lockedAt:Date.now()-86400000*8, bets:[], correct:58, total:72},
+      {id:'dm3', name:'Javier López',     ini:'J', col:'#4ECDC4', pts:218, locked:true, lockedAt:Date.now()-86400000*7, bets:[], correct:55, total:72},
+      {id:'dm4', name:'Diana Torres',     ini:'D', col:'#A855F7', pts:203, locked:true, lockedAt:Date.now()-86400000*7, bets:[], correct:51, total:72},
+      {id:'dm5', name:'Roberto Jiménez', ini:'R', col:'#3B82F6', pts:195, locked:true, lockedAt:Date.now()-86400000*6, bets:[], correct:49, total:72},
+      {id:'dm6', name:'Patricia Núñez',  ini:'P', col:'#10B981', pts:187, locked:true, lockedAt:Date.now()-86400000*6, bets:[], correct:47, total:72},
+      {id:'dm7', name:'Miguel Ángel F.', ini:'M', col:'#F59E0B', pts:176, locked:true, lockedAt:Date.now()-86400000*5, bets:[], correct:44, total:72},
+      {id:'dm8', name:'Carmen Vázquez',  ini:'C', col:'#EF4444', pts:164, locked:true, lockedAt:Date.now()-86400000*5, bets:[], correct:41, total:72},
+      {id:'dm9', name:'Alejandro Cruz',  ini:'A', col:'#8B5CF6', pts:152, locked:true, lockedAt:Date.now()-86400000*4, bets:[], correct:38, total:72},
+      {id:'dm10',name:'Isabella Moreno', ini:'I', col:'#06B6D4', pts:143, locked:true, lockedAt:Date.now()-86400000*4, bets:[], correct:36, total:72},
+      {id:'dm11',name:'Eduardo Vargas',  ini:'E', col:'#84CC16', pts:131, locked:true, lockedAt:Date.now()-86400000*3, bets:[], correct:33, total:72},
+      {id:'dm12',name:'Valentina Ruiz',  ini:'V', col:'#F97316', pts:119, locked:true, lockedAt:Date.now()-86400000*3, bets:[], correct:30, total:72},
+      {id:'dm13',name:'Francisco Medina',ini:'F', col:'#6366F1', pts:108, locked:true, lockedAt:Date.now()-86400000*2, bets:[], correct:27, total:72},
+      {id:'dm14',name:'Daniela Herrera', ini:'D', col:'#EC4899', pts:94,  locked:true, lockedAt:Date.now()-86400000*2, bets:[], correct:24, total:72},
+      {id:'dm15',name:'Antonio Guerrero',ini:'A', col:'#78716C', pts:79,  locked:true, lockedAt:Date.now()-86400000*1, bets:[], correct:20, total:72},
+    ]
+  };
+
   const joinGroup=async()=>{
     const code=joinCode.trim().toUpperCase();
     if(!code)return;
+    // Grupo demo local
+    if(code==='WC26-AMIGOS'){
+      setGroups(p=>[...p.filter(x=>x.code!==code),DEMO_GROUP]);
+      setJoinErr('');goDetail(DEMO_GROUP);setJoinCode('');return;
+    }
     // Check local first (fast)
     const found=groups.find(g=>g.code===code);
     if(found){setJoinErr('');goDetail(found);setJoinCode('');return;}
@@ -3742,46 +3773,60 @@ function GruposScreen({user,userBets,credito,creditoLoading,onPagar}){
                   <div style={{fontSize:12}}>Comparte el código <strong style={{color:'var(--gold)'}}>{selGroup.code}</strong></div>
                 </div>
               )}
-              {allM.map((m,i)=>(
-                <div key={m.id} style={{display:'flex',alignItems:'center',gap:11,
-                  padding:'11px 16px',borderBottom:'1px solid rgba(255,255,255,.04)',
-                  background:m.id==='user'?'rgba(246,201,14,.03)':'transparent',
-                  transition:'background .15s'}}>
-                  <div style={{width:30,height:30,borderRadius:'50%',flexShrink:0,
-                    background:i===0?'rgba(246,201,14,.3)':i===1?'rgba(192,192,192,.2)':i===2?'rgba(205,127,50,.2)':'rgba(255,255,255,.07)',
-                    display:'flex',alignItems:'center',justifyContent:'center',fontSize:i<3?15:12,fontWeight:800,color:i===0?'var(--gold)':'#fff'}}>
-                    {i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1}
-                  </div>
-                  <div style={{width:42,height:42,borderRadius:'50%',background:m.col+'25',
-                    border:`2px solid ${m.col}55`,display:'flex',alignItems:'center',
-                    justifyContent:'center',fontFamily:'var(--ff)',fontSize:15,color:'#fff',
-                    flexShrink:0,position:'relative'}}>
-                    {m.ini}
-                    <div style={{position:'absolute',bottom:-3,right:-3,background:'var(--surf)',
-                      borderRadius:'50%',width:16,height:16,display:'flex',alignItems:'center',
-                      justifyContent:'center',fontSize:8,border:'1px solid var(--br)'}}>
-                      {m.locked?'🔒':'✏️'}
+              {allM.map((m,i)=>{
+                const topPts=allM[0]?.pts||1;
+                const pct=Math.round(((m.pts||0)/topPts)*100);
+                const acc=m.correct!=null&&m.total?Math.round((m.correct/m.total)*100):null;
+                return(
+                <div key={m.id} style={{padding:'10px 16px',borderBottom:'1px solid rgba(255,255,255,.04)',
+                  background:m.id==='user'?'rgba(246,201,14,.04)':'transparent'}}>
+                  <div style={{display:'flex',alignItems:'center',gap:10}}>
+                    {/* Posición */}
+                    <div style={{width:28,height:28,borderRadius:'50%',flexShrink:0,
+                      background:i===0?'rgba(246,201,14,.3)':i===1?'rgba(192,192,192,.2)':i===2?'rgba(205,127,50,.2)':'rgba(255,255,255,.07)',
+                      display:'flex',alignItems:'center',justifyContent:'center',fontSize:i<3?14:11,fontWeight:800,color:i===0?'var(--gold)':'#fff'}}>
+                      {i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1}
                     </div>
-                  </div>
-                  <div style={{flex:1,minWidth:0}}>
-                    <div style={{fontWeight:700,fontSize:14,display:'flex',alignItems:'center',gap:6}}>
-                      {m.name}
-                      {m.id==='user'&&<span style={{fontSize:9,background:'rgba(246,201,14,.15)',
-                        color:'var(--gold)',padding:'1px 6px',borderRadius:9,fontWeight:700}}>{t.you}</span>}
+                    {/* Avatar */}
+                    <div style={{width:36,height:36,borderRadius:'50%',flexShrink:0,
+                      background:(m.col||'#4F8EF7')+'30',border:`2px solid ${m.col||'#4F8EF7'}60`,
+                      display:'flex',alignItems:'center',justifyContent:'center',
+                      fontFamily:'var(--ff)',fontSize:14,color:'#fff',position:'relative'}}>
+                      {m.ini}
+                      <div style={{position:'absolute',bottom:-2,right:-2,background:'var(--surf)',
+                        borderRadius:'50%',width:14,height:14,display:'flex',alignItems:'center',
+                        justifyContent:'center',fontSize:7,border:'1px solid var(--br)'}}>
+                        {m.locked?'🔒':'✏️'}
+                      </div>
                     </div>
-                    <div style={{fontSize:11,color:'var(--muted)',marginTop:1}}>
-                      {(m.bets||[]).length} pronósticos · {m.locked
-                        ?`🔒 ${new Date(m.lockedAt).toLocaleDateString('es',{day:'numeric',month:'short'})}`
-                        :'⚡ Sin guardar'}
+                    {/* Info */}
+                    <div style={{flex:1,minWidth:0}}>
+                      <div style={{fontWeight:700,fontSize:13,display:'flex',alignItems:'center',gap:5,marginBottom:2}}>
+                        <span style={{overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{m.name}</span>
+                        {m.id==='user'&&<span style={{fontSize:8,background:'rgba(246,201,14,.15)',
+                          color:'var(--gold)',padding:'1px 5px',borderRadius:8,fontWeight:700,flexShrink:0}}>{t.you}</span>}
+                      </div>
+                      {/* Barra de progreso relativa al 1° */}
+                      <div style={{height:4,background:'rgba(255,255,255,.08)',borderRadius:2,marginBottom:3,overflow:'hidden'}}>
+                        <div style={{height:'100%',borderRadius:2,
+                          background:i===0?'var(--gold)':i===1?'#C0C0C0':i===2?'#CD7F32':'var(--acc)',
+                          width:`${pct}%`,transition:'width .4s ease'}}/>
+                      </div>
+                      <div style={{fontSize:10,color:'var(--muted)',display:'flex',gap:8}}>
+                        {acc!=null&&<span style={{color:'var(--grn)'}}>✓ {m.correct}/{m.total} ({acc}%)</span>}
+                        <span>{m.locked?`🔒 ${new Date(m.lockedAt).toLocaleDateString('es',{day:'numeric',month:'short'})}`:'⚡ Sin guardar'}</span>
+                      </div>
                     </div>
-                  </div>
-                  <div style={{textAlign:'right',flexShrink:0}}>
-                    <div style={{fontFamily:'var(--ff)',fontSize:30,lineHeight:1,
-                      color:i===0?'var(--gold)':i===1?'#C0C0C0':i===2?'#CD7F32':'var(--txt)'}}>{m.pts||0}</div>
-                    <div style={{fontSize:9,color:'var(--muted)',fontWeight:700}}>{t.points}</div>
+                    {/* Puntos */}
+                    <div style={{textAlign:'right',flexShrink:0}}>
+                      <div style={{fontFamily:'var(--ff)',fontSize:26,lineHeight:1,
+                        color:i===0?'var(--gold)':i===1?'#C0C0C0':i===2?'#CD7F32':'var(--txt)'}}>{m.pts||0}</div>
+                      <div style={{fontSize:8,color:'var(--muted)',fontWeight:700}}>PTS</div>
+                    </div>
                   </div>
                 </div>
-              ))}
+                );
+              })}
               {/* Points table */}
               <div style={{margin:'14px 16px',background:'var(--surf)',borderRadius:12,
                 padding:14,border:'1px solid var(--br)'}}>
@@ -4615,14 +4660,14 @@ function BetsScreen({bets,placeBet,credito,creditoLoading,onPagar,onReset,betsSa
               {t.best_scorers}
             </div>
             <div style={{fontSize:10,color:'var(--muted)'}}>
-              Selecciona al 1°, 2° y 3° goleador · 8🪙 cada uno · Total: 24🪙
+              Selecciona al 1°, 2° y 3° goleador del Mundial
             </div>
           </div>
         </div>
         {[
-          {key:'goleador-1',label:'🥇 1er Goleador',rank:1},
-          {key:'goleador-2',label:'🥈 2do Goleador',rank:2},
-          {key:'goleador-3',label:'🥉 3er Goleador',rank:3},
+          {key:'goleador-1',label:'🥇 1er Goleador · 15🪙',rank:1},
+          {key:'goleador-2',label:'🥈 2do Goleador · 4🪙',rank:2},
+          {key:'goleador-3',label:'🥉 3er Goleador · 5🪙',rank:3},
         ].map(({key,label,rank})=>{
           const picked=getBet(key);
           return(
