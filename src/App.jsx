@@ -2324,6 +2324,7 @@ function BracketRound({title,slots,color='var(--acc)',icon=''}){
 }
 
 function BracketView({bracket}){
+  const t=useLang();
   if(!bracket) return null;
   const winner = bracket.final?.winner;
   return(
