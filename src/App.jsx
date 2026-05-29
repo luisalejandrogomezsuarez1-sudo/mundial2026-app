@@ -3503,87 +3503,189 @@ function GruposScreen({user,userBets,credito,creditoLoading,onPagar}){
   );
 
   // ── LIST ──
+  const [membersModal,setMembersModal]=useState(null); // grupo cuyo modal de miembros está abierto
+
   if(view==='list')return(
     <div className="scr fin">
-      <div style={{padding:'18px 16px 8px'}}>
-        <div style={{fontFamily:'var(--ff)',fontSize:28,letterSpacing:2}}>GRUPOS</div>
-        <div style={{fontSize:12,color:'var(--muted)'}}>Compite con amigos · Pronósticos bloqueados</div>
+      {/* Header compacto */}
+      <div style={{padding:'14px 16px 6px',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+        <div style={{fontFamily:'var(--ff)',fontSize:24,letterSpacing:2}}>GRUPOS</div>
+        <div style={{display:'flex',gap:8}}>
+          <button onClick={()=>setView('join')}
+            style={{background:'var(--surf)',color:'var(--txt)',border:'1.5px solid var(--br)',
+              borderRadius:10,padding:'8px 12px',fontFamily:'var(--fb)',fontSize:12,fontWeight:700,cursor:'pointer'}}>
+            🔗 Unirse
+          </button>
+          <button onClick={()=>setView('create')}
+            style={{background:'var(--gold)',color:'#000',border:'none',borderRadius:10,
+              padding:'8px 14px',fontFamily:'var(--ff)',fontSize:14,letterSpacing:.5,cursor:'pointer'}}>
+            + Crear
+          </button>
+        </div>
       </div>
-      <div style={{display:'flex',gap:10,padding:'4px 16px 14px'}}>
-        <button onClick={()=>setView('create')} style={{flex:1,background:'var(--gold)',color:'#000',
-          border:'none',borderRadius:12,padding:'13px 8px',fontFamily:'var(--ff)',fontSize:17,
-          letterSpacing:1,cursor:'pointer'}}>+ CREAR</button>
-        <button onClick={()=>setView('join')} style={{flex:1,background:'var(--surf)',color:'var(--txt)',
-          border:'1.5px solid var(--br)',borderRadius:12,padding:'13px 8px',fontFamily:'var(--fb)',
-          fontSize:13,fontWeight:700,cursor:'pointer'}}>🔗 Unirse con código</button>
+
+      {/* Lista compacta */}
+      <div style={{padding:'6px 12px 16px'}}>
+        {groups.length===0&&(
+          <div style={{textAlign:'center',padding:'32px 16px',color:'var(--muted)',fontSize:13}}>
+            No tienes grupos aún.<br/>
+            <span style={{fontSize:11,color:'var(--dim)'}}>Crea uno o únete con un código.</span>
+          </div>
+        )}
+        {groups.map(g=>{
+          const locked=isLocked(g.id);
+          const allM=getAllMembers(g,g.id);
+          const leader=allM[0];
+          return(
+            <div key={g.id}
+              style={{background:'var(--surf)',borderRadius:12,border:'1px solid var(--br)',
+                marginBottom:8,overflow:'hidden'}}>
+              {/* Fila principal — toca para entrar al detalle */}
+              <div onClick={()=>goDetail(g)}
+                style={{padding:'10px 12px',display:'flex',alignItems:'center',gap:10,cursor:'pointer'}}>
+                {/* Icono/inicial del grupo */}
+                <div style={{width:40,height:40,borderRadius:10,flexShrink:0,
+                  background:'rgba(246,201,14,.12)',border:'1px solid rgba(246,201,14,.2)',
+                  display:'flex',alignItems:'center',justifyContent:'center',
+                  fontFamily:'var(--ff)',fontSize:18,color:'var(--gold)'}}>
+                  {(g.name||'G')[0].toUpperCase()}
+                </div>
+                {/* Info */}
+                <div style={{flex:1,minWidth:0}}>
+                  <div style={{fontWeight:700,fontSize:13,overflow:'hidden',
+                    textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{g.name}</div>
+                  <div style={{display:'flex',gap:6,alignItems:'center',marginTop:2}}>
+                    <span style={{fontSize:9,background:'var(--surf2)',padding:'1px 6px',
+                      borderRadius:8,color:'var(--dim)',fontFamily:'var(--ff)',letterSpacing:.5}}>
+                      {g.code}
+                    </span>
+                    {locked
+                      ?<span style={{fontSize:10,color:'var(--grn)',fontWeight:700}}>🔒 Guardado</span>
+                      :<span style={{fontSize:10,color:'var(--gold)',fontWeight:700}}>✏️ Abierto</span>}
+                  </div>
+                </div>
+                {/* Flecha */}
+                <span style={{fontSize:16,color:'var(--muted)',flexShrink:0}}>›</span>
+              </div>
+              {/* Barra inferior — avatares + botón ver miembros */}
+              <div style={{padding:'6px 12px 8px',borderTop:'1px solid rgba(255,255,255,.05)',
+                display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+                {/* Avatares apilados */}
+                <div style={{display:'flex',alignItems:'center',gap:0}}>
+                  {allM.slice(0,6).map((m,i)=>(
+                    <div key={m.id} title={m.name}
+                      style={{width:22,height:22,borderRadius:'50%',flexShrink:0,
+                        background:(m.col||'#4F8EF7')+'44',
+                        border:'1.5px solid var(--surf)',
+                        display:'flex',alignItems:'center',justifyContent:'center',
+                        fontSize:8,fontWeight:800,color:'#fff',
+                        marginLeft:i>0?-6:0,zIndex:6-i}}>
+                      {(m.ini||'?')[0]}
+                    </div>
+                  ))}
+                  {allM.length>6&&(
+                    <div style={{width:22,height:22,borderRadius:'50%',flexShrink:0,
+                      background:'var(--surf2)',border:'1.5px solid var(--surf)',
+                      display:'flex',alignItems:'center',justifyContent:'center',
+                      fontSize:7,fontWeight:700,color:'var(--muted)',marginLeft:-6}}>
+                      +{allM.length-6}
+                    </div>
+                  )}
+                  <span style={{fontSize:10,color:'var(--muted)',marginLeft:8}}>
+                    {allM.length} miembro{allM.length!==1?'s':''}
+                  </span>
+                </div>
+                {/* Botón ver miembros */}
+                <button
+                  onClick={e=>{e.stopPropagation();setMembersModal({g,allM});}}
+                  style={{background:'rgba(79,142,247,.12)',border:'1px solid rgba(79,142,247,.2)',
+                    color:'var(--acc)',borderRadius:8,padding:'4px 10px',fontSize:11,
+                    fontWeight:700,cursor:'pointer',fontFamily:'var(--fb)'}}>
+                  👥 Ver
+                </button>
+              </div>
+            </div>
+          );
+        })}
       </div>
-      <div style={{padding:'0 16px 6px',fontSize:11,fontWeight:700,color:'var(--muted)',letterSpacing:.8}}>
-        MIS GRUPOS ({groups.length})
-      </div>
-      {groups.map(g=>{
-        const locked=isLocked(g.id);
-        const allM=getAllMembers(g,g.id);
-        return(
-          <div key={g.id} onClick={()=>goDetail(g)}
-            style={{margin:'0 16px 11px',background:'var(--surf)',borderRadius:14,
-              border:'1px solid var(--br)',overflow:'hidden',cursor:'pointer',transition:'border-color .15s'}}
-            onMouseEnter={e=>e.currentTarget.style.borderColor='rgba(246,201,14,.3)'}
-            onMouseLeave={e=>e.currentTarget.style.borderColor='rgba(255,255,255,.08)'}>
-            <div style={{padding:'12px 14px',display:'flex',justifyContent:'space-between',alignItems:'flex-start'}}>
-              <div style={{flex:1,minWidth:0}}>
-                <div style={{fontWeight:700,fontSize:15,marginBottom:2}}>{g.name}</div>
-                {g.desc&&<div style={{fontSize:11,color:'var(--muted)',marginBottom:4}}>{g.desc}</div>}
-                <div style={{display:'flex',gap:8,alignItems:'center',flexWrap:'wrap'}}>
-                  <span style={{fontSize:11,background:'var(--surf2)',padding:'2px 8px',borderRadius:20,
-                    color:'var(--dim)',fontFamily:'var(--ff)',letterSpacing:.5}}>{g.code}</span>
-                  <span style={{fontSize:11,color:'var(--muted)'}}>{allM.length} miembros</span>
+
+      {/* ── MODAL DE MIEMBROS ── */}
+      {membersModal&&(
+        <div onClick={()=>setMembersModal(null)}
+          style={{position:'fixed',inset:0,zIndex:100,background:'rgba(0,0,0,.65)',
+            backdropFilter:'blur(4px)',display:'flex',alignItems:'flex-end',justifyContent:'center',
+            padding:'0 0 76px'}}>
+          <div onClick={e=>e.stopPropagation()}
+            style={{width:'min(420px,96vw)',background:'var(--surf)',
+              borderRadius:'16px 16px 12px 12px',border:'1px solid var(--br)',
+              overflow:'hidden',boxShadow:'0 -8px 40px rgba(0,0,0,.6)',maxHeight:'70vh',
+              display:'flex',flexDirection:'column'}}>
+            {/* Cabecera del modal */}
+            <div style={{padding:'14px 16px 12px',borderBottom:'1px solid var(--br)',
+              display:'flex',alignItems:'center',justifyContent:'space-between',flexShrink:0}}>
+              <div>
+                <div style={{fontFamily:'var(--ff)',fontSize:16,letterSpacing:1,color:'var(--txt)'}}>
+                  {membersModal.g.name}
+                </div>
+                <div style={{fontSize:11,color:'var(--muted)',marginTop:2}}>
+                  {membersModal.allM.length} miembro{membersModal.allM.length!==1?'s':''} · {membersModal.g.code}
                 </div>
               </div>
-              <div style={{textAlign:'right',flexShrink:0,marginLeft:8}}>
-                {locked
-                  ?<div style={{fontSize:12,color:'var(--grn)',fontWeight:700}}>{t.locked_state}</div>
-                  :<div style={{fontSize:12,color:'var(--gold)',fontWeight:700}}>{t.open_state}</div>}
-                <div style={{fontSize:11,color:'var(--muted)',marginTop:2}}>{t.view_group}</div>
-              </div>
+              <button onClick={()=>setMembersModal(null)}
+                style={{background:'rgba(255,255,255,.1)',border:'none',color:'var(--txt)',
+                  borderRadius:8,width:30,height:30,cursor:'pointer',fontSize:14,
+                  display:'flex',alignItems:'center',justifyContent:'center'}}>✕</button>
             </div>
-            <div style={{padding:'8px 14px',borderTop:'1px solid var(--br)',
-              display:'flex',alignItems:'center',justifyContent:'space-between'}}>
-              {/* Stacked avatars */}
-              <div style={{display:'flex',alignItems:'center'}}>
-                {allM.slice(0,5).map((m,i)=>(
-                  <div key={m.id} title={m.name}
-                    style={{width:28,height:28,borderRadius:'50%',
-                      background:`linear-gradient(135deg,${m.col}55,${m.col}22)`,
-                      border:`2px solid var(--surf)`,
-                      display:'flex',alignItems:'center',justifyContent:'center',
-                      fontSize:9,fontWeight:800,color:'#fff',
-                      marginLeft:i>0?-8:0,zIndex:5-i,flexShrink:0,
-                      boxShadow:`0 0 0 1px ${m.col}44`}}>
-                    {(m.ini||'?').slice(0,2)}
+            {/* Lista de miembros */}
+            <div style={{overflowY:'auto',flex:1}}>
+              {membersModal.allM.length===0&&(
+                <div style={{padding:'24px',textAlign:'center',color:'var(--muted)',fontSize:13}}>
+                  Sin miembros aún
+                </div>
+              )}
+              {membersModal.allM.map((m,i)=>(
+                <div key={m.id} style={{display:'flex',alignItems:'center',gap:10,
+                  padding:'10px 16px',borderBottom:'1px solid rgba(255,255,255,.05)',
+                  background:m.id==='user'?'rgba(246,201,14,.03)':'transparent'}}>
+                  {/* Posición */}
+                  <div style={{width:22,flexShrink:0,textAlign:'center',fontSize:11,
+                    color:i===0?'var(--gold)':i===1?'#C0C0C0':i===2?'#CD7F32':'var(--muted)',fontWeight:700}}>
+                    {i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1}
                   </div>
-                ))}
-                {allM.length>5&&(
-                  <div style={{width:28,height:28,borderRadius:'50%',
-                    background:'var(--surf2)',border:'2px solid var(--surf)',
+                  {/* Avatar */}
+                  <div style={{width:36,height:36,borderRadius:'50%',flexShrink:0,
+                    background:(m.col||'#4F8EF7')+'30',
+                    border:`2px solid ${(m.col||'#4F8EF7')}60`,
                     display:'flex',alignItems:'center',justifyContent:'center',
-                    fontSize:8,fontWeight:700,color:'var(--muted)',marginLeft:-8,flexShrink:0}}>
-                    +{allM.length-5}
+                    fontFamily:'var(--ff)',fontSize:14,color:'#fff'}}>
+                    {m.ini||'?'}
                   </div>
-                )}
-              </div>
-              {/* Member count + top scorer */}
-              <div style={{textAlign:'right'}}>
-                <div style={{fontSize:10,color:'var(--muted)'}}>{allM.length} miembro{allM.length!==1?'s':''}</div>
-                {allM[0]&&allM[0].pts>0&&(
-                  <div style={{fontSize:10,color:'var(--gold)',fontWeight:600}}>
-                    🥇 {allM[0].name?.split(' ')[0]} · {allM[0].pts}pts
+                  {/* Nombre e info */}
+                  <div style={{flex:1,minWidth:0}}>
+                    <div style={{fontSize:13,fontWeight:700,overflow:'hidden',
+                      textOverflow:'ellipsis',whiteSpace:'nowrap',display:'flex',alignItems:'center',gap:5}}>
+                      {m.name}
+                      {m.id==='user'&&<span style={{fontSize:8,background:'rgba(246,201,14,.15)',
+                        color:'var(--gold)',padding:'1px 5px',borderRadius:8,fontWeight:700,flexShrink:0}}>TÚ</span>}
+                    </div>
+                    <div style={{fontSize:10,color:'var(--muted)',marginTop:1}}>
+                      {m.locked?`🔒 Guardado ${new Date(m.lockedAt).toLocaleDateString('es',{day:'numeric',month:'short'})}`:'✏️ Sin guardar'}
+                    </div>
                   </div>
-                )}
-              </div>
+                  {/* Puntos */}
+                  <div style={{textAlign:'right',flexShrink:0}}>
+                    <div style={{fontFamily:'var(--ff)',fontSize:20,lineHeight:1,
+                      color:i===0?'var(--gold)':i===1?'#C0C0C0':i===2?'#CD7F32':'var(--txt)'}}>
+                      {m.pts||0}
+                    </div>
+                    <div style={{fontSize:8,color:'var(--muted)',fontWeight:700}}>PTS</div>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
-        );
-      })}
+        </div>
+      )}
     </div>
   );
 
