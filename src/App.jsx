@@ -5345,15 +5345,13 @@ export default function App(){
       } else if(dbUser?.paquetes>0){
         setCredito({coins:COINS_PER_PAGO,paquetes:dbUser.paquetes,paidAt:Date.now()});
       } else {
-        // Fallback: verificar Firestore — el admin pudo haber regalado monedas desde otro dispositivo
+        // Fallback: verificar Firestore directamente con el doc del usuario (1 lectura, más rápido y confiable)
         setCreditoLoading(true);
         const checkFirestoreCredit=async(attempts=0)=>{
-          const getFn=fbGetAllUsers||window._fbGetAllUsers;
-          if(getFn){
+          const getOneFn=window._fbGetUser; // getUserFromFirestore — lectura directa por ID
+          if(getOneFn){
             try{
-              // maxAge=0 → siempre lee fresco, sin caché (evita que regalo reciente no se detecte)
-              const allUsers=await getAllUsersCached(getFn,0);
-              const fsUser=allUsers.find(x=>x.id===u.id);
+              const fsUser=await getOneFn(u.id);
               if(fsUser?.gifted){
                 const gc=fsUser.giftedCoins||1000;
                 setCredito({coins:gc,paquetes:1,paidAt:Date.now(),gifted:true,giftedCoins:gc});
@@ -5365,7 +5363,7 @@ export default function App(){
               }
             }catch(e){console.warn('checkFirestoreCredit error:',e);}
             setCreditoLoading(false);
-          } else if(attempts<10){ setTimeout(()=>checkFirestoreCredit(attempts+1),800); }
+          } else if(attempts<15){ setTimeout(()=>checkFirestoreCredit(attempts+1),600); }
           else { setCreditoLoading(false); }
         };
         checkFirestoreCredit();

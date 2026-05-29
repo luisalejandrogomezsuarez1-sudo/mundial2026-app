@@ -63,12 +63,15 @@ export async function getUserFromFirestore(userId) {
 }
 
 export async function giftCoinsInFirestore(userId, gifted, giftedCoins=1000) {
+  if(!userId) return;
   try {
-    await updateDoc(doc(db,'users', userId), {
+    // setDoc+merge en vez de updateDoc: crea el documento si no existe todavía
+    // (usuarios nuevos pueden no tener doc en Firestore cuando el admin regala)
+    await setDoc(doc(db,'users', userId), {
       gifted,
       giftedAt:    gifted ? new Date().toISOString() : null,
       giftedCoins: gifted ? giftedCoins : null,
-    });
+    }, { merge: true });
   } catch(e) { console.warn('giftCoins error:', e); }
 }
 
