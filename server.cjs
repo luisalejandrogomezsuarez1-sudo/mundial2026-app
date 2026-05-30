@@ -539,6 +539,99 @@ app.delete('/api/admin/groups/by-name/:name', async(req,res)=>{
   res.json({ok:true, deleted, names:matches.map(g=>g.name)});
 });
 
+// ── WELCOME EMAIL — Brevo REST API ─────────────────────────────────────────
+const BREVO_KEY    = process.env.BREVO_API_KEY || '';
+const APP_URL      = process.env.APP_URL        || 'https://mundial2026-app.up.railway.app';
+const EMAIL_FROM   = process.env.EMAIL_FROM     || 'noreply@mundial2026.app';
+const EMAIL_NAME   = 'Mundial 2026';
+
+app.post('/api/welcome-email', async(req,res)=>{
+  const { email, name } = req.body || {};
+  if(!email) return res.status(400).json({ok:false, error:'Falta email'});
+  if(!BREVO_KEY){
+    console.warn('⚠ BREVO_API_KEY no configurada — email no enviado');
+    return res.json({ok:false, error:'Email no configurado'});
+  }
+  const displayName = (name||'').split(' ')[0] || 'futbolero';
+  const html = `<!DOCTYPE html>
+<html lang="es">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bienvenido a Mundial 2026</title>
+<style>
+  body{margin:0;padding:0;background:#0A1628;font-family:'Segoe UI',Arial,sans-serif;color:#fff}
+  .wrap{max-width:560px;margin:0 auto;padding:32px 16px}
+  .logo{text-align:center;font-size:28px;font-weight:900;letter-spacing:3px;color:#FFD700;margin-bottom:4px}
+  .sub{text-align:center;font-size:12px;color:#8899AA;letter-spacing:2px;margin-bottom:32px}
+  .card{background:#0D2040;border-radius:16px;padding:32px;border:1px solid #1B3A60}
+  h1{font-size:22px;margin:0 0 8px;color:#fff}
+  p{font-size:15px;line-height:1.6;color:#C8D8E8;margin:12px 0}
+  .divider{border:none;border-top:1px solid #1B3A60;margin:24px 0}
+  .benefits-title{font-size:13px;font-weight:700;color:#FFD700;letter-spacing:1px;margin-bottom:12px;text-transform:uppercase}
+  .benefit{display:flex;align-items:flex-start;gap:10px;margin:10px 0;font-size:14px;color:#C8D8E8}
+  .benefit-icon{font-size:18px;flex-shrink:0;margin-top:1px}
+  .price-box{background:#0A2240;border:2px solid #FFD700;border-radius:12px;padding:16px 20px;margin:20px 0;text-align:center}
+  .price{font-size:32px;font-weight:900;color:#FFD700;line-height:1}
+  .price-label{font-size:12px;color:#8899AA;margin-top:4px}
+  .cta{display:block;background:#FFD700;color:#000;text-decoration:none;font-weight:900;font-size:15px;letter-spacing:1px;text-align:center;padding:14px 24px;border-radius:10px;margin-top:24px}
+  .footer{text-align:center;font-size:11px;color:#445566;margin-top:24px;line-height:1.6}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="logo">⚽ MUNDIAL 2026</div>
+  <div class="sub">FIFA WORLD CUP · USA · MÉXICO · CANADÁ</div>
+  <div class="card">
+    <h1>¡Bienvenido, ${displayName}! 🎉</h1>
+    <p>Gracias por unirte a <strong>Mundial 2026</strong>, la app para vivir el torneo más grande del mundo en tiempo real.</p>
+    <p>Tu cuenta ya está activa. Puedes seguir los partidos en vivo, consultar la tabla de posiciones, ver los máximos goleadores y mucho más — completamente gratis.</p>
+    <hr class="divider">
+    <div class="benefits-title">Desbloquea la experiencia completa</div>
+    <div class="benefit"><span class="benefit-icon">🔮</span><span><strong>Pronósticos premium</strong> — Predice resultados antes de cada partido y compite con otros usuarios.</span></div>
+    <div class="benefit"><span class="benefit-icon">💬</span><span><strong>Grupos privados de chat</strong> — Crea o únete a grupos exclusivos para ver el Mundial con tus amigos.</span></div>
+    <div class="benefit"><span class="benefit-icon">🏆</span><span><strong>Tabla de líderes</strong> — Sube posiciones según la precisión de tus pronósticos.</span></div>
+    <div class="price-box">
+      <div class="price">$20 MXN</div>
+      <div class="price-label">pago único · acceso completo todo el torneo</div>
+    </div>
+    <a href="${APP_URL}" class="cta">ABRIR LA APP →</a>
+  </div>
+  <div class="footer">
+    Recibiste este correo porque te registraste en Mundial 2026.<br>
+    Si no fuiste tú, puedes ignorar este mensaje.
+  </div>
+</div>
+</body>
+</html>`;
+
+  try{
+    const r = await fetch('https://api.brevo.com/v3/smtp/email',{
+      method:'POST',
+      headers:{
+        'api-key': BREVO_KEY,
+        'Content-Type':'application/json',
+        'Accept':'application/json',
+      },
+      body: JSON.stringify({
+        sender:  { name: EMAIL_NAME, email: EMAIL_FROM },
+        to:      [{ email, name: name||'' }],
+        subject: '⚽ ¡Bienvenido a Mundial 2026!',
+        htmlContent: html,
+      }),
+    });
+    if(r.ok){
+      console.log(`📧 Bienvenida enviada a ${email}`);
+      res.json({ok:true});
+    }else{
+      const err = await r.text();
+      console.warn(`⚠ Brevo error ${r.status}:`, err);
+      res.json({ok:false, error:`Brevo ${r.status}`});
+    }
+  }catch(e){
+    console.warn('welcome-email error:', e.message);
+    res.json({ok:false, error:e.message});
+  }
+});
+
 // Serve React app
 
 app.use(express.static(path.join(__dirname,'dist')));

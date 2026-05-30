@@ -1503,6 +1503,8 @@ function Auth({onLogin,onLangChange=()=>{},logoutMsg='',onClearMsg=()=>{}}){
       await dbSave([...users.filter(u=>u.email.toLowerCase()!==email.toLowerCase().trim()),newUser]);
       setLoading(false);
       onLogin(newUser);
+      fetch('/api/welcome-email',{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({email:newUser.email,name:newUser.name})}).catch(()=>{});
 
     }else{
       // Login: find user
