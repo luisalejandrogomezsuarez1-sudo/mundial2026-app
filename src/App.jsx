@@ -1704,6 +1704,57 @@ function MatchCard({m,onClick}){
   );
 }
 
+// ── Jun11Card: fondo de estadio para partidos del 11 jun ─────────
+// TEMPORAL — para eliminar: borrar este componente + cambiar las dos
+// líneas con isoDate==='2026-06-11' en HomeScreen y CalScreen por <NextCard/>
+function Jun11Card({m}){
+  const wiki=VENUES.find(v=>v.n===m.venue)?.wk;
+  return(
+    <div style={{margin:'0 16px 11px',borderRadius:'var(--r)',overflow:'hidden',
+      position:'relative',height:168,border:'1px solid var(--br)'}}>
+      {/* Fondo: foto del estadio vía Wikipedia (imágenes optimizadas) */}
+      {wiki&&<WikiPhoto wiki={wiki} sz="100%" radius="0"
+        style={{position:'absolute',inset:0,width:'100%',height:'100%',
+          borderRadius:0,objectFit:'cover',objectPosition:'center top'}}/>}
+      {/* Overlay degradado */}
+      <div style={{position:'absolute',inset:0,
+        background:'linear-gradient(180deg,rgba(0,0,0,.28) 0%,rgba(0,0,0,.74) 100%)'}}/>
+      {/* Contenido del partido */}
+      <div style={{position:'relative',zIndex:1,height:'100%',
+        display:'flex',flexDirection:'column',justifyContent:'space-between',
+        padding:'10px 14px'}}>
+        {/* Cabecera: fase · fecha · hora */}
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+          <span style={{fontSize:10,color:'rgba(255,255,255,.8)',fontWeight:700,letterSpacing:.5}}>
+            {m.phase} · {m.date}
+          </span>
+          <span style={{fontSize:10,color:'rgba(255,255,255,.7)'}}>🕐 {m.time}</span>
+        </div>
+        {/* Banderas y equipos */}
+        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+          <div style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:3}}>
+            <span style={{fontSize:38}}>{FLAGS[m.home]||'🏴'}</span>
+            <span style={{fontWeight:700,fontSize:13,color:'#fff',
+              textShadow:'0 1px 6px rgba(0,0,0,.9)',textAlign:'center'}}>{m.home}</span>
+          </div>
+          <div style={{padding:'0 8px'}}>
+            <div style={{fontFamily:'var(--ff)',fontSize:18,color:'rgba(255,255,255,.45)',letterSpacing:3}}>VS</div>
+          </div>
+          <div style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:3}}>
+            <span style={{fontSize:38}}>{FLAGS[m.away]||'🏴'}</span>
+            <span style={{fontWeight:700,fontSize:13,color:'#fff',
+              textShadow:'0 1px 6px rgba(0,0,0,.9)',textAlign:'center'}}>{m.away}</span>
+          </div>
+        </div>
+        {/* Pie: sede */}
+        <div style={{textAlign:'center',fontSize:10,color:'rgba(255,255,255,.65)'}}>
+          🏟 {m.venue} · {m.city}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── Next Match Card ──────────────────────────────
 function NextCard({m}){
   return(
@@ -2102,7 +2153,7 @@ function HomeScreen({onMatch,onGoToCal}){
         <div style={{fontFamily:'var(--ff)',fontSize:22,letterSpacing:1}}>{t.next_matches}</div>
         <span onClick={onGoToCal} style={{fontSize:12,color:'var(--gold)',fontWeight:600,cursor:'pointer'}}>{t.see_all}</span>
       </div>
-      {NEXT_MATCHES.slice(0,4).map(m=><NextCard key={m.id} m={m}/>)}
+      {NEXT_MATCHES.slice(0,4).map(m=>m.isoDate==='2026-06-11'?<Jun11Card key={m.id} m={m}/>:<NextCard key={m.id} m={m}/>)}
     </div>
   );
 }
@@ -2250,7 +2301,7 @@ function CalScreen(){
             color:'var(--muted)',letterSpacing:.8}}>
             {dateLabel(date)} · {fmt(date).toUpperCase()}
           </div>
-          {byDate[date].map(m=><NextCard key={m.id} m={m}/>)}
+          {byDate[date].map(m=>m.isoDate==='2026-06-11'?<Jun11Card key={m.id} m={m}/>:<NextCard key={m.id} m={m}/>)}
         </div>
       ))}
 
