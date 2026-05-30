@@ -3691,12 +3691,12 @@ function GruposScreen({user,userBets,credito,creditoLoading,onPagar,onRecheckAcc
           <button onClick={()=>setView('join')}
             style={{background:'var(--surf)',color:'var(--txt)',border:'1.5px solid var(--br)',
               borderRadius:10,padding:'8px 12px',fontFamily:'var(--fb)',fontSize:12,fontWeight:700,cursor:'pointer'}}>
-            🔗 Unirse
+            🔗 {t('join_group')}
           </button>
           <button onClick={()=>setView('create')}
             style={{background:'var(--gold)',color:'#000',border:'none',borderRadius:10,
               padding:'8px 14px',fontFamily:'var(--ff)',fontSize:14,letterSpacing:.5,cursor:'pointer'}}>
-            + Crear
+            + {t('create_group')}
           </button>
         </div>
       </div>
