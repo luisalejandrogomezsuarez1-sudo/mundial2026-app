@@ -2,8 +2,6 @@ import { useState, useEffect, useCallback, useRef, createContext, useContext } f
 
 // ── Firebase ACTIVO ─────────────────────────────────────────────
 let fbSendMsg = null, fbSubscribeChat = null, fbSaveUser = null, fbGetAllUsers = null, fbGiftCoins = null, fbSaveGroup = null, fbGetGroupByCode = null, fbDeleteUser = null;
-const FB_ACTIVE = true;
-
 import('./firebase.js').then(fb => {
   fbSendMsg       = fb.sendChatMessage;
   fbSubscribeChat = fb.subscribeToChatMessages;
@@ -521,6 +519,8 @@ const LANG_BY_NAT={
   // French
   'Francia':'fr','Bélgica':'fr','Suiza':'fr','Senegal':'fr','Costa de Marfil':'fr',
   'Marruecos':'fr','Argelia':'fr','Túnez':'fr','Haití':'fr','Camerún':'fr',
+  // Korean
+  'Corea del Sur':'ko','Rep. de Corea':'ko',
 };
 
 const LANG_FLAGS={'es':'🇲🇽','en':'🇺🇸','pt':'🇧🇷','fr':'🇫🇷','zh':'🇨🇳','ko':'🇰🇷'};
@@ -984,14 +984,6 @@ const GRP_WIN=[
 
 
 
-// ── Demo Group Members (example group participants) ──────────────────────────
-const DEMO_MEMBERS=[
-  {id:'m1',name:'Carlos M.',ini:'CM',col:'#4F8EF7',locked:false,lockedAt:null,pts:0,bets:[]},
-  {id:'m2',name:'Ana R.',  ini:'AR',col:'#1EC66C',locked:false,lockedAt:null,pts:0,bets:[]},
-  {id:'m3',name:'Miguel T.',ini:'MT',col:'#F6C90E',locked:false,lockedAt:null,pts:0,bets:[]},
-  {id:'m4',name:'Sofía L.', ini:'SL',col:'#E53E3E',locked:false,lockedAt:null,pts:0,bets:[]},
-  {id:'m5',name:'Roberto V.',ini:'RV',col:'#A855F7',locked:false,lockedAt:null,pts:0,bets:[]},
-];
 // ── Coin System ───────────────────────────────────
 const COINS_PER_PAGO=1000; // 1 pago de $20 MXN = 1000 monedas
 // 72 partidos × (1X2:7 + BTTS:6=13) = 936
