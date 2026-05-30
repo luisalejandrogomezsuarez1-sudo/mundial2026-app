@@ -145,19 +145,18 @@ const WC_END   = new Date('2026-07-20');
 const isActive = ()=> new Date()>=WC_START && new Date()<=WC_END;
 
 function startPolling(){
-  // Siempre sincronizar fixtures (horarios confirmados por FIFA)
-  pollFixtures();
-  setInterval(pollFixtures, 6*60*60000); // cada 6h
+  pollFixtures(); // llamada inicial siempre
   if(isActive()){
     console.log('⚽ Mundial ACTIVO — polling cada 60s');
     pollLive();      setInterval(pollLive,      60000);
     pollStandings(); setInterval(pollStandings, 5*60000);
     pollScorers();   setInterval(pollScorers,   10*60000);
-    setInterval(pollFixtures, 30*60000); // fixtures también cada 30min
+    setInterval(pollFixtures, 30*60000); // cada 30min durante el Mundial
   } else {
     console.log('⏳ Pre-Mundial — clasificación y fixtures cada 6h');
     pollStandings(); pollScorers();
     setInterval(()=>{ pollStandings(); pollScorers(); }, 6*60*60000);
+    setInterval(pollFixtures, 6*60*60000); // cada 6h fuera del Mundial
   }
 }
 
