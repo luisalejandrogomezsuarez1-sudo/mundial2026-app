@@ -501,10 +501,10 @@ app.post('/api/admin/auth', (req,res)=>{
 });
 
 // ── ADMIN: listar y borrar grupos por nombre (protegido con clave) ──────────
-const ADMIN_KEY = process.env.ADMIN_KEY || 'wc2026-admin-local';
+const ADMIN_KEY = process.env.ADMIN_KEY || '';
 
 app.get('/api/admin/groups', (req,res)=>{
-  if(req.query.key !== ADMIN_KEY) return res.status(403).json({error:'Forbidden'});
+  if(!ADMIN_KEY || req.query.key !== ADMIN_KEY) return res.status(403).json({error:'Forbidden'});
   const list = Object.values(serverGroups).map(g=>({
     code:    g.code,
     name:    g.name,
@@ -516,7 +516,7 @@ app.get('/api/admin/groups', (req,res)=>{
 });
 
 app.delete('/api/admin/groups/by-name/:name', async(req,res)=>{
-  if(req.query.key !== ADMIN_KEY) return res.status(403).json({error:'Forbidden'});
+  if(!ADMIN_KEY || req.query.key !== ADMIN_KEY) return res.status(403).json({error:'Forbidden'});
   const name = decodeURIComponent(req.params.name).toLowerCase().trim();
   const matches = Object.values(serverGroups).filter(g=>(g.name||'').toLowerCase()===name);
   if(!matches.length) return res.json({ok:false, msg:'No encontrado'});
