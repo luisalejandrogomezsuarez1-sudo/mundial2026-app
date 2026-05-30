@@ -139,6 +139,51 @@ async function pollFixtures(){
   }catch(e){ console.warn('pollFixtures error:',e.message); }
 }
 
+// ── Poll bracket (llave eliminatoria) ───────────────────
+async function pollBracket(){
+  if(!AF_KEY) return;
+  try{
+    const data=await afFetch(`/fixtures?league=${WC_ID}&season=${WC_SEASON}`);
+    if(!data||!data.length) return;
+
+    const toSlot=f=>({
+      label: `${f.teams.home.name||'?'} vs ${f.teams.away.name||'?'}`,
+      date:  f.fixture.date
+        ?new Date(f.fixture.date).toLocaleDateString('es',{day:'numeric',month:'short'})
+        :'--',
+      venue: f.fixture.venue?.name||'',
+      home:  f.teams.home.name||null,
+      away:  f.teams.away.name||null,
+      hs:    f.goals.home??null,
+      as:    f.goals.away??null,
+      winner:f.teams.home.winner?f.teams.home.name
+             :f.teams.away.winner?f.teams.away.name
+             :null,
+    });
+
+    const r32=[],r16=[],qf=[],sf=[];
+    let tercero=null,final=null;
+
+    for(const f of data){
+      const r=(f.league.round||'').toLowerCase();
+      if     (r.includes('round of 32'))  r32.push(toSlot(f));
+      else if(r.includes('round of 16'))  r16.push(toSlot(f));
+      else if(r.includes('quarter'))      qf.push(toSlot(f));
+      else if(r.includes('semi'))         sf.push(toSlot(f));
+      else if(r.includes('third')||r.includes('3rd')) tercero=toSlot(f);
+      else if(r.includes('final')&&!r.includes('semi')&&!r.includes('quarter')
+              &&!r.includes('third')&&!r.includes('3rd'))
+        final=toSlot(f);
+    }
+
+    // No escribir si aún no hay partidos eliminatorios (fase de grupos activa)
+    if(!r32.length&&!r16.length&&!qf.length&&!sf.length&&!tercero&&!final) return;
+
+    await save('bracket',{r32,r16,qf,sf,tercero,final});
+    console.log(`[${new Date().toLocaleTimeString()}] 🏆 Bracket actualizado`);
+  }catch(e){console.warn('pollBracket error:',e.message);}
+}
+
 // ── Scheduling ──────────────────────────────────────────
 const WC_START = new Date('2026-06-11');
 const WC_END   = new Date('2026-07-20');
@@ -151,7 +196,8 @@ function startPolling(){
     pollLive();      setInterval(pollLive,      60000);
     pollStandings(); setInterval(pollStandings, 5*60000);
     pollScorers();   setInterval(pollScorers,   10*60000);
-    setInterval(pollFixtures, 30*60000); // cada 30min durante el Mundial
+    setInterval(pollFixtures, 30*60000);   // cada 30min durante el Mundial
+    pollBracket();   setInterval(pollBracket, 2*60*60000); // llave cada 2h
   } else {
     console.log('⏳ Pre-Mundial — clasificación y fixtures cada 6h');
     pollStandings(); pollScorers();
