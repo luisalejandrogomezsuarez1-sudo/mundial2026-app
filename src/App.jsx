@@ -2716,6 +2716,89 @@ function GolesScreen(){
 }
 
 
+function AdminDialog({dlg,onClose}){
+  const [val,setVal]=useState(dlg.defVal||'');
+  const [err,setErr]=useState('');
+  const [busy,setBusy]=useState(false);
+
+  if(dlg.type==='confirm'){
+    return(
+      <div style={{position:'fixed',inset:0,zIndex:200,background:'rgba(0,0,0,.72)',
+        backdropFilter:'blur(4px)',display:'flex',alignItems:'center',justifyContent:'center',padding:'0 24px'}}
+        onClick={onClose}>
+        <div onClick={e=>e.stopPropagation()}
+          style={{width:'min(360px,94vw)',background:'var(--surf)',borderRadius:16,
+            border:'1px solid var(--br)',padding:'24px',boxShadow:'0 8px 40px rgba(0,0,0,.6)'}}>
+          <div style={{fontFamily:'var(--ff)',fontSize:15,letterSpacing:1,color:'var(--gold)',
+            marginBottom:10,textAlign:'center'}}>{dlg.title}</div>
+          <div style={{fontSize:13,color:'var(--dim)',lineHeight:1.6,marginBottom:20,
+            textAlign:'center'}}>{dlg.msg}</div>
+          <div style={{display:'flex',gap:10}}>
+            <button onClick={onClose}
+              style={{flex:1,background:'rgba(255,255,255,.07)',border:'1px solid var(--br)',
+                color:'var(--txt)',borderRadius:10,padding:12,fontSize:13,
+                fontWeight:600,cursor:'pointer',fontFamily:'var(--fb)'}}>Cancelar</button>
+            <button onClick={async()=>{setBusy(true);await dlg.onOk();setBusy(false);}}
+              disabled={busy}
+              style={{flex:1,background:'var(--red)',border:'none',
+                color:'#fff',borderRadius:10,padding:12,fontSize:13,
+                fontWeight:700,cursor:'pointer',fontFamily:'var(--fb)'}}>
+              {busy?'…':'Confirmar'}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if(dlg.type==='input'){
+    const handleOk=async()=>{
+      const n=parseInt(val,10);
+      if(isNaN(n)||n<1||n>99999){setErr('Ingresa un número entre 1 y 99,999.');return;}
+      setErr('');setBusy(true);
+      await dlg.onOk(n);
+      setBusy(false);
+    };
+    return(
+      <div style={{position:'fixed',inset:0,zIndex:200,background:'rgba(0,0,0,.72)',
+        backdropFilter:'blur(4px)',display:'flex',alignItems:'center',justifyContent:'center',padding:'0 24px'}}
+        onClick={onClose}>
+        <div onClick={e=>e.stopPropagation()}
+          style={{width:'min(360px,94vw)',background:'var(--surf)',borderRadius:16,
+            border:'1px solid var(--br)',padding:'24px',boxShadow:'0 8px 40px rgba(0,0,0,.6)'}}>
+          <div style={{fontFamily:'var(--ff)',fontSize:15,letterSpacing:1,color:'var(--gold)',
+            marginBottom:16,textAlign:'center'}}>{dlg.title}</div>
+          <div style={{fontSize:11,color:'var(--muted)',marginBottom:5}}>Cantidad de monedas (1 – 99,999)</div>
+          <input value={val} onChange={e=>{setVal(e.target.value);setErr('');}}
+            onKeyDown={e=>e.key==='Enter'&&handleOk()}
+            type="number" min="1" max="99999"
+            autoFocus
+            style={{width:'100%',background:'var(--bg)',
+              border:`1px solid ${err?'rgba(229,62,62,.6)':'var(--br)'}`,
+              color:'var(--txt)',borderRadius:9,padding:'10px 12px',fontSize:15,
+              fontFamily:'var(--fb)',boxSizing:'border-box',outline:'none',
+              marginBottom:err?4:14}}/>
+          {err&&<div style={{fontSize:11,color:'#FC8181',marginBottom:12}}>{err}</div>}
+          <div style={{display:'flex',gap:10}}>
+            <button onClick={onClose}
+              style={{flex:1,background:'rgba(255,255,255,.07)',border:'1px solid var(--br)',
+                color:'var(--txt)',borderRadius:10,padding:12,fontSize:13,
+                fontWeight:600,cursor:'pointer',fontFamily:'var(--fb)'}}>Cancelar</button>
+            <button onClick={handleOk} disabled={busy}
+              style={{flex:1,background:'rgba(246,201,14,.15)',border:'1px solid rgba(246,201,14,.4)',
+                color:'var(--gold)',borderRadius:10,padding:12,fontSize:13,
+                fontWeight:700,cursor:'pointer',fontFamily:'var(--fb)'}}>
+              {busy?'…':'🎁 Regalar'}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return null;
+}
+
 function PerfilScreen({user,onLogout,lang='es'}){
   const t = useLang(); // ← translations
   const ini=(user.name||user.email||'U')[0].toUpperCase();
@@ -2724,6 +2807,8 @@ function PerfilScreen({user,onLogout,lang='es'}){
   const [dbLoaded,setDbLoaded]=useState(false);
   const [fbStatus,setFbStatus]=useState('waiting'); // waiting | ready | error
   const [shareMsg,setShareMsg]=useState('');
+  const [adminDlg,setAdminDlg]=useState(null);
+  const [adminMsg,setAdminMsg]=useState('');
 
   // Fuera del useEffect para que refreshAdminUsers y el botón 🔄 puedan usarlo
   const getDeletedIds=()=>{try{return JSON.parse(localStorage.getItem('wc2026_admin_deleted')||'[]');}catch{return[];}};
@@ -2785,21 +2870,28 @@ function PerfilScreen({user,onLogout,lang='es'}){
       setDbUsers(mergeUsers(local,fsData));
     }catch(e){}
   };
-  const deleteUser=async id=>{
+  const deleteUser=id=>{
     const target=dbUsers.find(u=>u.id===id);
     const label=target?.name||target?.email||id;
-    if(!window.confirm(`¿Eliminar a "${label}"?\nEsta acción no se puede deshacer.`))return;
-    // 1. Guardar ID en blocklist local (persiste aunque Firestore falle)
-    try{
-      const prev=JSON.parse(localStorage.getItem('wc2026_admin_deleted')||'[]');
-      localStorage.setItem('wc2026_admin_deleted',JSON.stringify([...new Set([...prev,id])]));
-    }catch(e){}
-    // 2. Borrar de localStorage de usuarios
-    const updated=dbUsers.filter(u=>u.id!==id);
-    await dbSave(updated);
-    setDbUsers(updated);
-    // 3. Borrar de Firestore (intento)
-    if(fbDeleteUser) fbDeleteUser(id);
+    setAdminDlg({
+      type:'confirm',
+      title:'¿Eliminar usuario?',
+      msg:`¿Eliminar a "${label}"? Esta acción no se puede deshacer.`,
+      onOk:async()=>{
+        setAdminDlg(null);
+        // 1. Guardar ID en blocklist local (persiste aunque Firestore falle)
+        try{
+          const prev=JSON.parse(localStorage.getItem('wc2026_admin_deleted')||'[]');
+          localStorage.setItem('wc2026_admin_deleted',JSON.stringify([...new Set([...prev,id])]));
+        }catch(e){}
+        // 2. Borrar de localStorage de usuarios
+        const updated=dbUsers.filter(u=>u.id!==id);
+        await dbSave(updated);
+        setDbUsers(updated);
+        // 3. Borrar de Firestore (intento)
+        if(fbDeleteUser) fbDeleteUser(id);
+      }
+    });
   };
 
   // ── Share the app ────────────────────────────────
@@ -3023,27 +3115,37 @@ function PerfilScreen({user,onLogout,lang='es'}){
                     <div style={{flex:1}}/>
                     {/* Gift coins */}
                     <button
-                      onClick={async()=>{
+                      onClick={()=>{
                         if(u.gifted){
-                          if(!window.confirm(`¿Quitar monedas a ${u.name||u.email}?`))return;
-                          const ok=await dbRevokeGift(u.email);
-                          if(ok){
-                            if(fbGiftCoins&&u.id) try{await fbGiftCoins(u.id,false);}catch(e){console.warn('fbGiftCoins error:',e);}
-                            const updated=await dbLoad();setDbUsers(updated);
-                          }
+                          setAdminDlg({
+                            type:'confirm',
+                            title:'¿Quitar monedas?',
+                            msg:`¿Quitar las monedas regalo a ${u.name||u.email}?`,
+                            onOk:async()=>{
+                              setAdminDlg(null);
+                              const ok=await dbRevokeGift(u.email);
+                              if(ok){
+                                if(fbGiftCoins&&u.id) try{await fbGiftCoins(u.id,false);}catch(e){console.warn('fbGiftCoins error:',e);}
+                                const updated=await dbLoad();setDbUsers(updated);
+                              }
+                            }
+                          });
                         } else {
-                          const raw=window.prompt(`¿Cuántas monedas regalar a ${u.name||u.email}?\n(mínimo 1, máximo 99999)`, '1000');
-                          if(!raw) return;
-                          const amount=parseInt(raw,10);
-                          if(isNaN(amount)||amount<1||amount>99999){
-                            alert('Cantidad inválida. Ingresa un número entre 1 y 99,999.');return;
-                          }
-                          const ok=await dbGiftCoins(u.email,amount);
-                          if(ok){
-                            if(fbGiftCoins&&u.id) try{await fbGiftCoins(u.id,true,amount);}catch(e){console.warn('fbGiftCoins error:',e);}
-                            alert(`✅ ${amount} monedas regaladas a ${u.name||u.email}`);
-                            const updated=await dbLoad();setDbUsers(updated);
-                          }
+                          setAdminDlg({
+                            type:'input',
+                            title:`🎁 Regalar monedas a ${u.name||u.email}`,
+                            defVal:'1000',
+                            onOk:async amount=>{
+                              const ok=await dbGiftCoins(u.email,amount);
+                              if(ok){
+                                if(fbGiftCoins&&u.id) try{await fbGiftCoins(u.id,true,amount);}catch(e){console.warn('fbGiftCoins error:',e);}
+                                setAdminDlg(null);
+                                setAdminMsg(`✅ ${amount} monedas regaladas a ${u.name||u.email}`);
+                                setTimeout(()=>setAdminMsg(''),4000);
+                                const updated=await dbLoad();setDbUsers(updated);
+                              }
+                            }
+                          });
                         }
                       }}
                       title={u.gifted?`Quitar monedas (tiene ${u.giftedCoins||1000}🪙)`:'Regalar monedas'}
@@ -3245,6 +3347,17 @@ function PerfilScreen({user,onLogout,lang='es'}){
           🚪 {t.logout}
         </button>
       </div>
+
+      {adminMsg&&(
+        <div style={{position:'fixed',bottom:90,left:'50%',transform:'translateX(-50%)',
+          zIndex:200,background:'rgba(30,198,108,.15)',border:'1px solid rgba(30,198,108,.35)',
+          borderRadius:12,padding:'10px 18px',fontSize:13,color:'var(--grn)',
+          fontWeight:600,whiteSpace:'nowrap',pointerEvents:'none',
+          boxShadow:'0 4px 20px rgba(0,0,0,.4)'}}>
+          {adminMsg}
+        </div>
+      )}
+      {adminDlg&&<AdminDialog dlg={adminDlg} onClose={()=>setAdminDlg(null)}/>}
     </div>
   );
 }
