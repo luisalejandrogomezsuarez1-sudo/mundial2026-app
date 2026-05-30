@@ -21,6 +21,7 @@ import('./firebase.js').then(fb => {
   window._fbReady          = true;
   window._fbSubscribeLive  = fb.subscribeToLiveDoc;
   window._fbGetUser        = fb.getUserFromFirestore; // 1 lectura (no getAllUsers)
+  window._fbSubscribeUser  = fb.subscribeToUserDoc;
   console.log('🔥 Firebase conectado — mundial2026-15686');
 }).catch(e => console.warn('Firebase error:', e));
 
@@ -5613,6 +5614,38 @@ export default function App(){
     setUser(null);setScreen('auth');setMatch(null);
     setTab('home');setUserBets([]);setCredito(null);setBetsSaved(false);
   };
+
+  // Expulsión en tiempo real: onSnapshot al doc del usuario activo
+  useEffect(()=>{
+    if(!user?.id||user.isAdmin) return;
+    let unsub=null;
+    let cancelled=false;
+    let pollTimer=null;
+    const doSubscribe=()=>{
+      const fn=window._fbSubscribeUser;
+      if(!fn) return;
+      unsub=fn(user.id,fsUser=>{
+        if(cancelled) return;
+        if(fsUser?.forceDelete||fsUser?.deleted){
+          dbLoad().then(allDB=>dbSave(allDB.filter(x=>x.id!==user.id))).catch(()=>{});
+          ['wc2026_bets_','wc2026_saved_','wc2026_groups_','wc2026_session_'].forEach(k=>{
+            try{localStorage.removeItem(k+user.id);}catch(e){}
+          });
+          logout('Tu cuenta fue eliminada. Puedes registrarte de nuevo con el mismo correo.');
+        }
+      });
+    };
+    if(window._fbSubscribeUser){
+      doSubscribe();
+    } else {
+      let elapsed=0;
+      pollTimer=setInterval(()=>{
+        if(window._fbSubscribeUser){clearInterval(pollTimer);if(!cancelled)doSubscribe();}
+        else if((elapsed+=200)>=8000){clearInterval(pollTimer);}
+      },200);
+    }
+    return()=>{cancelled=true;clearInterval(pollTimer);unsub?.();};
+  },[user?.id]);
 
   // Session check cada 5 min — usa 1 sola lectura (getUserFromFirestore) en vez de getAllUsers
   useEffect(()=>{

@@ -153,6 +153,15 @@ export function subscribeToChatMessages(groupCode, callback) {
   }, err => console.warn('chat snapshot error:', err));
 }
 
+// ── Suscripción al documento de un usuario (expulsión en tiempo real) ──────
+export function subscribeToUserDoc(userId, callback) {
+  return onSnapshot(
+    doc(db, 'users', userId),
+    snap => callback(snap.exists() ? { id: snap.id, ...snap.data() } : null),
+    err => console.warn('userDoc snapshot error:', err)
+  );
+}
+
 // ── Suscripción a documentos en vivo (colección 'live') ─────────────────────
 // El servidor escribe aquí: live/matches, live/standings, live/scorers, live/fixtures
 export function subscribeToLiveDoc(docId, callback) {
