@@ -1512,8 +1512,17 @@ function Auth({onLogin,onLangChange=()=>{},logoutMsg='',onClearMsg=()=>{}}){
         return;
       }
       // Verificar en Firestore si la cuenta fue eliminada por admin
+      // Esperar hasta 4s a que Firebase esté listo (evita ventana de ~8s)
       if(found.id){
-        const getFn=window._fbGetUser;
+        const getFn=await new Promise(resolve=>{
+          if(window._fbGetUser) return resolve(window._fbGetUser);
+          let elapsed=0;
+          const t=setInterval(()=>{
+            if(window._fbGetUser){clearInterval(t);resolve(window._fbGetUser);}
+            else if(elapsed>=4000){clearInterval(t);resolve(null);}
+            elapsed+=200;
+          },200);
+        });
         if(getFn){
           try{
             const fsUser=await getFn(found.id);
