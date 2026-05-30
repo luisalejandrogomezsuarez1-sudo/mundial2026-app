@@ -5069,7 +5069,7 @@ function BetsScreen({bets,placeBet,credito,creditoLoading,onPagar,onReset,betsSa
       {/* ── BOTÓN GUARDAR PRONÓSTICO ── */}
       {!isAdminUser&&(
         <div style={{margin:'8px 16px 24px',padding:'16px',background:'var(--surf)',
-          borderRadius:16,border:`2px solid ${betsSaved?'var(--grn)':coinsLeft===0?'rgba(246,201,14,.5)':'var(--br)'}`,
+          borderRadius:16,border:`2px solid ${betsSaved?'var(--grn)':coinsLeft<=0?'rgba(246,201,14,.5)':'var(--br)'}`,
           textAlign:'center'}}>
 
           {betsSaved?(
@@ -5104,10 +5104,10 @@ function BetsScreen({bets,placeBet,credito,creditoLoading,onPagar,onReset,betsSa
             /* Estado: PENDIENTE GUARDAR */
             <div>
               <div style={{fontFamily:'var(--ff)',fontSize:18,letterSpacing:1,marginBottom:8}}>
-                {coinsLeft===0?'✅ '+t.predictions_ready:'⏳ '+t.predictions_incomplete}
+                {coinsLeft<=0?'✅ '+t.predictions_ready:'⏳ '+t.predictions_incomplete}
               </div>
               <div style={{fontSize:12,color:'var(--muted)',lineHeight:1.6,marginBottom:12}}>
-                {coinsLeft===0
+                {coinsLeft<=0
                   ?'Has usado todas tus monedas. Una vez que guardes, los pronósticos no se podrán modificar.'
                   :`Aún tienes ${coinsLeft}🪙 disponibles. Usa todas tus monedas antes de guardar.`
                 }
@@ -5120,19 +5120,19 @@ function BetsScreen({bets,placeBet,credito,creditoLoading,onPagar,onReset,betsSa
                 </div>
               )}
               <button
-                disabled={coinsLeft!==0||bets.length===0}
+                disabled={coinsLeft>0||bets.length===0}
                 onClick={()=>{
-                  if(coinsLeft!==0||bets.length===0) return;
+                  if(coinsLeft>0||bets.length===0) return;
                   onSave&&onSave();
                 }}
                 style={{width:'100%',
-                  background:coinsLeft===0&&bets.length>0?'linear-gradient(135deg,var(--gold),var(--gold2))':'var(--surf2)',
-                  border:`1.5px solid ${coinsLeft===0&&bets.length>0?'var(--gold)':'var(--br)'}`,
-                  color:coinsLeft===0&&bets.length>0?'#000':'var(--muted)',
+                  background:coinsLeft<=0&&bets.length>0?'linear-gradient(135deg,var(--gold),var(--gold2))':'var(--surf2)',
+                  border:`1.5px solid ${coinsLeft<=0&&bets.length>0?'var(--gold)':'var(--br)'}`,
+                  color:coinsLeft<=0&&bets.length>0?'#000':'var(--muted)',
                   borderRadius:12,padding:'14px',fontSize:15,fontWeight:800,
-                  cursor:coinsLeft===0&&bets.length>0?'pointer':'not-allowed',
+                  cursor:coinsLeft<=0&&bets.length>0?'pointer':'not-allowed',
                   fontFamily:'var(--ff)',letterSpacing:1,
-                  boxShadow:coinsLeft===0&&bets.length>0?'0 4px 20px rgba(246,201,14,.4)':'none',
+                  boxShadow:coinsLeft<=0&&bets.length>0?'0 4px 20px rgba(246,201,14,.4)':'none',
                   transition:'all .3s',marginBottom:10}}>
                 💾 {t.save_prediction}
               </button>
