@@ -2009,8 +2009,9 @@ function HomeScreen({onMatch,onGoToCal}){
     if(new Date()<new Date('2026-06-11')) return;
     const cached=getCachedLive('matches');
     if(cached?.matches?.length){ setLiveMatches(cached.matches); setApiStatus('live'); return; }
-    let unsub;
+    let unsub, mounted=true;
     const trySubscribe=()=>{
+      if(!mounted) return;
       const fn=window._fbSubscribeLive;
       if(!fn){ setTimeout(trySubscribe,800); return; }
       try{
@@ -2022,7 +2023,7 @@ function HomeScreen({onMatch,onGoToCal}){
       }catch(e){ setApiStatus('error'); }
     };
     trySubscribe();
-    return()=>{ if(typeof unsub==='function') unsub(); };
+    return()=>{ mounted=false; if(typeof unsub==='function') unsub(); };
   },[]);
   const doRef=useCallback(()=>{
     setRef(true);setTimeout(()=>{setRef(false);setUpd(new Date());},900);
@@ -2112,8 +2113,9 @@ function CalScreen(){
   useEffect(()=>{
     const cached=getCachedLive('fixtures');
     if(cached?.fixtures?.length>0){ setMatches(cached.fixtures); return; }
-    let unsub;
+    let unsub, mounted=true;
     const trySubscribe=()=>{
+      if(!mounted) return;
       const fn=window._fbSubscribeLive;
       if(!fn){ setTimeout(trySubscribe,800); return; }
       try{
@@ -2124,7 +2126,7 @@ function CalScreen(){
       }catch(e){}
     };
     trySubscribe();
-    return()=>{ if(typeof unsub==='function') unsub(); };
+    return()=>{ mounted=false; if(typeof unsub==='function') unsub(); };
   },[]);
 
   // Build dynamic date tabs from match dates
@@ -2426,8 +2428,9 @@ function TablaScreen(){
     if(cs?.groups?.length>0){ setGroups(cs.groups); setApiLoaded(true); }
     if(cb?.r32) setBracket(cb);
     if(cs && cb) return; // datos frescos en cache, no suscribir
-    let u1,u2;
+    let u1,u2,mounted=true;
     const trySubscribe=()=>{
+      if(!mounted) return;
       const fn=window._fbSubscribeLive;
       if(!fn){ setTimeout(trySubscribe,800); return; }
       try{
@@ -2442,7 +2445,7 @@ function TablaScreen(){
       }catch(e){ console.warn('standings error',e); }
     };
     trySubscribe();
-    return()=>{ if(typeof u1==='function') u1(); if(typeof u2==='function') u2(); };
+    return()=>{ mounted=false; if(typeof u1==='function') u1(); if(typeof u2==='function') u2(); };
   },[]);
 
   const grp=groups[gi]||GROUPS[0];
@@ -2561,8 +2564,9 @@ function GolesScreen(){
       setScorers(prev=>cached.list.map(s=>({...(prev.find(p=>p.n===s.n)||{}),...s})));
       return;
     }
-    let unsub;
+    let unsub, mounted=true;
     const trySubscribe=()=>{
+      if(!mounted) return;
       const fn=window._fbSubscribeLive;
       if(!fn){ setTimeout(trySubscribe,800); return; }
       try{
@@ -2573,7 +2577,7 @@ function GolesScreen(){
       }catch(e){}
     };
     trySubscribe();
-    return()=>{ if(typeof unsub==='function') unsub(); };
+    return()=>{ mounted=false; if(typeof unsub==='function') unsub(); };
   },[]);
 
   // Ordenar por goles; si todos tienen 0, mantener orden original
