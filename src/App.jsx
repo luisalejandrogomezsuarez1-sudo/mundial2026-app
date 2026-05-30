@@ -1467,10 +1467,27 @@ function Auth({onLogin,onLangChange=()=>{},logoutMsg='',onClearMsg=()=>{}}){
         setLoading(false);setErr('Por favor completa todos los campos del registro');return;
       }
       // Check duplicate email
-      if(dbFind(users,email)){
-        setLoading(false);
-        setErr('⚠️ Este correo ya está registrado. Por favor inicia sesión.');
-        return;
+      const existing=dbFind(users,email);
+      if(existing){
+        // If the account was deleted by admin, allow re-registration
+        let canReregister=false;
+        const getFn=window._fbGetUser;
+        if(getFn&&existing.id){
+          try{
+            const fsUser=await getFn(existing.id);
+            if(fsUser?.deleted||fsUser?.forceDelete){
+              canReregister=true;
+              ['wc2026_bets_','wc2026_saved_','wc2026_groups_','wc2026_session_'].forEach(k=>{
+                try{localStorage.removeItem(k+existing.id);}catch(e){}
+              });
+            }
+          }catch(e){}
+        }
+        if(!canReregister){
+          setLoading(false);
+          setErr('⚠️ Este correo ya está registrado. Por favor inicia sesión.');
+          return;
+        }
       }
       // Save new user to DB
       const newUser={
@@ -1482,7 +1499,7 @@ function Auth({onLogin,onLangChange=()=>{},logoutMsg='',onClearMsg=()=>{}}){
         createdAt:new Date().toISOString(),
         paquetes:0,isAdmin:false
       };
-      await dbSave([...users,newUser]);
+      await dbSave([...users.filter(u=>u.email.toLowerCase()!==email.toLowerCase().trim()),newUser]);
       setLoading(false);
       onLogin(newUser);
 
