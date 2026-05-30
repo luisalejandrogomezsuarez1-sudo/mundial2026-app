@@ -1435,7 +1435,7 @@ function Splash({done}){
 }
 
 // ── Auth ─────────────────────────────────────────
-function Auth({onLogin,onLangChange=()=>{}}){
+function Auth({onLogin,onLangChange=()=>{},logoutMsg='',onClearMsg=()=>{}}){
   const [mode,setMode]=useState('login');
   const [f,setF]=useState({email:'',pass:'',name:'',bd:'',nat:'',gen:'',lang:'es'});
   const [err,setErr]=useState('');
@@ -1565,6 +1565,18 @@ function Auth({onLogin,onLangChange=()=>{}}){
           {mode==='login'?t.login_subtitle:t.register_subtitle}
         </div>
       </div>
+
+      {logoutMsg&&(
+        <div style={{margin:'0 24px 4px',background:'rgba(246,201,14,.1)',
+          border:'1px solid rgba(246,201,14,.35)',borderRadius:12,
+          padding:'12px 14px',display:'flex',alignItems:'flex-start',gap:10}}>
+          <span style={{fontSize:20,flexShrink:0}}>📱</span>
+          <div style={{flex:1,fontSize:13,color:'var(--gold)',lineHeight:1.5}}>{logoutMsg}</div>
+          <button onClick={onClearMsg}
+            style={{background:'none',border:'none',color:'var(--muted)',
+              cursor:'pointer',fontSize:20,padding:0,flexShrink:0,lineHeight:1}}>×</button>
+        </div>
+      )}
 
       <div style={{padding:'0 24px 36px',display:'flex',flexDirection:'column',gap:11}}>
         {err&&
@@ -5287,6 +5299,7 @@ export default function App(){
   const [credito,setCredito]=useState(null);
   const [creditoLoading,setCreditoLoading]=useState(false);
   const [betsSaved,setBetsSaved]=useState(false); // predictions locked after saving
+  const [logoutMsg,setLogoutMsg]=useState('');
   // credito = {coins:1000, paquetes:N, paidAt:timestamp} | null
 
   // ── Push Notification helper ──────────────────────────
@@ -5307,6 +5320,7 @@ export default function App(){
   };
 
   const login=async u=>{
+    setLogoutMsg('');
     setUser(u);
     setScreen('app');
     // Restore saved bets from localStorage (survive logout)
@@ -5464,7 +5478,7 @@ export default function App(){
   },[]);
 
   const logout=(reason='')=>{
-    if(reason && typeof reason === 'string') alert('⚠️ '+reason);
+    if(reason && typeof reason === 'string') setLogoutMsg(reason);
     setUser(null);setScreen('auth');setMatch(null);
     setTab('home');setUserBets([]);setCredito(null);setBetsSaved(false);
   };
@@ -5540,7 +5554,7 @@ export default function App(){
       <style>{css}</style>
       <div className="app">
         {screen==='splash'&&<Splash done={()=>setScreen('auth')}/>}
-        {screen==='auth'&&<Auth onLogin={login} onLangChange={setLang}/>}
+        {screen==='auth'&&<Auth onLogin={login} onLangChange={setLang} logoutMsg={logoutMsg} onClearMsg={()=>setLogoutMsg('')}/>}
         {screen==='app'&&user&&<>
           {/* Match detail overlay */}
           {match&&(
