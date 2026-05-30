@@ -5091,7 +5091,7 @@ function BetsScreen({bets,placeBet,credito,creditoLoading,onPagar,onReset,betsSa
         backdropFilter:'blur(12px)',WebkitBackdropFilter:'blur(12px)'}}>
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:10}}>
           <div>
-            <div style={{fontFamily:'var(--ff)',fontSize:26,letterSpacing:2}}>MI PRONÓSTICO</div>
+            <div style={{fontFamily:'var(--ff)',fontSize:26,letterSpacing:2}}>{t('bets_title')}</div>
             <div style={{fontSize:11,color:'var(--muted)',marginTop:1}}>
               Paquete #{credito?.paquetes||0} · {new Date(credito.paidAt).toLocaleDateString('es',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}
             </div>
@@ -5173,7 +5173,7 @@ function BetsScreen({bets,placeBet,credito,creditoLoading,onPagar,onReset,betsSa
       </div>
       {/* Tabs */}
       <div style={{display:'flex',gap:8,padding:'8px 16px',overflowX:'auto',borderBottom:'1px solid rgba(255,255,255,.04)'}}>
-        {[['largo','🏅 Partidos Mundial'],['partido','⚽ Por Partido'],['especiales','🎯 Especiales'],['stats','📈 Estadísticas']].map(([k,l])=>(
+        {[['largo','🏅 '+t('long_term')],['partido','⚽ '+t('per_match')],['especiales','🎯 '+t('specials')],['stats','📈 '+t('stats')]].map(([k,l])=>(
           <button key={k} className={`tpill ${tab===k?'on':''}`} onClick={()=>setTab(k)}>{l}</button>
         ))}
       </div>
