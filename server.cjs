@@ -7,7 +7,9 @@ const app  = express();
 const PORT = process.env.PORT || 3000;
 
 // ── Config ──────────────────────────────────────────────
-const AF_KEY    = process.env.AF_KEY || '';
+const AF_KEY      = process.env.AF_KEY      || '';
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || '';
+const ADMIN_PASS  = process.env.ADMIN_PASS  || '';
 const AF_BASE   = 'v3.football.api-sports.io';
 const WC_ID     = 1;
 const WC_SEASON = 2026;
@@ -442,6 +444,15 @@ app.delete('/api/groups/:code', async(req,res)=>{
 
   console.log('🗑 Grupo eliminado:', code);
   res.json({ok:true});
+});
+
+// ── ADMIN AUTH — valida credenciales sin exponerlas al frontend ──────────────
+app.post('/api/admin/auth', (req,res)=>{
+  const { email, pass } = req.body || {};
+  if(!ADMIN_EMAIL || !ADMIN_PASS)
+    return res.status(503).json({ ok:false, reason:'not_configured' });
+  const ok = email === ADMIN_EMAIL && pass === ADMIN_PASS;
+  res.json({ ok });
 });
 
 // ── ADMIN: listar y borrar grupos por nombre (protegido con clave) ──────────

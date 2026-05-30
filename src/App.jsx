@@ -1013,8 +1013,6 @@ const getBetCost=id=>{
 };
 
 // ── Admin & DB Config ─────────────────────────────
-const ADMIN_EMAIL='luis.gomezs@yahoo.com.mx';
-const ADMIN_PASS='85489705';
 const DB_KEY='wc2026_users_db'; // storage key for user database
 
 // DB helpers using localStorage (works in any browser/deployment)
@@ -1452,13 +1450,21 @@ function Auth({onLogin,onLangChange=()=>{}}){
 
     setLoading(true);
 
-    // ── Admin check ──
-    if(email===ADMIN_EMAIL&&pass===ADMIN_PASS){
-      setLoading(false);
-      onLogin({email:ADMIN_EMAIL,name:'Administrador General',isAdmin:true,
-               nat:'México',gen:'Prefiero no decir'});
-      return;
-    }
+    // ── Admin check (valida en el servidor, credenciales nunca en el bundle) ──
+    try{
+      const r=await fetch('/api/admin/auth',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({email,pass}),
+      });
+      const {ok}=await r.json();
+      if(ok){
+        setLoading(false);
+        onLogin({email,name:'Administrador General',isAdmin:true,
+                 nat:'México',gen:'Prefiero no decir'});
+        return;
+      }
+    }catch(e){ /* si el servidor no responde, continúa con login normal */ }
 
     // ── Load DB ──
     const users=await dbLoad();
