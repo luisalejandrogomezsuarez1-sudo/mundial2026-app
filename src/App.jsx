@@ -3686,7 +3686,7 @@ function GruposScreen({user,userBets,credito,creditoLoading,onPagar,onRecheckAcc
     <div className="scr fin">
       {/* Header compacto */}
       <div style={{padding:'14px 16px 6px',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
-        <div style={{fontFamily:'var(--ff)',fontSize:24,letterSpacing:2}}>GRUPOS</div>
+        <div style={{fontFamily:'var(--ff)',fontSize:24,letterSpacing:2}}>{t('nav_groups').toUpperCase()}</div>
         <div style={{display:'flex',gap:8}}>
           <button onClick={()=>setView('join')}
             style={{background:'var(--surf)',color:'var(--txt)',border:'1.5px solid var(--br)',
