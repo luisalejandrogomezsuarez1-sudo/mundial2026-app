@@ -4607,8 +4607,9 @@ function BetsScreen({bets,placeBet,credito,creditoLoading,onPagar,onReset,betsSa
   // Coins
   const isAdminUser=credito?.isAdmin||false;
   const coinsUsed=isAdminUser?0:bets.reduce((s,b)=>s+getBetCost(b.id),0);
-  const coinsLeft=isAdminUser?999999:COINS_PER_PAGO-coinsUsed;
-  const pctUsed=isAdminUser?0:Math.min(100,Math.round(coinsUsed/COINS_PER_PAGO*100));
+  const totalCoins=credito?.coins??COINS_PER_PAGO;
+  const coinsLeft=isAdminUser?999999:totalCoins-coinsUsed;
+  const pctUsed=isAdminUser?0:Math.min(100,Math.round(coinsUsed/totalCoins*100));
 
   const getBet=id=>bets.find(b=>b.id===id);
   const isSel=(id,val)=>getBet(id)?.selection===val;
@@ -4997,7 +4998,7 @@ function BetsScreen({bets,placeBet,credito,creditoLoading,onPagar,onReset,betsSa
                   <span style={{fontSize:18}}>🪙</span>
                   <div>
                     <span style={{fontFamily:'var(--ff)',fontSize:22,color:'var(--gold)'}}>{coinsLeft.toLocaleString()}</span>
-                    <span style={{fontSize:11,color:'var(--muted)'}}> / {COINS_PER_PAGO.toLocaleString()} monedas</span>
+                    <span style={{fontSize:11,color:'var(--muted)'}}> / {totalCoins.toLocaleString()} monedas</span>
                   </div>
                 </div>
                 <div style={{textAlign:'right'}}>
