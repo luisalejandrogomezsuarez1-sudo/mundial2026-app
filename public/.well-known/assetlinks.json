@@ -1,0 +1,10 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "com.mundial2026.app",
+    "sha256_cert_fingerprints": [
+      "PLACEHOLDER:REEMPLAZAR:CON:HUELLA:REAL:DESPUES:DE:BUBBLEWRAP:INIT"
+    ]
+  }
+}]
