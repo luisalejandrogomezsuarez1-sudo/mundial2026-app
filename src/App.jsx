@@ -5469,6 +5469,8 @@ export default function App(){
     // Generar sessionId único para este dispositivo
     const sessionId = 'sess_'+Date.now()+'_'+Math.random().toString(36).slice(2,8);
     localStorage.setItem('wc2026_session_'+u.id, sessionId);
+    // Persistir sesión para restauración automática al recargar
+    try{localStorage.setItem('wc2026_current_user',JSON.stringify(u));}catch(e){}
     // Guardar en Firestore — con reintentos si Firebase aún carga
     const saveToFirestore = async(attempts=0) => {
       const saveFn=fbSaveUser||window._fbSaveUser;
@@ -5574,6 +5576,16 @@ export default function App(){
       }catch(e){}
     }catch(e){console.warn('login check error:',e);}
   };
+  // Restaurar sesión guardada al cargar la app (evita pantalla de login en recarga)
+  useEffect(()=>{
+    try{
+      const stored=localStorage.getItem('wc2026_current_user');
+      if(stored){
+        const u=JSON.parse(stored);
+        if(u?.id&&u?.email) login(u);
+      }
+    }catch(e){}
+  },[]);
   // Re-verifica acceso en Firestore sin necesidad de cerrar sesión
   // Útil cuando el admin regala monedas mientras el usuario ya está en la app
   const recheckAccess=async()=>{
@@ -5613,6 +5625,7 @@ export default function App(){
 
   const logout=(reason='')=>{
     if(reason && typeof reason === 'string') setLogoutMsg(reason);
+    try{localStorage.removeItem('wc2026_current_user');}catch(e){}
     setUser(null);setScreen('auth');setMatch(null);
     setTab('home');setUserBets([]);setCredito(null);setBetsSaved(false);
   };
