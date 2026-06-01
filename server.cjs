@@ -660,9 +660,63 @@ app.post('/api/mp/create-preference', async (req, res) => {
   }
 });
 
+// Diagnóstico: ver datos de un pago en MP y Firestore (protegido con ADMIN_KEY)
+app.get('/api/admin/mp-payment/:id', async (req, res) => {
+  if (!ADMIN_KEY || req.query.key !== ADMIN_KEY)
+    return res.status(403).json({ error: 'Forbidden' });
+  try {
+    const payment = new Payment(mpClient);
+    const data = await payment.get({ id: Number(req.params.id) });
+    let fsPayment = null, fsUser = null;
+    if (db) {
+      const pdoc = await db.collection('payments').doc(String(req.params.id)).get();
+      fsPayment = pdoc.exists ? pdoc.data() : null;
+      if (data.external_reference) {
+        const udoc = await db.collection('users').doc(data.external_reference).get();
+        fsUser = udoc.exists ? udoc.data() : null;
+      }
+    }
+    res.json({
+      mp: {
+        id: data.id, status: data.status, amount: data.transaction_amount,
+        external_reference: data.external_reference, email: data.payer?.email,
+        date: data.date_approved
+      },
+      firestore: { payment: fsPayment, user_paquetes: fsUser?.paquetes ?? 'doc no existe' }
+    });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// Acreditar manualmente un pago aprobado (protegido con ADMIN_KEY)
+app.post('/api/admin/mp-credit', async (req, res) => {
+  if (!ADMIN_KEY || req.body.key !== ADMIN_KEY)
+    return res.status(403).json({ error: 'Forbidden' });
+  const { paymentId, userId } = req.body;
+  if (!paymentId || !userId || !db)
+    return res.status(400).json({ error: 'Faltan datos o DB no disponible' });
+  try {
+    const paid = await db.collection('payments').doc(String(paymentId)).get();
+    if (paid.exists) return res.json({ ok: true, msg: 'Ya estaba acreditado', data: paid.data() });
+    const admin = require('firebase-admin');
+    await db.collection('users').doc(userId).set(
+      { paquetes: admin.firestore.FieldValue.increment(1) },
+      { merge: true }
+    );
+    await db.collection('payments').doc(String(paymentId)).set({
+      userId, creditedAt: new Date().toISOString(), manual: true
+    });
+    console.log(`[MP admin-credit] ✅ acreditado manualmente: paymentId=${paymentId} userId=${userId}`);
+    res.json({ ok: true, msg: 'Acreditado correctamente' });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 app.post('/api/mp/verify', async (req, res) => {
   const { paymentId, userId } = req.body;
-  console.log(`[MP verify] paymentId=${paymentId} userId=${userId}`);
+  console.log(`[MP verify] paymentId=${paymentId} (type:${typeof paymentId}) userId=${userId}`);
   if (!db) return res.status(503).json({ error: 'DB no disponible' });
   if (!paymentId || paymentId === '{{payment_id}}') {
     console.error('[MP verify] paymentId inválido:', paymentId);
@@ -675,9 +729,12 @@ app.post('/api/mp/verify', async (req, res) => {
       return res.json({ ok: true, alreadyCredited: true });
     }
     const payment = new Payment(mpClient);
-    const data = await payment.get({ id: paymentId });
-    console.log(`[MP verify] estado MP: ${data.status}, ext_ref: ${data.external_reference}, esperado: ${userId}`);
-    if (data.status === 'approved' && data.external_reference === userId) {
+    // Pasar como número — el SDK de MP v3 requiere número, no string
+    const data = await payment.get({ id: Number(paymentId) });
+    const extRef = String(data.external_reference || '').trim();
+    const userIdStr = String(userId || '').trim();
+    console.log(`[MP verify] estado=${data.status} ext_ref="${extRef}" userId="${userIdStr}" match=${extRef===userIdStr}`);
+    if (data.status === 'approved' && extRef === userIdStr) {
       const admin = require('firebase-admin');
       await db.collection('users').doc(userId).set(
         { paquetes: admin.firestore.FieldValue.increment(1) },
@@ -689,11 +746,11 @@ app.post('/api/mp/verify', async (req, res) => {
       console.log(`[MP verify] ✅ acreditado: paymentId=${paymentId} userId=${userId}`);
       res.json({ ok: true });
     } else {
-      console.warn(`[MP verify] no acreditado: status=${data.status} ext_ref=${data.external_reference}`);
-      res.json({ ok: false, status: data.status, ext_ref: data.external_reference });
+      console.warn(`[MP verify] ❌ no acreditado: status="${data.status}" ext_ref="${extRef}" userId="${userIdStr}"`);
+      res.json({ ok: false, status: data.status, ext_ref: extRef, userId: userIdStr });
     }
   } catch (e) {
-    console.error('[MP verify] error:', e.message);
+    console.error('[MP verify] error:', e.message, e.stack);
     res.status(500).json({ error: e.message });
   }
 });
