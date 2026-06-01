@@ -735,121 +735,121 @@ const NEXT_MATCHES=[
 
   // ── 11 de junio ───────────────────────────────────────────────
   {id:1,  home:'México',           away:'Sudáfrica',        isoDate:'2026-06-11',date:'Jun 11',time:'13:00',phase:'Grupo A · J1 · P1',  venue:'Estadio Azteca',         city:'Tlalpan, CDMX',       wx:{ic:'⛅',desc:'Parcialmente nublado',t:'18°C'},odds:[1.8,3.5,4.5]},
-  {id:2,  home:'Corea del Sur',    away:'República Checa',  isoDate:'2026-06-11',date:'Jun 11',time:'16:00',phase:'Grupo A · J1 · P2',  venue:'Estadio Akron',          city:'Zapopan, Jalisco',    wx:{ic:'☀️',desc:'Soleado',t:'28°C'},            odds:[2.2,3.1,3.0]},
+  {id:2,  home:'Corea del Sur',    away:'República Checa',  isoDate:'2026-06-11',date:'Jun 11',time:'16:00',phase:'Grupo A · J1 · P2',  venue:'Estadio Guadalajara',          city:'Zapopan, Jalisco',    wx:{ic:'☀️',desc:'Soleado',t:'28°C'},            odds:[2.2,3.1,3.0]},
 
   // ── 12 de junio ───────────────────────────────────────────────
-  {id:3,  home:'Canadá',           away:'Bosnia y Herzegovina',isoDate:'2026-06-12',date:'Jun 12',time:'16:00',phase:'Grupo B · J1 · P3',venue:'BMO Field',             city:'Toronto, Ontario',    wx:{ic:'🌤️',desc:'Agradable',t:'22°C'},         odds:[1.9,3.4,4.0]},
-  {id:4,  home:'USA',              away:'Paraguay',         isoDate:'2026-06-12',date:'Jun 12',time:'19:00',phase:'Grupo D · J1 · P4',  venue:'SoFi Stadium',           city:'Inglewood, California',wx:{ic:'☀️',desc:'Soleado',t:'27°C'},           odds:[1.7,3.5,4.8]},
+  {id:3,  home:'Canadá',           away:'Bosnia y Herzegovina',isoDate:'2026-06-12',date:'Jun 12',time:'16:00',phase:'Grupo B · J1 · P3',venue:'Toronto Stadium',             city:'Toronto, Ontario',    wx:{ic:'🌤️',desc:'Agradable',t:'22°C'},         odds:[1.9,3.4,4.0]},
+  {id:4,  home:'USA',              away:'Paraguay',         isoDate:'2026-06-12',date:'Jun 12',time:'19:00',phase:'Grupo D · J1 · P4',  venue:'Los Angeles Stadium',           city:'Inglewood, California',wx:{ic:'☀️',desc:'Soleado',t:'27°C'},           odds:[1.7,3.5,4.8]},
 
   // ── 13 de junio ───────────────────────────────────────────────
-  {id:5,  home:'Haití',            away:'Escocia',          isoDate:'2026-06-13',date:'Jun 13',time:'11:00',phase:'Grupo C · J1 · P5',  venue:'Gillette Stadium',       city:'Foxborough, MA',      wx:{ic:'🌥️',desc:'Nublado',t:'19°C'},           odds:[4.0,3.2,1.9]},
+  {id:5,  home:'Haití',            away:'Escocia',          isoDate:'2026-06-13',date:'Jun 13',time:'11:00',phase:'Grupo C · J1 · P5',  venue:'Boston Stadium',       city:'Foxborough, MA',      wx:{ic:'🌥️',desc:'Nublado',t:'19°C'},           odds:[4.0,3.2,1.9]},
   {id:6,  home:'Australia',        away:'Turquía',          isoDate:'2026-06-13',date:'Jun 13',time:'14:00',phase:'Grupo D · J1 · P6',  venue:'BC Place',               city:'Vancouver, BC',       wx:{ic:'🌧️',desc:'Lluvia ligera',t:'16°C'},      odds:[2.0,3.3,3.5]},
-  {id:7,  home:'Brasil',           away:'Marruecos',        isoDate:'2026-06-13',date:'Jun 13',time:'17:00',phase:'Grupo C · J1 · P7',  venue:'MetLife Stadium',        city:'East Rutherford, NJ', wx:{ic:'🌤️',desc:'Mayormente soleado',t:'23°C'}, odds:[1.4,4.0,7.5]},
-  {id:8,  home:'Qatar',            away:'Suiza',            isoDate:'2026-06-13',date:'Jun 13',time:'20:00',phase:'Grupo B · J1 · P8',  venue:'Levi Stadium',           city:'Santa Clara, CA',     wx:{ic:'🌫️',desc:'Neblina costera',t:'16°C'},    odds:[5.0,3.8,1.6]},
+  {id:7,  home:'Brasil',           away:'Marruecos',        isoDate:'2026-06-13',date:'Jun 13',time:'17:00',phase:'Grupo C · J1 · P7',  venue:'New York New Jersey Stadium',        city:'East Rutherford, NJ', wx:{ic:'🌤️',desc:'Mayormente soleado',t:'23°C'}, odds:[1.4,4.0,7.5]},
+  {id:8,  home:'Qatar',            away:'Suiza',            isoDate:'2026-06-13',date:'Jun 13',time:'20:00',phase:'Grupo B · J1 · P8',  venue:'San Francisco Bay Area Stadium',           city:'Santa Clara, CA',     wx:{ic:'🌫️',desc:'Neblina costera',t:'16°C'},    odds:[5.0,3.8,1.6]},
 
   // ── 14 de junio ───────────────────────────────────────────────
-  {id:9,  home:'Costa de Marfil',  away:'Ecuador',          isoDate:'2026-06-14',date:'Jun 14',time:'11:00',phase:'Grupo E · J1 · P9',  venue:'Lincoln Financial Field',city:'Filadelfia, PA',      wx:{ic:'🌤️',desc:'Soleado parcial',t:'25°C'},   odds:[2.2,3.1,3.0]},
-  {id:10, home:'Alemania',         away:'Curazao',          isoDate:'2026-06-14',date:'Jun 14',time:'14:00',phase:'Grupo E · J1 · P10', venue:'NRG Stadium',            city:'Houston, Texas',      wx:{ic:'☀️',desc:'Caluroso',t:'34°C'},           odds:[1.2,6.0,18.0]},
-  {id:11, home:'Países Bajos',     away:'Japón',            isoDate:'2026-06-14',date:'Jun 14',time:'17:00',phase:'Grupo F · J1 · P11', venue:'AT&T Stadium',           city:'Arlington, Texas',    wx:{ic:'☀️',desc:'Despejado',t:'31°C'},          odds:[1.6,3.8,5.5]},
-  {id:12, home:'Suecia',           away:'Túnez',            isoDate:'2026-06-14',date:'Jun 14',time:'20:00',phase:'Grupo F · J1 · P12', venue:'Estadio BBVA',           city:'Guadalupe, Monterrey',wx:{ic:'⛅',desc:'Caluroso',t:'32°C'},           odds:[2.0,3.2,3.5]},
+  {id:9,  home:'Costa de Marfil',  away:'Ecuador',          isoDate:'2026-06-14',date:'Jun 14',time:'11:00',phase:'Grupo E · J1 · P9',  venue:'Philadelphia Stadium',city:'Filadelfia, PA',      wx:{ic:'🌤️',desc:'Soleado parcial',t:'25°C'},   odds:[2.2,3.1,3.0]},
+  {id:10, home:'Alemania',         away:'Curazao',          isoDate:'2026-06-14',date:'Jun 14',time:'14:00',phase:'Grupo E · J1 · P10', venue:'Houston Stadium',            city:'Houston, Texas',      wx:{ic:'☀️',desc:'Caluroso',t:'34°C'},           odds:[1.2,6.0,18.0]},
+  {id:11, home:'Países Bajos',     away:'Japón',            isoDate:'2026-06-14',date:'Jun 14',time:'17:00',phase:'Grupo F · J1 · P11', venue:'Dallas Stadium',           city:'Arlington, Texas',    wx:{ic:'☀️',desc:'Despejado',t:'31°C'},          odds:[1.6,3.8,5.5]},
+  {id:12, home:'Suecia',           away:'Túnez',            isoDate:'2026-06-14',date:'Jun 14',time:'20:00',phase:'Grupo F · J1 · P12', venue:'Estadio Monterrey',           city:'Guadalupe, Monterrey',wx:{ic:'⛅',desc:'Caluroso',t:'32°C'},           odds:[2.0,3.2,3.5]},
 
   // ── 15 de junio ───────────────────────────────────────────────
-  {id:13, home:'Arabia Saudita',   away:'Uruguay',          isoDate:'2026-06-15',date:'Jun 15',time:'11:00',phase:'Grupo H · J1 · P13', venue:'Hard Rock Stadium',      city:'Miami Gardens, FL',   wx:{ic:'⛈️',desc:'Tormenta',t:'30°C'},           odds:[4.5,3.4,1.8]},
-  {id:14, home:'España',           away:'Cabo Verde',       isoDate:'2026-06-15',date:'Jun 15',time:'14:00',phase:'Grupo H · J1 · P14', venue:'Mercedes-Benz Stadium',  city:'Atlanta, Georgia',    wx:{ic:'🌤️',desc:'Caluroso',t:'31°C'},          odds:[1.2,6.5,20.0]},
-  {id:15, home:'Irán',             away:'Nueva Zelanda',    isoDate:'2026-06-15',date:'Jun 15',time:'17:00',phase:'Grupo G · J1 · P15', venue:'SoFi Stadium',           city:'Inglewood, CA',       wx:{ic:'☀️',desc:'Soleado',t:'27°C'},            odds:[1.8,3.2,4.0]},
-  {id:16, home:'Bélgica',          away:'Egipto',           isoDate:'2026-06-15',date:'Jun 15',time:'20:00',phase:'Grupo G · J1 · P16', venue:'Lumen Field',            city:'Seattle, WA',         wx:{ic:'🌧️',desc:'Lluvia',t:'16°C'},             odds:[1.5,3.8,6.5]},
+  {id:13, home:'Arabia Saudita',   away:'Uruguay',          isoDate:'2026-06-15',date:'Jun 15',time:'11:00',phase:'Grupo H · J1 · P13', venue:'Miami Stadium',      city:'Miami Gardens, FL',   wx:{ic:'⛈️',desc:'Tormenta',t:'30°C'},           odds:[4.5,3.4,1.8]},
+  {id:14, home:'España',           away:'Cabo Verde',       isoDate:'2026-06-15',date:'Jun 15',time:'14:00',phase:'Grupo H · J1 · P14', venue:'Atlanta Stadium',  city:'Atlanta, Georgia',    wx:{ic:'🌤️',desc:'Caluroso',t:'31°C'},          odds:[1.2,6.5,20.0]},
+  {id:15, home:'Irán',             away:'Nueva Zelanda',    isoDate:'2026-06-15',date:'Jun 15',time:'17:00',phase:'Grupo G · J1 · P15', venue:'Los Angeles Stadium',           city:'Inglewood, CA',       wx:{ic:'☀️',desc:'Soleado',t:'27°C'},            odds:[1.8,3.2,4.0]},
+  {id:16, home:'Bélgica',          away:'Egipto',           isoDate:'2026-06-15',date:'Jun 15',time:'20:00',phase:'Grupo G · J1 · P16', venue:'Seattle Stadium',            city:'Seattle, WA',         wx:{ic:'🌧️',desc:'Lluvia',t:'16°C'},             odds:[1.5,3.8,6.5]},
 
   // ── 16 de junio ───────────────────────────────────────────────
-  {id:17, home:'Francia',          away:'Senegal',          isoDate:'2026-06-16',date:'Jun 16',time:'13:00',phase:'Grupo I · J1 · P17', venue:'MetLife Stadium',        city:'East Rutherford, NJ', wx:{ic:'🌤️',desc:'Agradable',t:'23°C'},         odds:[1.5,3.8,6.5]},
-  {id:18, home:'Irak',             away:'Noruega',          isoDate:'2026-06-16',date:'Jun 16',time:'17:00',phase:'Grupo I · J1 · P18', venue:'Gillette Stadium',       city:'Foxborough, MA',      wx:{ic:'⛅',desc:'Nublado',t:'20°C'},            odds:[7.0,4.0,1.4]},
+  {id:17, home:'Francia',          away:'Senegal',          isoDate:'2026-06-16',date:'Jun 16',time:'13:00',phase:'Grupo I · J1 · P17', venue:'New York New Jersey Stadium',        city:'East Rutherford, NJ', wx:{ic:'🌤️',desc:'Agradable',t:'23°C'},         odds:[1.5,3.8,6.5]},
+  {id:18, home:'Irak',             away:'Noruega',          isoDate:'2026-06-16',date:'Jun 16',time:'17:00',phase:'Grupo I · J1 · P18', venue:'Boston Stadium',       city:'Foxborough, MA',      wx:{ic:'⛅',desc:'Nublado',t:'20°C'},            odds:[7.0,4.0,1.4]},
 
   // ── 17 de junio ───────────────────────────────────────────────
-  {id:19, home:'Argentina',        away:'Argelia',          isoDate:'2026-06-17',date:'Jun 17',time:'11:00',phase:'Grupo J · J1 · P19', venue:'Arrowhead Stadium',      city:'Kansas City, MO',     wx:{ic:'⛅',desc:'Parcialmente nublado',t:'27°C'},odds:[1.3,5.5,12.0]},
-  {id:20, home:'Austria',          away:'Jordania',         isoDate:'2026-06-17',date:'Jun 17',time:'11:00',phase:'Grupo J · J1 · P20', venue:'Levi Stadium',           city:'Santa Clara, CA',     wx:{ic:'🌫️',desc:'Neblina costera',t:'15°C'},   odds:[1.5,3.8,6.0]},
-  {id:21, home:'Portugal',         away:'Congo DR',         isoDate:'2026-06-17',date:'Jun 17',time:'13:00',phase:'Grupo K · J1 · P23', venue:'NRG Stadium',            city:'Houston, Texas',      wx:{ic:'☀️',desc:'Caluroso',t:'35°C'},           odds:[1.2,6.0,20.0]},
-  {id:22, home:'Inglaterra',       away:'Croacia',          isoDate:'2026-06-17',date:'Jun 17',time:'15:00',phase:'Grupo L · J1 · P22', venue:'AT&T Stadium',           city:'Arlington, Texas',    wx:{ic:'☀️',desc:'Muy caluroso',t:'33°C'},       odds:[1.6,3.6,5.5]},
-  {id:23, home:'Ghana',            away:'Panamá',           isoDate:'2026-06-17',date:'Jun 17',time:'16:00',phase:'Grupo L · J1 · P21', venue:'BMO Field',              city:'Toronto, Ontario',    wx:{ic:'🌤️',desc:'Agradable',t:'20°C'},         odds:[2.2,3.2,3.0]},
+  {id:19, home:'Argentina',        away:'Argelia',          isoDate:'2026-06-17',date:'Jun 17',time:'11:00',phase:'Grupo J · J1 · P19', venue:'Kansas City Stadium',      city:'Kansas City, MO',     wx:{ic:'⛅',desc:'Parcialmente nublado',t:'27°C'},odds:[1.3,5.5,12.0]},
+  {id:20, home:'Austria',          away:'Jordania',         isoDate:'2026-06-17',date:'Jun 17',time:'11:00',phase:'Grupo J · J1 · P20', venue:'San Francisco Bay Area Stadium',           city:'Santa Clara, CA',     wx:{ic:'🌫️',desc:'Neblina costera',t:'15°C'},   odds:[1.5,3.8,6.0]},
+  {id:21, home:'Portugal',         away:'Congo DR',         isoDate:'2026-06-17',date:'Jun 17',time:'13:00',phase:'Grupo K · J1 · P23', venue:'Houston Stadium',            city:'Houston, Texas',      wx:{ic:'☀️',desc:'Caluroso',t:'35°C'},           odds:[1.2,6.0,20.0]},
+  {id:22, home:'Inglaterra',       away:'Croacia',          isoDate:'2026-06-17',date:'Jun 17',time:'15:00',phase:'Grupo L · J1 · P22', venue:'Dallas Stadium',           city:'Arlington, Texas',    wx:{ic:'☀️',desc:'Muy caluroso',t:'33°C'},       odds:[1.6,3.6,5.5]},
+  {id:23, home:'Ghana',            away:'Panamá',           isoDate:'2026-06-17',date:'Jun 17',time:'16:00',phase:'Grupo L · J1 · P21', venue:'Toronto Stadium',              city:'Toronto, Ontario',    wx:{ic:'🌤️',desc:'Agradable',t:'20°C'},         odds:[2.2,3.2,3.0]},
   {id:24, home:'Colombia',         away:'Uzbekistán',       isoDate:'2026-06-17',date:'Jun 17',time:'19:00',phase:'Grupo K · J1 · P24', venue:'Estadio Azteca',         city:'Tlalpan, CDMX',       wx:{ic:'⛅',desc:'Nublado',t:'19°C'},            odds:[1.4,4.0,7.5]},
 
   // ══════════════════════════════════════════════════════════════
   // JORNADA 2 — Jun 20–26 (horarios TBD hasta confirmación FIFA)
   // ══════════════════════════════════════════════════════════════
   // ── J2 Grupo A ──
-  {id:25,home:'México',        away:'Corea del Sur',          isoDate:'2026-06-20',date:'Jun 20',time:'TBD',phase:'Grupo A · J2',venue:'AT&T Stadium',            city:'Arlington, Texas',    wx:{ic:'☀️',desc:'Caluroso',t:'32°C'},       odds:[1.4,3.8,6.5]},
-  {id:26,home:'Sudáfrica',     away:'República Checa',        isoDate:'2026-06-20',date:'Jun 20',time:'TBD',phase:'Grupo A · J2',venue:'Lumen Field',              city:'Seattle, WA',         wx:{ic:'🌤️',desc:'Fresco',t:'19°C'},        odds:[3.0,3.2,2.2]},
+  {id:25,home:'México',        away:'Corea del Sur',          isoDate:'2026-06-20',date:'Jun 20',time:'TBD',phase:'Grupo A · J2',venue:'Dallas Stadium',            city:'Arlington, Texas',    wx:{ic:'☀️',desc:'Caluroso',t:'32°C'},       odds:[1.4,3.8,6.5]},
+  {id:26,home:'Sudáfrica',     away:'República Checa',        isoDate:'2026-06-20',date:'Jun 20',time:'TBD',phase:'Grupo A · J2',venue:'Seattle Stadium',              city:'Seattle, WA',         wx:{ic:'🌤️',desc:'Fresco',t:'19°C'},        odds:[3.0,3.2,2.2]},
   // ── J2 Grupo B ──
   {id:27,home:'Canadá',        away:'Qatar',                  isoDate:'2026-06-21',date:'Jun 21',time:'TBD',phase:'Grupo B · J2',venue:'BC Place',                 city:'Vancouver, BC',       wx:{ic:'🌧️',desc:'Lluvia',t:'16°C'},        odds:[1.8,3.4,4.5]},
   {id:28,home:'Suiza',         away:'Bosnia y Herzegovina',   isoDate:'2026-06-21',date:'Jun 21',time:'TBD',phase:'Grupo B · J2',venue:'Estadio Azteca',           city:'Tlalpan, CDMX',       wx:{ic:'⛅',desc:'Nublado',t:'17°C'},        odds:[1.6,3.6,5.5]},
   // ── J2 Grupo C ──
-  {id:29,home:'Brasil',        away:'Haití',                  isoDate:'2026-06-21',date:'Jun 21',time:'TBD',phase:'Grupo C · J2',venue:'MetLife Stadium',          city:'East Rutherford, NJ', wx:{ic:'🌤️',desc:'Agradable',t:'25°C'},    odds:[1.2,6.0,18.0]},
-  {id:30,home:'Escocia',       away:'Marruecos',              isoDate:'2026-06-21',date:'Jun 21',time:'TBD',phase:'Grupo C · J2',venue:'Gillette Stadium',         city:'Foxborough, MA',      wx:{ic:'🌥️',desc:'Nublado',t:'18°C'},      odds:[3.0,3.2,2.3]},
+  {id:29,home:'Brasil',        away:'Haití',                  isoDate:'2026-06-21',date:'Jun 21',time:'TBD',phase:'Grupo C · J2',venue:'New York New Jersey Stadium',          city:'East Rutherford, NJ', wx:{ic:'🌤️',desc:'Agradable',t:'25°C'},    odds:[1.2,6.0,18.0]},
+  {id:30,home:'Escocia',       away:'Marruecos',              isoDate:'2026-06-21',date:'Jun 21',time:'TBD',phase:'Grupo C · J2',venue:'Boston Stadium',         city:'Foxborough, MA',      wx:{ic:'🌥️',desc:'Nublado',t:'18°C'},      odds:[3.0,3.2,2.3]},
   // ── J2 Grupo D ──
-  {id:31,home:'USA',           away:'Australia',              isoDate:'2026-06-22',date:'Jun 22',time:'TBD',phase:'Grupo D · J2',venue:'SoFi Stadium',             city:'Inglewood, CA',       wx:{ic:'☀️',desc:'Soleado',t:'27°C'},       odds:[1.6,3.5,5.0]},
-  {id:32,home:'Paraguay',      away:'Turquía',                isoDate:'2026-06-22',date:'Jun 22',time:'TBD',phase:'Grupo D · J2',venue:'Arrowhead Stadium',        city:'Kansas City, MO',     wx:{ic:'⛅',desc:'Nublado',t:'26°C'},       odds:[3.2,3.0,2.2]},
+  {id:31,home:'USA',           away:'Australia',              isoDate:'2026-06-22',date:'Jun 22',time:'TBD',phase:'Grupo D · J2',venue:'Los Angeles Stadium',             city:'Inglewood, CA',       wx:{ic:'☀️',desc:'Soleado',t:'27°C'},       odds:[1.6,3.5,5.0]},
+  {id:32,home:'Paraguay',      away:'Turquía',                isoDate:'2026-06-22',date:'Jun 22',time:'TBD',phase:'Grupo D · J2',venue:'Kansas City Stadium',        city:'Kansas City, MO',     wx:{ic:'⛅',desc:'Nublado',t:'26°C'},       odds:[3.2,3.0,2.2]},
   // ── J2 Grupo E ──
-  {id:33,home:'Alemania',      away:'Ecuador',                isoDate:'2026-06-22',date:'Jun 22',time:'TBD',phase:'Grupo E · J2',venue:'AT&T Stadium',             city:'Arlington, Texas',    wx:{ic:'☀️',desc:'Caluroso',t:'33°C'},      odds:[1.4,4.0,7.0]},
-  {id:34,home:'Costa de Marfil',away:'Curazao',               isoDate:'2026-06-22',date:'Jun 22',time:'TBD',phase:'Grupo E · J2',venue:'NRG Stadium',              city:'Houston, Texas',      wx:{ic:'☀️',desc:'Muy caluroso',t:'35°C'}, odds:[1.3,5.5,10.0]},
+  {id:33,home:'Alemania',      away:'Ecuador',                isoDate:'2026-06-22',date:'Jun 22',time:'TBD',phase:'Grupo E · J2',venue:'Dallas Stadium',             city:'Arlington, Texas',    wx:{ic:'☀️',desc:'Caluroso',t:'33°C'},      odds:[1.4,4.0,7.0]},
+  {id:34,home:'Costa de Marfil',away:'Curazao',               isoDate:'2026-06-22',date:'Jun 22',time:'TBD',phase:'Grupo E · J2',venue:'Houston Stadium',              city:'Houston, Texas',      wx:{ic:'☀️',desc:'Muy caluroso',t:'35°C'}, odds:[1.3,5.5,10.0]},
   // ── J2 Grupo F ──
-  {id:35,home:'Países Bajos',  away:'Suecia',                 isoDate:'2026-06-23',date:'Jun 23',time:'TBD',phase:'Grupo F · J2',venue:'Levi Stadium',             city:'Santa Clara, CA',     wx:{ic:'🌫️',desc:'Neblina',t:'16°C'},     odds:[1.5,3.6,6.0]},
-  {id:36,home:'Japón',         away:'Túnez',                  isoDate:'2026-06-23',date:'Jun 23',time:'TBD',phase:'Grupo F · J2',venue:'Lincoln Financial Field',  city:'Filadelfia, PA',      wx:{ic:'🌤️',desc:'Agradable',t:'25°C'},   odds:[1.5,3.5,6.0]},
+  {id:35,home:'Países Bajos',  away:'Suecia',                 isoDate:'2026-06-23',date:'Jun 23',time:'TBD',phase:'Grupo F · J2',venue:'San Francisco Bay Area Stadium',             city:'Santa Clara, CA',     wx:{ic:'🌫️',desc:'Neblina',t:'16°C'},     odds:[1.5,3.6,6.0]},
+  {id:36,home:'Japón',         away:'Túnez',                  isoDate:'2026-06-23',date:'Jun 23',time:'TBD',phase:'Grupo F · J2',venue:'Philadelphia Stadium',  city:'Filadelfia, PA',      wx:{ic:'🌤️',desc:'Agradable',t:'25°C'},   odds:[1.5,3.5,6.0]},
   // ── J2 Grupo G ──
-  {id:37,home:'Bélgica',       away:'Irán',                   isoDate:'2026-06-23',date:'Jun 23',time:'TBD',phase:'Grupo G · J2',venue:'Mercedes-Benz Stadium',    city:'Atlanta, Georgia',    wx:{ic:'⛈️',desc:'Tormenta',t:'29°C'},    odds:[1.4,4.0,7.5]},
-  {id:38,home:'Egipto',        away:'Nueva Zelanda',          isoDate:'2026-06-23',date:'Jun 23',time:'TBD',phase:'Grupo G · J2',venue:'Hard Rock Stadium',        city:'Miami Gardens, FL',   wx:{ic:'🌤️',desc:'Caluroso',t:'30°C'},    odds:[1.4,3.8,7.0]},
+  {id:37,home:'Bélgica',       away:'Irán',                   isoDate:'2026-06-23',date:'Jun 23',time:'TBD',phase:'Grupo G · J2',venue:'Atlanta Stadium',    city:'Atlanta, Georgia',    wx:{ic:'⛈️',desc:'Tormenta',t:'29°C'},    odds:[1.4,4.0,7.5]},
+  {id:38,home:'Egipto',        away:'Nueva Zelanda',          isoDate:'2026-06-23',date:'Jun 23',time:'TBD',phase:'Grupo G · J2',venue:'Miami Stadium',        city:'Miami Gardens, FL',   wx:{ic:'🌤️',desc:'Caluroso',t:'30°C'},    odds:[1.4,3.8,7.0]},
   // ── J2 Grupo H ──
-  {id:39,home:'España',        away:'Uruguay',                isoDate:'2026-06-24',date:'Jun 24',time:'TBD',phase:'Grupo H · J2',venue:'SoFi Stadium',             city:'Inglewood, CA',       wx:{ic:'☀️',desc:'Soleado',t:'27°C'},      odds:[1.5,3.8,6.0]},
-  {id:40,home:'Arabia Saudita',away:'Cabo Verde',             isoDate:'2026-06-24',date:'Jun 24',time:'TBD',phase:'Grupo H · J2',venue:'Lumen Field',              city:'Seattle, WA',         wx:{ic:'🌧️',desc:'Lluvia',t:'17°C'},      odds:[1.4,3.8,7.5]},
+  {id:39,home:'España',        away:'Uruguay',                isoDate:'2026-06-24',date:'Jun 24',time:'TBD',phase:'Grupo H · J2',venue:'Los Angeles Stadium',             city:'Inglewood, CA',       wx:{ic:'☀️',desc:'Soleado',t:'27°C'},      odds:[1.5,3.8,6.0]},
+  {id:40,home:'Arabia Saudita',away:'Cabo Verde',             isoDate:'2026-06-24',date:'Jun 24',time:'TBD',phase:'Grupo H · J2',venue:'Seattle Stadium',              city:'Seattle, WA',         wx:{ic:'🌧️',desc:'Lluvia',t:'17°C'},      odds:[1.4,3.8,7.5]},
   // ── J2 Grupo I ──
-  {id:41,home:'Francia',       away:'Irak',                   isoDate:'2026-06-24',date:'Jun 24',time:'TBD',phase:'Grupo I · J2',venue:'MetLife Stadium',          city:'East Rutherford, NJ', wx:{ic:'🌤️',desc:'Agradable',t:'24°C'},   odds:[1.2,6.0,18.0]},
-  {id:42,home:'Noruega',       away:'Senegal',                isoDate:'2026-06-25',date:'Jun 25',time:'TBD',phase:'Grupo I · J2',venue:'Arrowhead Stadium',        city:'Kansas City, MO',     wx:{ic:'⛅',desc:'Parcial',t:'27°C'},      odds:[1.5,3.5,6.0]},
+  {id:41,home:'Francia',       away:'Irak',                   isoDate:'2026-06-24',date:'Jun 24',time:'TBD',phase:'Grupo I · J2',venue:'New York New Jersey Stadium',          city:'East Rutherford, NJ', wx:{ic:'🌤️',desc:'Agradable',t:'24°C'},   odds:[1.2,6.0,18.0]},
+  {id:42,home:'Noruega',       away:'Senegal',                isoDate:'2026-06-25',date:'Jun 25',time:'TBD',phase:'Grupo I · J2',venue:'Kansas City Stadium',        city:'Kansas City, MO',     wx:{ic:'⛅',desc:'Parcial',t:'27°C'},      odds:[1.5,3.5,6.0]},
   // ── J2 Grupo J ──
-  {id:43,home:'Argentina',     away:'Austria',                isoDate:'2026-06-25',date:'Jun 25',time:'TBD',phase:'Grupo J · J2',venue:'NRG Stadium',              city:'Houston, Texas',      wx:{ic:'☀️',desc:'Caluroso',t:'34°C'},     odds:[1.4,4.0,7.0]},
-  {id:44,home:'Argelia',       away:'Jordania',               isoDate:'2026-06-25',date:'Jun 25',time:'TBD',phase:'Grupo J · J2',venue:'BMO Field',                city:'Toronto, Ontario',    wx:{ic:'🌤️',desc:'Fresco',t:'20°C'},      odds:[1.5,3.5,6.0]},
+  {id:43,home:'Argentina',     away:'Austria',                isoDate:'2026-06-25',date:'Jun 25',time:'TBD',phase:'Grupo J · J2',venue:'Houston Stadium',              city:'Houston, Texas',      wx:{ic:'☀️',desc:'Caluroso',t:'34°C'},     odds:[1.4,4.0,7.0]},
+  {id:44,home:'Argelia',       away:'Jordania',               isoDate:'2026-06-25',date:'Jun 25',time:'TBD',phase:'Grupo J · J2',venue:'Toronto Stadium',                city:'Toronto, Ontario',    wx:{ic:'🌤️',desc:'Fresco',t:'20°C'},      odds:[1.5,3.5,6.0]},
   // ── J2 Grupo K ──
-  {id:45,home:'Portugal',      away:'Colombia',               isoDate:'2026-06-26',date:'Jun 26',time:'TBD',phase:'Grupo K · J2',venue:'AT&T Stadium',             city:'Arlington, Texas',    wx:{ic:'☀️',desc:'Muy caluroso',t:'34°C'},odds:[1.6,3.5,5.5]},
-  {id:46,home:'Uzbekistán',    away:'Congo DR',               isoDate:'2026-06-26',date:'Jun 26',time:'TBD',phase:'Grupo K · J2',venue:'Lincoln Financial Field',  city:'Filadelfia, PA',      wx:{ic:'🌤️',desc:'Agradable',t:'25°C'},   odds:[1.7,3.3,4.8]},
+  {id:45,home:'Portugal',      away:'Colombia',               isoDate:'2026-06-26',date:'Jun 26',time:'TBD',phase:'Grupo K · J2',venue:'Dallas Stadium',             city:'Arlington, Texas',    wx:{ic:'☀️',desc:'Muy caluroso',t:'34°C'},odds:[1.6,3.5,5.5]},
+  {id:46,home:'Uzbekistán',    away:'Congo DR',               isoDate:'2026-06-26',date:'Jun 26',time:'TBD',phase:'Grupo K · J2',venue:'Philadelphia Stadium',  city:'Filadelfia, PA',      wx:{ic:'🌤️',desc:'Agradable',t:'25°C'},   odds:[1.7,3.3,4.8]},
   // ── J2 Grupo L ──
-  {id:47,home:'Inglaterra',    away:'Ghana',                  isoDate:'2026-06-26',date:'Jun 26',time:'TBD',phase:'Grupo L · J2',venue:'Mercedes-Benz Stadium',    city:'Atlanta, Georgia',    wx:{ic:'⛈️',desc:'Tormenta',t:'29°C'},    odds:[1.5,3.7,6.0]},
-  {id:48,home:'Croacia',       away:'Panamá',                 isoDate:'2026-06-26',date:'Jun 26',time:'TBD',phase:'Grupo L · J2',venue:'Hard Rock Stadium',        city:'Miami Gardens, FL',   wx:{ic:'🌤️',desc:'Caluroso',t:'30°C'},    odds:[1.4,3.8,7.0]},
+  {id:47,home:'Inglaterra',    away:'Ghana',                  isoDate:'2026-06-26',date:'Jun 26',time:'TBD',phase:'Grupo L · J2',venue:'Atlanta Stadium',    city:'Atlanta, Georgia',    wx:{ic:'⛈️',desc:'Tormenta',t:'29°C'},    odds:[1.5,3.7,6.0]},
+  {id:48,home:'Croacia',       away:'Panamá',                 isoDate:'2026-06-26',date:'Jun 26',time:'TBD',phase:'Grupo L · J2',venue:'Miami Stadium',        city:'Miami Gardens, FL',   wx:{ic:'🌤️',desc:'Caluroso',t:'30°C'},    odds:[1.4,3.8,7.0]},
 
   // ══════════════════════════════════════════════════════════════
   // JORNADA 3 — Partidos simultáneos por grupo (Jun 28 – Jul 2)
   // ══════════════════════════════════════════════════════════════
   // ── J3 Grupo A (simultáneos) ──
   {id:49,home:'México',        away:'República Checa',        isoDate:'2026-06-28',date:'Jun 28',time:'17:00',phase:'Grupo A · J3 · SIM',venue:'Estadio Azteca',   city:'Tlalpan, CDMX',       wx:{ic:'⛅',desc:'Nublado',t:'17°C'},      odds:[1.3,5.0,10.0]},
-  {id:50,home:'Corea del Sur', away:'Sudáfrica',              isoDate:'2026-06-28',date:'Jun 28',time:'17:00',phase:'Grupo A · J3 · SIM',venue:'Estadio Akron',    city:'Zapopan, Jalisco',    wx:{ic:'☀️',desc:'Cálido',t:'27°C'},      odds:[1.6,3.5,5.5]},
+  {id:50,home:'Corea del Sur', away:'Sudáfrica',              isoDate:'2026-06-28',date:'Jun 28',time:'17:00',phase:'Grupo A · J3 · SIM',venue:'Estadio Guadalajara',    city:'Zapopan, Jalisco',    wx:{ic:'☀️',desc:'Cálido',t:'27°C'},      odds:[1.6,3.5,5.5]},
   // ── J3 Grupo B (simultáneos) ──
-  {id:51,home:'Canadá',        away:'Suiza',                  isoDate:'2026-06-28',date:'Jun 28',time:'20:00',phase:'Grupo B · J3 · SIM',venue:'BMO Field',        city:'Toronto, Ontario',    wx:{ic:'🌤️',desc:'Fresco',t:'21°C'},     odds:[2.0,3.3,3.5]},
+  {id:51,home:'Canadá',        away:'Suiza',                  isoDate:'2026-06-28',date:'Jun 28',time:'20:00',phase:'Grupo B · J3 · SIM',venue:'Toronto Stadium',        city:'Toronto, Ontario',    wx:{ic:'🌤️',desc:'Fresco',t:'21°C'},     odds:[2.0,3.3,3.5]},
   {id:52,home:'Qatar',         away:'Bosnia y Herzegovina',   isoDate:'2026-06-28',date:'Jun 28',time:'20:00',phase:'Grupo B · J3 · SIM',venue:'BC Place',         city:'Vancouver, BC',       wx:{ic:'🌧️',desc:'Lluvia',t:'15°C'},     odds:[2.5,3.0,2.8]},
   // ── J3 Grupo C (simultáneos) ──
-  {id:53,home:'Brasil',        away:'Escocia',                isoDate:'2026-06-29',date:'Jun 29',time:'17:00',phase:'Grupo C · J3 · SIM',venue:'MetLife Stadium',  city:'East Rutherford, NJ', wx:{ic:'🌤️',desc:'Agradable',t:'24°C'},  odds:[1.2,6.5,20.0]},
-  {id:54,home:'Haití',         away:'Marruecos',              isoDate:'2026-06-29',date:'Jun 29',time:'17:00',phase:'Grupo C · J3 · SIM',venue:'Gillette Stadium', city:'Foxborough, MA',      wx:{ic:'⛅',desc:'Nublado',t:'20°C'},     odds:[4.5,3.2,1.7]},
+  {id:53,home:'Brasil',        away:'Escocia',                isoDate:'2026-06-29',date:'Jun 29',time:'17:00',phase:'Grupo C · J3 · SIM',venue:'New York New Jersey Stadium',  city:'East Rutherford, NJ', wx:{ic:'🌤️',desc:'Agradable',t:'24°C'},  odds:[1.2,6.5,20.0]},
+  {id:54,home:'Haití',         away:'Marruecos',              isoDate:'2026-06-29',date:'Jun 29',time:'17:00',phase:'Grupo C · J3 · SIM',venue:'Boston Stadium', city:'Foxborough, MA',      wx:{ic:'⛅',desc:'Nublado',t:'20°C'},     odds:[4.5,3.2,1.7]},
   // ── J3 Grupo D (simultáneos) ──
-  {id:55,home:'USA',           away:'Turquía',                isoDate:'2026-06-29',date:'Jun 29',time:'20:00',phase:'Grupo D · J3 · SIM',venue:'SoFi Stadium',     city:'Inglewood, CA',       wx:{ic:'☀️',desc:'Soleado',t:'27°C'},     odds:[1.7,3.4,4.5]},
-  {id:56,home:'Australia',     away:'Paraguay',               isoDate:'2026-06-29',date:'Jun 29',time:'20:00',phase:'Grupo D · J3 · SIM',venue:'AT&T Stadium',     city:'Arlington, Texas',    wx:{ic:'☀️',desc:'Caluroso',t:'33°C'},    odds:[2.0,3.3,3.5]},
+  {id:55,home:'USA',           away:'Turquía',                isoDate:'2026-06-29',date:'Jun 29',time:'20:00',phase:'Grupo D · J3 · SIM',venue:'Los Angeles Stadium',     city:'Inglewood, CA',       wx:{ic:'☀️',desc:'Soleado',t:'27°C'},     odds:[1.7,3.4,4.5]},
+  {id:56,home:'Australia',     away:'Paraguay',               isoDate:'2026-06-29',date:'Jun 29',time:'20:00',phase:'Grupo D · J3 · SIM',venue:'Dallas Stadium',     city:'Arlington, Texas',    wx:{ic:'☀️',desc:'Caluroso',t:'33°C'},    odds:[2.0,3.3,3.5]},
   // ── J3 Grupo E (simultáneos) ──
-  {id:57,home:'Alemania',      away:'Costa de Marfil',        isoDate:'2026-06-30',date:'Jun 30',time:'17:00',phase:'Grupo E · J3 · SIM',venue:'AT&T Stadium',     city:'Arlington, Texas',    wx:{ic:'☀️',desc:'Muy caluroso',t:'35°C'},odds:[1.4,4.0,7.5]},
-  {id:58,home:'Ecuador',       away:'Curazao',                isoDate:'2026-06-30',date:'Jun 30',time:'17:00',phase:'Grupo E · J3 · SIM',venue:'NRG Stadium',      city:'Houston, Texas',      wx:{ic:'☀️',desc:'Caluroso',t:'35°C'},    odds:[1.3,5.5,12.0]},
+  {id:57,home:'Alemania',      away:'Costa de Marfil',        isoDate:'2026-06-30',date:'Jun 30',time:'17:00',phase:'Grupo E · J3 · SIM',venue:'Dallas Stadium',     city:'Arlington, Texas',    wx:{ic:'☀️',desc:'Muy caluroso',t:'35°C'},odds:[1.4,4.0,7.5]},
+  {id:58,home:'Ecuador',       away:'Curazao',                isoDate:'2026-06-30',date:'Jun 30',time:'17:00',phase:'Grupo E · J3 · SIM',venue:'Houston Stadium',      city:'Houston, Texas',      wx:{ic:'☀️',desc:'Caluroso',t:'35°C'},    odds:[1.3,5.5,12.0]},
   // ── J3 Grupo F (simultáneos) ──
-  {id:59,home:'Países Bajos',  away:'Túnez',                  isoDate:'2026-06-30',date:'Jun 30',time:'20:00',phase:'Grupo F · J3 · SIM',venue:'Levi Stadium',     city:'Santa Clara, CA',     wx:{ic:'🌫️',desc:'Neblina',t:'16°C'},   odds:[1.4,4.0,8.0]},
-  {id:60,home:'Japón',         away:'Suecia',                 isoDate:'2026-06-30',date:'Jun 30',time:'20:00',phase:'Grupo F · J3 · SIM',venue:'Lincoln Financial Field',city:'Filadelfia, PA',wx:{ic:'🌤️',desc:'Agradable',t:'26°C'},odds:[1.6,3.5,5.5]},
+  {id:59,home:'Países Bajos',  away:'Túnez',                  isoDate:'2026-06-30',date:'Jun 30',time:'20:00',phase:'Grupo F · J3 · SIM',venue:'San Francisco Bay Area Stadium',     city:'Santa Clara, CA',     wx:{ic:'🌫️',desc:'Neblina',t:'16°C'},   odds:[1.4,4.0,8.0]},
+  {id:60,home:'Japón',         away:'Suecia',                 isoDate:'2026-06-30',date:'Jun 30',time:'20:00',phase:'Grupo F · J3 · SIM',venue:'Philadelphia Stadium',city:'Filadelfia, PA',wx:{ic:'🌤️',desc:'Agradable',t:'26°C'},odds:[1.6,3.5,5.5]},
   // ── J3 Grupo G (simultáneos) ──
-  {id:61,home:'Bélgica',       away:'Nueva Zelanda',          isoDate:'2026-07-01',date:'Jul 1', time:'17:00',phase:'Grupo G · J3 · SIM',venue:'Mercedes-Benz Stadium',city:'Atlanta, Georgia',wx:{ic:'⛈️',desc:'Tormenta',t:'30°C'},odds:[1.3,5.5,12.0]},
-  {id:62,home:'Irán',          away:'Egipto',                 isoDate:'2026-07-01',date:'Jul 1', time:'17:00',phase:'Grupo G · J3 · SIM',venue:'Hard Rock Stadium', city:'Miami Gardens, FL',  wx:{ic:'🌤️',desc:'Caluroso',t:'31°C'},   odds:[1.8,3.3,4.5]},
+  {id:61,home:'Bélgica',       away:'Nueva Zelanda',          isoDate:'2026-07-01',date:'Jul 1', time:'17:00',phase:'Grupo G · J3 · SIM',venue:'Atlanta Stadium',city:'Atlanta, Georgia',wx:{ic:'⛈️',desc:'Tormenta',t:'30°C'},odds:[1.3,5.5,12.0]},
+  {id:62,home:'Irán',          away:'Egipto',                 isoDate:'2026-07-01',date:'Jul 1', time:'17:00',phase:'Grupo G · J3 · SIM',venue:'Miami Stadium', city:'Miami Gardens, FL',  wx:{ic:'🌤️',desc:'Caluroso',t:'31°C'},   odds:[1.8,3.3,4.5]},
   // ── J3 Grupo H (simultáneos) ──
-  {id:63,home:'España',        away:'Arabia Saudita',         isoDate:'2026-07-01',date:'Jul 1', time:'20:00',phase:'Grupo H · J3 · SIM',venue:'SoFi Stadium',     city:'Inglewood, CA',       wx:{ic:'☀️',desc:'Soleado',t:'27°C'},     odds:[1.3,5.5,12.0]},
-  {id:64,home:'Uruguay',       away:'Cabo Verde',             isoDate:'2026-07-01',date:'Jul 1', time:'20:00',phase:'Grupo H · J3 · SIM',venue:'Lumen Field',      city:'Seattle, WA',         wx:{ic:'🌧️',desc:'Lluvia',t:'17°C'},     odds:[1.4,4.0,8.0]},
+  {id:63,home:'España',        away:'Arabia Saudita',         isoDate:'2026-07-01',date:'Jul 1', time:'20:00',phase:'Grupo H · J3 · SIM',venue:'Los Angeles Stadium',     city:'Inglewood, CA',       wx:{ic:'☀️',desc:'Soleado',t:'27°C'},     odds:[1.3,5.5,12.0]},
+  {id:64,home:'Uruguay',       away:'Cabo Verde',             isoDate:'2026-07-01',date:'Jul 1', time:'20:00',phase:'Grupo H · J3 · SIM',venue:'Seattle Stadium',      city:'Seattle, WA',         wx:{ic:'🌧️',desc:'Lluvia',t:'17°C'},     odds:[1.4,4.0,8.0]},
   // ── J3 Grupo I (simultáneos) ──
-  {id:65,home:'Francia',       away:'Noruega',                isoDate:'2026-07-01',date:'Jul 1', time:'17:00',phase:'Grupo I · J3 · SIM',venue:'MetLife Stadium',  city:'East Rutherford, NJ', wx:{ic:'🌤️',desc:'Agradable',t:'25°C'},  odds:[1.6,3.6,5.5]},
-  {id:66,home:'Irak',          away:'Senegal',                isoDate:'2026-07-01',date:'Jul 1', time:'17:00',phase:'Grupo I · J3 · SIM',venue:'Arrowhead Stadium',city:'Kansas City, MO',     wx:{ic:'⛅',desc:'Nublado',t:'28°C'},     odds:[4.0,3.2,1.9]},
+  {id:65,home:'Francia',       away:'Noruega',                isoDate:'2026-07-01',date:'Jul 1', time:'17:00',phase:'Grupo I · J3 · SIM',venue:'New York New Jersey Stadium',  city:'East Rutherford, NJ', wx:{ic:'🌤️',desc:'Agradable',t:'25°C'},  odds:[1.6,3.6,5.5]},
+  {id:66,home:'Irak',          away:'Senegal',                isoDate:'2026-07-01',date:'Jul 1', time:'17:00',phase:'Grupo I · J3 · SIM',venue:'Kansas City Stadium',city:'Kansas City, MO',     wx:{ic:'⛅',desc:'Nublado',t:'28°C'},     odds:[4.0,3.2,1.9]},
   // ── J3 Grupo J (simultáneos) ──
-  {id:67,home:'Argentina',     away:'Jordania',               isoDate:'2026-07-02',date:'Jul 2', time:'17:00',phase:'Grupo J · J3 · SIM',venue:'NRG Stadium',      city:'Houston, Texas',      wx:{ic:'☀️',desc:'Caluroso',t:'35°C'},    odds:[1.2,7.0,22.0]},
-  {id:68,home:'Argelia',       away:'Austria',                isoDate:'2026-07-02',date:'Jul 2', time:'17:00',phase:'Grupo J · J3 · SIM',venue:'BMO Field',        city:'Toronto, Ontario',    wx:{ic:'🌤️',desc:'Fresco',t:'19°C'},     odds:[2.8,3.0,2.5]},
+  {id:67,home:'Argentina',     away:'Jordania',               isoDate:'2026-07-02',date:'Jul 2', time:'17:00',phase:'Grupo J · J3 · SIM',venue:'Houston Stadium',      city:'Houston, Texas',      wx:{ic:'☀️',desc:'Caluroso',t:'35°C'},    odds:[1.2,7.0,22.0]},
+  {id:68,home:'Argelia',       away:'Austria',                isoDate:'2026-07-02',date:'Jul 2', time:'17:00',phase:'Grupo J · J3 · SIM',venue:'Toronto Stadium',        city:'Toronto, Ontario',    wx:{ic:'🌤️',desc:'Fresco',t:'19°C'},     odds:[2.8,3.0,2.5]},
   // ── J3 Grupo K (simultáneos) ──
-  {id:69,home:'Portugal',      away:'Uzbekistán',             isoDate:'2026-07-02',date:'Jul 2', time:'20:00',phase:'Grupo K · J3 · SIM',venue:'AT&T Stadium',     city:'Arlington, Texas',    wx:{ic:'☀️',desc:'Muy caluroso',t:'34°C'},odds:[1.2,6.5,20.0]},
-  {id:70,home:'Colombia',      away:'Congo DR',               isoDate:'2026-07-02',date:'Jul 2', time:'20:00',phase:'Grupo K · J3 · SIM',venue:'Lincoln Financial Field',city:'Filadelfia, PA',wx:{ic:'🌤️',desc:'Agradable',t:'27°C'},odds:[1.4,4.0,8.0]},
+  {id:69,home:'Portugal',      away:'Uzbekistán',             isoDate:'2026-07-02',date:'Jul 2', time:'20:00',phase:'Grupo K · J3 · SIM',venue:'Dallas Stadium',     city:'Arlington, Texas',    wx:{ic:'☀️',desc:'Muy caluroso',t:'34°C'},odds:[1.2,6.5,20.0]},
+  {id:70,home:'Colombia',      away:'Congo DR',               isoDate:'2026-07-02',date:'Jul 2', time:'20:00',phase:'Grupo K · J3 · SIM',venue:'Philadelphia Stadium',city:'Filadelfia, PA',wx:{ic:'🌤️',desc:'Agradable',t:'27°C'},odds:[1.4,4.0,8.0]},
   // ── J3 Grupo L (simultáneos) ──
-  {id:71,home:'Inglaterra',    away:'Panamá',                 isoDate:'2026-07-02',date:'Jul 2', time:'17:00',phase:'Grupo L · J3 · SIM',venue:'Mercedes-Benz Stadium',city:'Atlanta, Georgia',wx:{ic:'⛈️',desc:'Tormenta',t:'29°C'},odds:[1.2,7.0,22.0]},
-  {id:72,home:'Ghana',         away:'Croacia',                isoDate:'2026-07-02',date:'Jul 2', time:'17:00',phase:'Grupo L · J3 · SIM',venue:'Hard Rock Stadium', city:'Miami Gardens, FL',  wx:{ic:'🌤️',desc:'Caluroso',t:'30°C'},   odds:[2.5,3.0,2.8]},
+  {id:71,home:'Inglaterra',    away:'Panamá',                 isoDate:'2026-07-02',date:'Jul 2', time:'17:00',phase:'Grupo L · J3 · SIM',venue:'Atlanta Stadium',city:'Atlanta, Georgia',wx:{ic:'⛈️',desc:'Tormenta',t:'29°C'},odds:[1.2,7.0,22.0]},
+  {id:72,home:'Ghana',         away:'Croacia',                isoDate:'2026-07-02',date:'Jul 2', time:'17:00',phase:'Grupo L · J3 · SIM',venue:'Miami Stadium', city:'Miami Gardens, FL',  wx:{ic:'🌤️',desc:'Caluroso',t:'30°C'},   odds:[2.5,3.0,2.8]},
 ];
 const GROUPS=[
   // Grupos confirmados — Copa Mundial FIFA 2026
@@ -933,24 +933,24 @@ const VENUE_WIKI={
 const VENUES=[
   // 16 sedes oficiales FIFA World Cup 2026 — datos del documento oficial FIFA
   // USA — 11 sedes
-  {n:'MetLife Stadium',         c:'East Rutherford, NJ',   cap:'82,500',f:'🇺🇸',phase:'Final',       wk:'MetLife_Stadium'},
-  {n:'AT&T Stadium',            c:'Arlington, Texas',      cap:'94,000',f:'🇺🇸',phase:'Semifinal',   wk:'AT&T_Stadium'},
-  {n:'Mercedes-Benz Stadium',   c:'Atlanta, Georgia',      cap:'75,000',f:'🇺🇸',phase:'Semifinal',   wk:'Mercedes-Benz_Stadium'},
-  {n:'SoFi Stadium',            c:'Inglewood, California', cap:'70,000',f:'🇺🇸',phase:'Cuartos',     wk:'SoFi_Stadium'},
-  {n:'NRG Stadium',             c:'Houston, Texas',        cap:'72,220',f:'🇺🇸',phase:'Cuartos',     wk:'NRG_Stadium'},
-  {n:'Hard Rock Stadium',       c:'Miami Gardens, Florida',cap:'65,000',f:'🇺🇸',phase:'3er Lugar',   wk:'Hard_Rock_Stadium'},
-  {n:'Arrowhead Stadium',       c:'Kansas City, Missouri', cap:'73,000',f:'🇺🇸',phase:'Cuartos',     wk:'Arrowhead_Stadium'},
-  {n:'Lincoln Financial Field', c:'Filadelfia, PA',        cap:'69,000',f:'🇺🇸',phase:'Octavos',     wk:'Lincoln_Financial_Field'},
-  {n:'Gillette Stadium',        c:'Foxborough, MA',        cap:'65,000',f:'🇺🇸',phase:'Cuartos',     wk:'Gillette_Stadium'},
-  {n:'Lumen Field',             c:'Seattle, Washington',   cap:'69,000',f:'🇺🇸',phase:'Octavos',     wk:'Lumen_Field'},
-  {n:'Levi Stadium',            c:'Santa Clara, California',cap:'71,000',f:'🇺🇸',phase:'Octavos',    wk:"Levi_Stadium"},
+  {n:'New York New Jersey Stadium',c:'East Rutherford, NJ',   cap:'82,500',f:'🇺🇸',phase:'Final',       wk:'MetLife_Stadium'},
+  {n:'Dallas Stadium',            c:'Arlington, Texas',      cap:'94,000',f:'🇺🇸',phase:'Semifinal',   wk:'AT&T_Stadium'},
+  {n:'Atlanta Stadium',           c:'Atlanta, Georgia',      cap:'75,000',f:'🇺🇸',phase:'Semifinal',   wk:'Mercedes-Benz_Stadium'},
+  {n:'Los Angeles Stadium',       c:'Inglewood, California', cap:'70,000',f:'🇺🇸',phase:'Cuartos',     wk:'SoFi_Stadium'},
+  {n:'Houston Stadium',           c:'Houston, Texas',        cap:'72,220',f:'🇺🇸',phase:'Cuartos',     wk:'NRG_Stadium'},
+  {n:'Miami Stadium',             c:'Miami Gardens, Florida',cap:'65,000',f:'🇺🇸',phase:'3er Lugar',   wk:'Hard_Rock_Stadium'},
+  {n:'Kansas City Stadium',       c:'Kansas City, Missouri', cap:'73,000',f:'🇺🇸',phase:'Cuartos',     wk:'Arrowhead_Stadium'},
+  {n:'Philadelphia Stadium',      c:'Filadelfia, PA',        cap:'69,000',f:'🇺🇸',phase:'Octavos',     wk:'Lincoln_Financial_Field'},
+  {n:'Boston Stadium',            c:'Foxborough, MA',        cap:'65,000',f:'🇺🇸',phase:'Cuartos',     wk:'Gillette_Stadium'},
+  {n:'Seattle Stadium',           c:'Seattle, Washington',   cap:'69,000',f:'🇺🇸',phase:'Octavos',     wk:'Lumen_Field'},
+  {n:'San Francisco Bay Area Stadium',c:'Santa Clara, California',cap:'71,000',f:'🇺🇸',phase:'Octavos',wk:"Levi_Stadium"},
   // México — 3 sedes (datos oficiales FIFA)
-  {n:'Estadio Azteca',          c:'Tlalpan, CDMX',         cap:'83,000',f:'🇲🇽',phase:'Inauguración',wk:'Estadio_Azteca'},
-  {n:'Estadio BBVA',            c:'Guadalupe, Monterrey',  cap:'53,500',f:'🇲🇽',phase:'Octavos',     wk:'BBVA_Stadium_(Monterrey)'},
-  {n:'Estadio Akron',           c:'Zapopan, Guadalajara',  cap:'48,000',f:'🇲🇽',phase:'Grupos',      wk:'Estadio_Akron'},
+  {n:'Estadio Azteca',            c:'Tlalpan, CDMX',         cap:'83,000',f:'🇲🇽',phase:'Inauguración',wk:'Estadio_Azteca'},
+  {n:'Estadio Monterrey',         c:'Guadalupe, Monterrey',  cap:'53,500',f:'🇲🇽',phase:'Octavos',     wk:'BBVA_Stadium_(Monterrey)'},
+  {n:'Estadio Guadalajara',       c:'Zapopan, Guadalajara',  cap:'48,000',f:'🇲🇽',phase:'Grupos',      wk:'Estadio_Akron'},
   // Canadá — 2 sedes
-  {n:'BC Place',                c:'Vancouver, BC',         cap:'54,000',f:'🇨🇦',phase:'Octavos',     wk:'BC_Place'},
-  {n:'BMO Field',               c:'Toronto, Ontario',      cap:'45,000',f:'🇨🇦',phase:'Octavos',     wk:'BMO_Field'},
+  {n:'BC Place',                  c:'Vancouver, BC',         cap:'54,000',f:'🇨🇦',phase:'Octavos',     wk:'BC_Place'},
+  {n:'Toronto Stadium',           c:'Toronto, Ontario',      cap:'45,000',f:'🇨🇦',phase:'Octavos',     wk:'BMO_Field'},
 ];
 
 // ── Bet Options Data ──────────────────────────────
@@ -1301,7 +1301,7 @@ function PlayerPhoto({name,team,g=0,a=0,sz=120}){
   );
 }
 // Embedded stadium images (base64) — only BBVA has one
-const STADIUM_IMGS={'Estadio BBVA':'/stadiums/bbva.jpg'};
+const STADIUM_IMGS={'Estadio Monterrey':'/stadiums/bbva.jpg'};
 
 // Stadium color themes — accent colors per venue
 const STADIUM_THEMES={
