@@ -5614,6 +5614,9 @@ export default function App(){
           onPagar();
           window.history.replaceState({},'','/');
           setTab('pronostico');
+          // Re-leer desde Firestore para obtener el valor real de paquetes
+          // (el servidor ya actualizó Firestore; esperamos 1.5s a que propague)
+          setTimeout(()=>{ recheckAccess(); console.log('[MP] recheckAccess ejecutado'); }, 1500);
           console.log('[MP] onPagar() ejecutado, navegando a pronostico');
         } else {
           console.warn('[MP] verify respondio ok=false:', data);
