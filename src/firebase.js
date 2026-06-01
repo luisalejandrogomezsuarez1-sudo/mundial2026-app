@@ -32,25 +32,32 @@ export const googleProvider = new GoogleAuthProvider();
 // ── USUARIOS ────────────────────────────────────────────────────
 export async function saveUserToFirestore(user) {
   if(!user?.id || !user?.email) return;
+  const normalizedEmail = user.email.toLowerCase().trim();
   try {
-    // Buscar si ya existe un documento con este email para evitar duplicados
-    // (ocurre cuando el mismo usuario se registra desde otro dispositivo)
     let targetId = user.id;
-    try {
-      const q = query(collection(db,'users'), where('email','==', user.email));
+
+    // 1. Check if user.id already has a Firestore doc — fast direct read, no query.
+    //    This is the common path (same device, same registration).
+    const directSnap = await getDoc(doc(db, 'users', user.id));
+    if (!directSnap.exists()) {
+      // 2. user.id is not in Firestore — this is a new ID (re-registration from
+      //    another device or cleared localStorage). Search by email to reuse the
+      //    existing doc instead of creating a duplicate.
+      const q = query(collection(db,'users'), where('email','==', normalizedEmail));
       const snap = await getDocs(q);
       if (!snap.empty) {
-        // Preferir el doc con más datos (paquetes > 0 o gifted), si no, el primero
+        // Prefer the doc with payment data; fall back to the first one.
         const best = snap.docs.find(d => (d.data().paquetes > 0) || d.data().gifted)
                      || snap.docs[0];
         targetId = best.id;
       }
-    } catch(e) { /* si falla la query, usar user.id */ }
+      // If snap is empty: truly new user — create with user.id (falls through below).
+    }
 
     // No incluir 'gifted' — solo giftCoinsInFirestore debe escribirlo.
     await setDoc(doc(db,'users', targetId), {
       name:      user.name      || '',
-      email:     user.email     || '',
+      email:     normalizedEmail,
       paquetes:  user.paquetes  || 0,
       isAdmin:   user.isAdmin   || false,
       sessionId: user.sessionId || '',
