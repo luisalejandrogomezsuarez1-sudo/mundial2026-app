@@ -10,7 +10,7 @@ import {
   doc, setDoc, getDoc, getDocs, updateDoc, where, deleteDoc
 } from 'firebase/firestore';
 import {
-  getAuth, GoogleAuthProvider, signInWithPopup,
+  getAuth,
   createUserWithEmailAndPassword, signInWithEmailAndPassword,
   signOut, onAuthStateChanged, updateProfile
 } from 'firebase/auth';
@@ -27,7 +27,35 @@ const firebaseConfig = {
 const app        = initializeApp(firebaseConfig);
 export const db  = getFirestore(app);
 export const auth= getAuth(app);
-export const googleProvider = new GoogleAuthProvider();
+
+// ═══════════════════════════════════════════════════════════════
+// 🔐 FIREBASE AUTH NATIVO
+// Capa que envuelve el Auth real de Firebase. El UID que devuelve cada
+// función es el ID definitivo del documento en users/{uid}.
+// ═══════════════════════════════════════════════════════════════
+
+// Crear cuenta. Devuelve el objeto user (user.uid). Lanza el error de Firebase
+// (auth/email-already-in-use, auth/weak-password, etc.) para que el caller lo maneje.
+export async function authRegister(email, password) {
+  const cred = await createUserWithEmailAndPassword(auth, email.toLowerCase().trim(), password);
+  return cred.user;
+}
+
+// Iniciar sesión. Lanza auth/user-not-found, auth/wrong-password, etc.
+export async function authLogin(email, password) {
+  const cred = await signInWithEmailAndPassword(auth, email.toLowerCase().trim(), password);
+  return cred.user;
+}
+
+export async function authLogout() {
+  try { await signOut(auth); } catch(e) { console.warn('authLogout error:', e); }
+}
+
+// Suscribirse a cambios de sesión. Firebase persiste la sesión solo en cada
+// dispositivo y la restaura al recargar. Devuelve la función de desuscripción.
+export function authOnChange(callback) {
+  return onAuthStateChanged(auth, callback);
+}
 
 // ── ID CANÓNICO ─────────────────────────────────────────────────
 // Email normalizado → ID de documento Firestore determinista.
@@ -37,7 +65,70 @@ function emailToDocId(email) {
   return 'u_' + email.replace('@', '_at_').replace(/[^a-z0-9]/g, '_');
 }
 
-// ── USUARIOS ────────────────────────────────────────────────────
+// ── USUARIOS (Firebase Auth) ────────────────────────────────────
+// Escribe/actualiza el doc del usuario usando el UID de Firebase Auth como ID
+// del documento. Reemplaza a saveUserToFirestore para el flujo Auth nativo.
+export async function saveAuthUserToFirestore(uid, user) {
+  if(!uid || !user?.email) return null;
+  const normalizedEmail = user.email.toLowerCase().trim();
+  try {
+    await setDoc(doc(db, 'users', uid), {
+      name:      user.name      || '',
+      email:     normalizedEmail,
+      paquetes:  user.paquetes  || 0,
+      isAdmin:   user.isAdmin   || false,
+      ...(user.bd   ? { bd:user.bd }    : {}),
+      ...(user.nat  ? { nat:user.nat }  : {}),
+      ...(user.gen  ? { gen:user.gen }  : {}),
+      ...(user.lang ? { lang:user.lang }: {}),
+      updatedAt: new Date().toISOString(),
+    }, { merge: true });
+    return uid;
+  } catch(e) { console.warn('saveAuthUser error:', e); return null; }
+}
+
+// Migración perezosa: en el primer login con Auth, copia los datos del/los
+// doc(s) viejo(s) (ID u_TIMESTAMP o canónico u_..._at_...) hallados por email al
+// doc definitivo users/{uid}. NO borra los viejos: los marca migrated:true para
+// trazabilidad y para que getAllUsersFromFirestore los oculte. Idempotente.
+export async function migrateUserDataToUid(uid, email) {
+  if(!uid || !email) return null;
+  const normalizedEmail = email.toLowerCase().trim();
+  try {
+    // Si el doc nuevo ya fue migrado antes, no repetir
+    const newSnap = await getDoc(doc(db, 'users', uid));
+    if (newSnap.exists() && newSnap.data().migratedFrom) return { id: uid, ...newSnap.data() };
+
+    // Buscar docs viejos con este email (excluye el propio uid)
+    const snap = await getDocs(query(collection(db,'users'), where('email','==', normalizedEmail)));
+    const olds = snap.docs.filter(d => d.id !== uid).map(d => ({ id:d.id, ...d.data() }));
+    if (!olds.length) return newSnap.exists() ? { id: uid, ...newSnap.data() } : null;
+
+    // Mejor doc viejo: el que tenga regalo o paquetes
+    const best = olds.find(d => d.gifted || d.paquetes > 0) || olds[0];
+    const { forceDelete:_1, deleted:_2, deletedAt:_3, sessionId:_4, ...safe } = best;
+
+    await setDoc(doc(db,'users', uid), {
+      ...safe,
+      email:        normalizedEmail,
+      paquetes:     Math.max(0, ...olds.map(o=>o.paquetes||0)),
+      gifted:       olds.some(o=>o.gifted) || false,
+      giftedCoins:  best.giftedCoins || null,
+      migratedFrom: best.id,
+      migratedAt:   new Date().toISOString(),
+    }, { merge: true });
+
+    // Marcar los viejos como migrados (sin borrar)
+    await Promise.all(olds.map(o =>
+      setDoc(doc(db,'users', o.id), { migratedTo: uid, migrated: true }, { merge: true })
+    ));
+
+    const merged = await getDoc(doc(db,'users', uid));
+    return { id: uid, ...merged.data() };
+  } catch(e) { console.warn('migrateUserData error:', e); return null; }
+}
+
+// ── USUARIOS (legado localStorage/canónico — aún en uso hasta Fase 2/3) ──
 export async function saveUserToFirestore(user) {
   if(!user?.id || !user?.email) return null;
   const normalizedEmail = user.email.toLowerCase().trim();
@@ -96,7 +187,9 @@ export async function getAllUsersFromFirestore() {
     const snap = await getDocs(collection(db,'users'));
     // Descartar docs artefacto SIN email (fantasmas de regalos viejos): no son
     // usuarios reales y aparecían como filas "Quitar" sin nombre en el panel.
-    const docs = snap.docs.map(d => ({ id: d.id, ...d.data() })).filter(d => d.email);
+    // Ocultar también los docs viejos ya migrados a un uid de Auth (migrated:true):
+    // sus datos viven ahora en users/{uid}, mostrarlos duplicaría al usuario.
+    const docs = snap.docs.map(d => ({ id: d.id, ...d.data() })).filter(d => d.email && !d.migrated);
 
     // Deduplicar por email: cuando existen el doc viejo (u_TIMESTAMP) y el canónico
     // (u_luis_at_gmail_com) para el mismo email, el canónico siempre gana.
@@ -131,9 +224,11 @@ export async function findUserByEmail(email) {
   const normalizedEmail = email.toLowerCase().trim();
   try {
     const qsnap = await getDocs(query(collection(db, 'users'), where('email', '==', normalizedEmail)));
-    if (!qsnap.empty) {
+    // Ignorar docs ya migrados a un uid de Auth: sus datos viven en users/{uid}.
+    const live = qsnap.docs.filter(d => !d.data().migrated);
+    if (live.length) {
       // Si hubiera varios docs con el mismo email, preferir el que tiene regalo/pago
-      const best = qsnap.docs.find(d => d.data().gifted || d.data().paquetes > 0) || qsnap.docs[0];
+      const best = live.find(d => d.data().gifted || d.data().paquetes > 0) || live[0];
       return { id: best.id, ...best.data() };
     }
     // Fallback: doc canónico (usuarios creados directamente con ID canónico)

@@ -68,7 +68,7 @@ const TRANSLATIONS={
     email:'Correo electrónico',password:'Contraseña',name:'Nombre completo',
     birthdate:'Fecha de nacimiento',nationality:'Nacionalidad',gender:'Género',
     have_account:'¿Ya tienes cuenta?',no_account:'¿No tienes cuenta?',
-    google_login:'Continuar con Google',language:'Idioma',
+    language:'Idioma',
     login_subtitle:'Inicia sesión para vivir el Mundial',
     register_subtitle:'Crea tu cuenta · Es gratis',
     select_gender:'Selecciona tu género',
@@ -151,7 +151,7 @@ const TRANSLATIONS={
     email:'Email',password:'Password',name:'Full name',
     birthdate:'Date of birth',nationality:'Nationality',gender:'Gender',
     have_account:'Already have an account?',no_account:"Don't have an account?",
-    google_login:'Continue with Google',language:'Language',
+    language:'Language',
     login_subtitle:'Sign in to experience the World Cup',
     register_subtitle:'Create your account · It\'s free',
     select_gender:'Select gender',
@@ -225,7 +225,7 @@ const TRANSLATIONS={
     email:'E-mail',password:'Senha',name:'Nome completo',
     birthdate:'Data de nascimento',nationality:'Nacionalidade',gender:'Gênero',
     have_account:'Já tem conta?',no_account:'Não tem conta?',
-    google_login:'Continuar com Google',language:'Idioma',
+    language:'Idioma',
     login_subtitle:'Entre para viver a Copa do Mundo',
     register_subtitle:'Crie sua conta · É grátis',
     select_gender:'Selecione o gênero',
@@ -299,7 +299,7 @@ const TRANSLATIONS={
     email:'邮箱',password:'密码',name:'全名',
     birthdate:'出生日期',nationality:'国籍',gender:'性别',
     have_account:'已有账号？',no_account:'没有账号？',
-    google_login:'使用Google继续',language:'语言',
+    language:'语言',
     login_subtitle:'登录体验世界杯',
     register_subtitle:'创建账号 · 免费',
     select_gender:'选择性别',
@@ -373,7 +373,7 @@ const TRANSLATIONS={
     email:'이메일',password:'비밀번호',name:'이름',
     birthdate:'생년월일',nationality:'국적',gender:'성별',
     have_account:'계정이 있으신가요?',no_account:'계정이 없으신가요?',
-    google_login:'Google로 계속하기',language:'언어',
+    language:'언어',
     login_subtitle:'월드컵을 함께 즐기려면 로그인하세요',
     register_subtitle:'계정 만들기 · 무료',
     select_gender:'성별 선택',
@@ -447,7 +447,7 @@ const TRANSLATIONS={
     email:'Email',password:'Mot de passe',name:'Nom complet',
     birthdate:'Date de naissance',nationality:'Nationalité',gender:'Genre',
     have_account:'Déjà un compte?',no_account:'Pas de compte?',
-    google_login:'Continuer avec Google',language:'Langue',
+    language:'Langue',
     login_subtitle:'Connectez-vous pour vivre la Coupe du Monde',
     register_subtitle:'Créez votre compte · Gratuit',
     select_gender:'Sélectionnez votre genre',
@@ -1603,31 +1603,6 @@ function Auth({onLogin,onLangChange=()=>{},logoutMsg='',onClearMsg=()=>{}}){
         else { console.warn('authLogin error:',e); setErr('Correo o contraseña incorrectos'); }
       }
     }
-  };
-
-  const googleLogin=async()=>{
-    setLoading(true);
-    // Prompt for name since we don't have real Google OAuth yet
-    const name = prompt('¿Cuál es tu nombre completo?','');
-    if(!name?.trim()){setLoading(false);return;}
-    const users=await dbLoad();
-    // Use a device-unique ID based on timestamp
-    const gId='u_g_'+Date.now();
-    const gEmail=`google_${gId}@mundial2026.app`;
-    const gUser={
-      id:gId,
-      email:gEmail,
-      name:name.trim(),
-      google:true,
-      nat:'México',
-      gen:'Prefiero no decir',
-      createdAt:new Date().toISOString(),
-      paquetes:0,
-      isAdmin:false
-    };
-    await dbSave([...users,gUser]);
-    setLoading(false);
-    onLogin(gUser);
   };
 
   const t=useLang();
@@ -3156,7 +3131,6 @@ function PerfilScreen({user,onLogout,lang='es'}){
                     <div style={{flex:1,minWidth:0}}>
                       <div style={{fontSize:11,fontWeight:700,color:'var(--txt)',lineHeight:1.2}}>
                         {u.name||'Sin nombre'}
-                        {u.google&&<span style={{marginLeft:4,fontSize:8,color:'var(--acc)',fontWeight:700}}>G</span>}
                         {u.gifted&&<span style={{marginLeft:4,fontSize:8,background:'rgba(240,165,0,.2)',
                           color:'var(--gold)',padding:'1px 4px',borderRadius:4,fontWeight:700}}>🎁GRATIS</span>}
                       </div>
