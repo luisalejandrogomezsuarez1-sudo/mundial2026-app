@@ -5218,7 +5218,7 @@ function BetsScreen({bets,placeBet,credito,creditoLoading,onPagar,onReset,betsSa
                   ¿Quieres cambiar tus pronósticos?
                 </div>
                 <div style={{fontSize:11,color:'var(--dim)'}}>
-                  Compra otro paquete de <strong style={{color:'var(--gold)'}}>$20 MXN</strong> y recibirás 1,000🪙 nuevas para volver a apostar.
+                  Compra otro paquete de <strong style={{color:'var(--gold)'}}>$30 MXN</strong> y recibirás 1,000🪙 nuevas para volver a apostar.
                 </div>
               </div>
               <button onClick={()=>setConfirmReset(true)}
