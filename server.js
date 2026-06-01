@@ -178,6 +178,146 @@ app.post('/poll', async (req, res) => {
   res.json({ ok: true, liveMatches: matches.length });
 });
 
+// ── MercadoPago ───────────────────────────────────────────────────
+app.post('/api/mp/create-preference', async (req, res) => {
+  const { userId, userEmail } = req.body;
+  const mpToken = process.env.MP_ACCESS_TOKEN;
+  if (!mpToken) return res.status(500).json({ error: 'MP_ACCESS_TOKEN no configurado' });
+  if (!userId)  return res.status(400).json({ error: 'userId requerido' });
+
+  const appUrl = process.env.APP_URL || 'https://mundial2026-app-production.up.railway.app';
+
+  try {
+    const mpRes = await fetch('https://api.mercadopago.com/checkout/preferences', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${mpToken}`
+      },
+      body: JSON.stringify({
+        items: [{
+          title: 'Mundial 2026 — Paquete de 1,000 monedas',
+          quantity: 1,
+          unit_price: 30,
+          currency_id: 'MXN'
+        }],
+        payer: { email: userEmail || 'usuario@mundial2026.app' },
+        back_urls: {
+          success: `${appUrl}/api/mp/success?userId=${userId}`,
+          failure: `${appUrl}/api/mp/failure?userId=${userId}`,
+          pending: `${appUrl}/api/mp/pending?userId=${userId}`
+        },
+        auto_return: 'approved',
+        external_reference: userId,
+        statement_descriptor: 'MUNDIAL2026'
+      })
+    });
+
+    if (!mpRes.ok) {
+      const err = await mpRes.text();
+      console.warn('[MP] create-preference error:', err);
+      return res.status(502).json({ error: 'Error MercadoPago', detail: err });
+    }
+
+    const data = await mpRes.json();
+    res.json({ checkoutUrl: data.init_point, preferenceId: data.id });
+  } catch(e) {
+    console.warn('[MP] create-preference exception:', e.message);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// Verificar pago con MercadoPago y acreditar si está aprobado
+app.post('/api/mp/verify', async (req, res) => {
+  const { paymentId, userId } = req.body;
+  const mpToken = process.env.MP_ACCESS_TOKEN;
+  if (!mpToken) return res.status(500).json({ ok: false, error: 'MP_ACCESS_TOKEN no configurado' });
+  if (!paymentId || !userId) return res.status(400).json({ ok: false, error: 'paymentId y userId requeridos' });
+
+  try {
+    const mpRes = await fetch(`https://api.mercadopago.com/v1/payments/${paymentId}`, {
+      headers: { 'Authorization': `Bearer ${mpToken}` }
+    });
+
+    if (!mpRes.ok) {
+      const err = await mpRes.text();
+      console.warn('[MP] verify error:', err);
+      return res.json({ ok: false, status: 'error', detail: err });
+    }
+
+    const payment = await mpRes.json();
+    console.log('[MP] verify — status:', payment.status, 'userId:', userId);
+
+    if (payment.status === 'approved') {
+      // Acreditar en Firestore
+      if (db) {
+        try {
+          const userRef = db.collection('users').doc(userId);
+          const snap = await userRef.get();
+          if (snap.exists) {
+            const current = snap.data();
+            const newPaquetes = (current.paquetes || 0) + 1;
+            await userRef.set({
+              paquetes: newPaquetes,
+              lastPayment: new Date().toISOString(),
+              lastPaymentId: paymentId,
+              totalPagado: newPaquetes * 30
+            }, { merge: true });
+            console.log('[MP] paquetes acreditados:', newPaquetes, '→ userId:', userId);
+          }
+        } catch(e) {
+          console.warn('[MP] error acreditando en Firestore:', e.message);
+        }
+      }
+      return res.json({ ok: true, status: 'approved', paymentId });
+    }
+
+    res.json({ ok: false, status: payment.status });
+  } catch(e) {
+    console.warn('[MP] verify exception:', e.message);
+    res.status(500).json({ ok: false, error: e.message });
+  }
+});
+
+
+app.get('/api/mp/success', async (req, res) => {
+  const { userId, payment_id, status } = req.query;
+  console.log('[MP] success — userId:', userId, 'payment_id:', payment_id, 'status:', status);
+
+  if (userId && db) {
+    try {
+      const userRef = db.collection('users').doc(userId);
+      const snap = await userRef.get();
+      if (snap.exists) {
+        const current = snap.data();
+        const newPaquetes = (current.paquetes || 0) + 1;
+        await userRef.set({
+          paquetes: newPaquetes,
+          lastPayment: new Date().toISOString(),
+          lastPaymentId: payment_id || null,
+          totalPagado: newPaquetes * 30
+        }, { merge: true });
+        console.log('[MP] paquetes acreditados:', newPaquetes, '→ userId:', userId);
+      }
+    } catch(e) {
+      console.warn('[MP] error acreditando pago:', e.message);
+    }
+  }
+
+  const appUrl = process.env.APP_URL || 'https://mundial2026-app-production.up.railway.app';
+  res.redirect(`${appUrl}?payment_status=success&collection_id=${payment_id || ''}&userId=${userId}`);
+});
+
+app.get('/api/mp/failure', (req, res) => {
+  const appUrl = process.env.APP_URL || 'https://mundial2026-app-production.up.railway.app';
+  res.redirect(`${appUrl}?pago=error`);
+});
+
+app.get('/api/mp/pending', (req, res) => {
+  const appUrl = process.env.APP_URL || 'https://mundial2026-app-production.up.railway.app';
+  res.redirect(`${appUrl}?pago=pendiente`);
+});
+
 // Serve the React app (static files from dist/)
 const path = require('path');
 app.use(express.static(path.join(__dirname, 'dist')));
