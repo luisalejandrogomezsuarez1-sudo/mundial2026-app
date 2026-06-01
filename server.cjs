@@ -2,6 +2,8 @@
 const express    = require('express');
 const path       = require('path');
 const https      = require('https');
+const { MercadoPagoConfig, Preference, Payment } = require('mercadopago');
+const mpClient = new MercadoPagoConfig({ accessToken: process.env.MP_ACCESS_TOKEN });
 
 const app  = express();
 const PORT = process.env.PORT || 3000;
@@ -629,6 +631,83 @@ app.post('/api/welcome-email', async(req,res)=>{
   }catch(e){
     console.warn('welcome-email error:', e.message);
     res.json({ok:false, error:e.message});
+  }
+});
+
+
+// ── MercadoPago Checkout Pro ─────────────────────────────────────────────────
+app.post('/api/mp/create-preference', async (req, res) => {
+  const { userId, userEmail } = req.body;
+  try {
+    const preference = new Preference(mpClient);
+    const result = await preference.create({
+      body: {
+        items: [{ title: 'Paquete 1000 monedas', quantity: 1, unit_price: 50, currency_id: 'MXN' }],
+        payer: { email: userEmail },
+        external_reference: userId,
+        back_urls: {
+          success: `${process.env.APP_URL}/?payment_status=success&payment_id={{payment_id}}`,
+          failure: `${process.env.APP_URL}/?payment_status=failure`,
+          pending: `${process.env.APP_URL}/?payment_status=pending`
+        },
+        auto_return: 'approved',
+        notification_url: `${process.env.APP_URL}/api/mp/webhook`
+      }
+    });
+    res.json({ checkoutUrl: result.init_point });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.post('/api/mp/verify', async (req, res) => {
+  const { paymentId, userId } = req.body;
+  if (!db) return res.status(503).json({ error: 'DB no disponible' });
+  try {
+    const paid = await db.collection('payments').doc(String(paymentId)).get();
+    if (paid.exists) return res.json({ ok: true, alreadyCredited: true });
+    const payment = new Payment(mpClient);
+    const data = await payment.get({ id: paymentId });
+    if (data.status === 'approved' && data.external_reference === userId) {
+      const admin = require('firebase-admin');
+      await db.collection('users').doc(userId).update({
+        paquetes: admin.firestore.FieldValue.increment(1)
+      });
+      await db.collection('payments').doc(String(paymentId)).set({
+        userId, creditedAt: new Date().toISOString(), amount: data.transaction_amount
+      });
+      res.json({ ok: true });
+    } else {
+      res.json({ ok: false, status: data.status });
+    }
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.post('/api/mp/webhook', async (req, res) => {
+  res.sendStatus(200);
+  try {
+    const { type, data } = req.body;
+    if (type === 'payment' && data?.id) {
+      const payment = new Payment(mpClient);
+      const info = await payment.get({ id: data.id });
+      if (info.status === 'approved' && db) {
+        const userId = info.external_reference;
+        const paid = await db.collection('payments').doc(String(data.id)).get();
+        if (!paid.exists) {
+          const admin = require('firebase-admin');
+          await db.collection('users').doc(userId).update({
+            paquetes: admin.firestore.FieldValue.increment(1)
+          });
+          await db.collection('payments').doc(String(data.id)).set({
+            userId, creditedAt: new Date().toISOString()
+          });
+        }
+      }
+    }
+  } catch (e) {
+    console.error('Webhook error:', e.message);
   }
 });
 

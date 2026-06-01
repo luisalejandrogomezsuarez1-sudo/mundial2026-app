@@ -3461,7 +3461,7 @@ function GruposScreen({user,userBets,credito,creditoLoading,onPagar,onRecheckAcc
       <div style={{fontSize:13,color:'var(--muted)'}}>Verificando acceso…</div>
     </div>
   );
-  if(!credito&&showPago) return <PagoScreen onExito={()=>{setShowPago(false);onPagar();}} onRecheckAccess={onRecheckAccess}/>;
+  if(!credito&&showPago) return <PagoScreen onExito={()=>{setShowPago(false);onPagar();}} onRecheckAccess={onRecheckAccess} user={user}/>;
   if(!credito) return(
     <div className="scr fin" style={{display:'flex',flexDirection:'column',
       alignItems:'center',justifyContent:'center',padding:'32px 24px',
@@ -4455,36 +4455,26 @@ function GruposScreen({user,userBets,credito,creditoLoading,onPagar,onRecheckAcc
 }
 
 // ── Pago Screen ───────────────────────────────────
-function PagoScreen({onExito,onCancelar,esReset=false,onRecheckAccess}){
+function PagoScreen({onExito,onCancelar,esReset=false,onRecheckAccess,user}){
   const t=useLang();
   const [metodo,setMetodo]=useState('card');
   const [loading,setLoading]=useState(false);
   const [exito,setExito]=useState(false);
-  const [esperandoPago,setEsperandoPago]=useState(false);
 
-  // ══════════════════════════════════════════════════
-  // 🔑 CONFIGURACIÓN DE PAGOS — REEMPLAZA ESTAS URLS
-  // ══════════════════════════════════════════════════
-  // Crea tu link de pago en mercadopago.com.mx:
-  // Dashboard → Cobrar → Link de pago → $20 MXN → Copiar link
-  const MP_LINK = 'https://mpago.la/TU_LINK_AQUI'; // ← Reemplaza con tu link real
-
-  // Referencia única por usuario (para identificar el pago en el dashboard de MP)
-  const REF = `WC26_${Date.now()}_${Math.random().toString(36).slice(2,7).toUpperCase()}`;
-
-  const mpConfigurado = MP_LINK !== 'https://mpago.la/TU_LINK_AQUI';
-
-  const pagar=()=>{
-    if(!mpConfigurado) return; // No hay link configurado — botón deshabilitado
-    setEsperandoPago(true);
-    const url = `${MP_LINK}?external_reference=${REF}`;
-    window.open(url, '_blank');
-  };
-
-  const confirmarPagoManual=()=>{
-    // El usuario ya pagó en MercadoPago → acreditar monedas
-    setExito(true);
-    setTimeout(onExito,1800);
+  const handlePagar=async()=>{
+    setLoading(true);
+    try{
+      const res=await fetch('/api/mp/create-preference',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({userId:user?.id,userEmail:user?.email})
+      });
+      const {checkoutUrl}=await res.json();
+      window.location.href=checkoutUrl;
+    }catch(e){
+      alert('Error al iniciar el pago');
+      setLoading(false);
+    }
   };
 
   if(exito)return(
@@ -4513,38 +4503,6 @@ function PagoScreen({onExito,onCancelar,esReset=false,onRecheckAccess}){
   );
 
   // ── Pantalla "Esperando confirmación de pago" ──
-  if(esperandoPago)return(
-    <div style={{display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',
-      height:'100%',gap:16,textAlign:'center',padding:'32px'}}>
-      <div style={{fontSize:48}}>💳</div>
-      <div style={{fontFamily:'var(--ff)',fontSize:24,letterSpacing:2}}>PAGO EN PROCESO</div>
-      <div style={{fontSize:13,color:'var(--muted)',lineHeight:1.7,maxWidth:280}}>
-        Se abrió MercadoPago en una nueva pestaña.<br/>
-        Completa el pago de <strong style={{color:'var(--gold)'}}>$20 MXN</strong> y regresa aquí.
-      </div>
-      <div style={{fontSize:11,color:'var(--dim)',background:'rgba(255,255,255,.04)',
-        borderRadius:8,padding:'8px 14px'}}>
-        Ref: <strong style={{color:'var(--acc)',fontFamily:'monospace'}}>{REF}</strong>
-      </div>
-      <button onClick={confirmarPagoManual}
-        style={{background:'var(--gold)',color:'#000',border:'none',borderRadius:12,
-          padding:'14px 28px',fontFamily:'var(--ff)',fontSize:18,letterSpacing:1,
-          cursor:'pointer',width:'100%',maxWidth:300}}>
-        ✅ Ya pagué — Activar mis monedas
-      </button>
-      <button onClick={()=>setEsperandoPago(false)}
-        style={{background:'transparent',border:'1px solid var(--br)',color:'var(--muted)',
-          borderRadius:10,padding:'10px 20px',cursor:'pointer',fontSize:13}}>
-        ← Volver al pago
-      </button>
-      <div style={{fontSize:11,color:'var(--dim)',lineHeight:1.6}}>
-        ¿No se abrió MercadoPago?{' '}
-        <span onClick={pagar} style={{color:'var(--acc)',cursor:'pointer',textDecoration:'underline'}}>
-          Intentar de nuevo
-        </span>
-      </div>
-    </div>
-  );
 
   return(
     <div className="scr fin">
@@ -4695,32 +4653,13 @@ function PagoScreen({onExito,onCancelar,esReset=false,onRecheckAccess}){
         </div>
 
         {/* Pay button */}
-        {mpConfigurado ? (
-          <button onClick={pagar}
-            style={{width:'100%',background:'var(--gold)',color:'#000',border:'none',
-              borderRadius:12,padding:'16px',fontFamily:'var(--ff)',fontSize:20,
-              letterSpacing:1,cursor:'pointer',transition:'all .2s',fontWeight:400}}>
-            {esReset?'PAGAR $20 Y REINICIAR TODO':'PAGAR $20 MXN Y ACTIVAR'}
-          </button>
-        ):(
-          <div style={{textAlign:'center'}}>
-            <div style={{background:'rgba(240,165,0,.07)',border:'1.5px solid rgba(240,165,0,.25)',
-              borderRadius:12,padding:'18px 16px',marginBottom:8}}>
-              <div style={{fontSize:32,marginBottom:8}}>🔜</div>
-              <div style={{fontFamily:'var(--ff)',fontSize:16,color:'var(--gold)',letterSpacing:1,marginBottom:6}}>
-                PAGO PRÓXIMAMENTE
-              </div>
-              <div style={{fontSize:12,color:'var(--muted)',lineHeight:1.6}}>
-                El pago en línea estará disponible muy pronto.<br/>
-                <strong style={{color:'var(--txt)'}}>Por ahora, contacta al administrador</strong><br/>
-                para que te active el acceso VIP.
-              </div>
-            </div>
-            <div style={{fontSize:11,color:'var(--dim)'}}>
-              📱 Escríbenos por WhatsApp para obtener acceso
-            </div>
-          </div>
-        )}
+        <button onClick={handlePagar} disabled={loading}
+          style={{width:'100%',background:'var(--gold)',color:'#000',border:'none',
+            borderRadius:12,padding:'16px',fontFamily:'var(--ff)',fontSize:20,
+            letterSpacing:1,cursor:loading?'not-allowed':'pointer',transition:'all .2s',
+            fontWeight:400,opacity:loading?0.7:1}}>
+          {loading?'Conectando…':esReset?'PAGAR $20 Y REINICIAR TODO':'PAGAR $20 MXN Y ACTIVAR'}
+        </button>
         {!esReset&&onRecheckAccess&&(
           <div style={{textAlign:'center',marginTop:16,paddingTop:14,borderTop:'1px solid rgba(255,255,255,.07)'}}>
             <div style={{fontSize:11,color:'var(--muted)',marginBottom:6}}>¿Ya recibiste monedas de regalo?</div>
@@ -4752,12 +4691,12 @@ function BetsScreen({bets,placeBet,credito,creditoLoading,onPagar,onReset,betsSa
       <div style={{fontSize:13,color:'var(--muted)'}}>Verificando acceso…</div>
     </div>
   );
-  if(!credito) return <PagoScreen onExito={onPagar} onRecheckAccess={onRecheckAccess}/>;
+  if(!credito) return <PagoScreen onExito={onPagar} onRecheckAccess={onRecheckAccess} user={currentUser}/>;
   if(showReset) return(
     <PagoScreen
       onExito={()=>{onReset();setShowReset(false);setConfirmReset(false);}}
       onCancelar={()=>{setShowReset(false);setConfirmReset(false);}}
-      esReset={true}/>
+      esReset={true} user={currentUser}/>
   );
 
   // Coins
@@ -5622,6 +5561,28 @@ export default function App(){
     window.addEventListener('wc_lang',handleLang);
     return()=>window.removeEventListener('wc_lang',handleLang);
   },[]);
+
+  // Detectar retorno de MercadoPago y verificar pago
+  useEffect(()=>{
+    const params=new URLSearchParams(window.location.search);
+    const status=params.get('payment_status');
+    const paymentId=params.get('payment_id');
+    if(status==='success'&&paymentId&&user){
+      fetch('/api/mp/verify',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({paymentId,userId:user.id})
+      })
+      .then(r=>r.json())
+      .then(data=>{
+        if(data.ok){
+          onPagar();
+          window.history.replaceState({},'','/');
+        }
+      })
+      .catch(()=>{});
+    }
+  },[user]);
 
   const logout=(reason='')=>{
     if(reason && typeof reason === 'string') setLogoutMsg(reason);
