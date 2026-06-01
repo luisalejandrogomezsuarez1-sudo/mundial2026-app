@@ -94,9 +94,9 @@ const TRANSLATIONS={
     bets_title:'MIS PRONÓSTICOS',long_term:'Partidos Mundial',
     per_match:'Por Partido',specials:'Especiales',stats:'Estadísticas',
     world_champion:'Campeón del Mundo',golden_ball:'Balón de Oro',
-    buy_package:'Comprar Paquete de Pronósticos',price:'$20 MXN',
+    buy_package:'Comprar Paquete de Pronósticos',price:'$30 MXN',
     pay_card:'Tarjeta',pay_oxxo:'OXXO',pay_transfer:'Transferencia',
-    pay_btn:'Pagar $20 MXN',payment_success:'¡PAGO EXITOSO!',
+    pay_btn:'Pagar $30 MXN',payment_success:'¡PAGO EXITOSO!',
     coins_added:'monedas añadidas a tu cuenta',
     world_champion_q:'¿Qué selección levantará la Copa?',
     top_scorer_q:'Máximo goleador del torneo',
@@ -172,9 +172,9 @@ const TRANSLATIONS={
     bets_title:'MY PREDICTIONS',long_term:'World Cup Matches',
     per_match:'Per Match',specials:'Specials',stats:'Statistics',
     world_champion:'World Champion',golden_ball:'Golden Ball',
-    buy_package:'Buy Predictions Package',price:'$20 MXN',
+    buy_package:'Buy Predictions Package',price:'$30 MXN',
     pay_card:'Card',pay_oxxo:'OXXO',pay_transfer:'Transfer',
-    pay_btn:'Pay $20 MXN',payment_success:'PAYMENT SUCCESSFUL!',
+    pay_btn:'Pay $30 MXN',payment_success:'PAYMENT SUCCESSFUL!',
     coins_added:'coins added to your account',
     world_champion_q:'Which team will lift the Cup?',
     top_scorer_q:'Top scorer of the tournament',
@@ -246,9 +246,9 @@ const TRANSLATIONS={
     bets_title:'MEUS PALPITES',long_term:'Jogos da Copa',
     per_match:'Por Jogo',specials:'Especiais',stats:'Estatísticas',
     world_champion:'Campeão Mundial',golden_ball:'Bola de Ouro',
-    buy_package:'Comprar Pacote de Palpites',price:'$20 MXN',
+    buy_package:'Comprar Pacote de Palpites',price:'$30 MXN',
     pay_card:'Cartão',pay_oxxo:'OXXO',pay_transfer:'Transferência',
-    pay_btn:'Pagar $20 MXN',payment_success:'PAGAMENTO REALIZADO!',
+    pay_btn:'Pagar $30 MXN',payment_success:'PAGAMENTO REALIZADO!',
     coins_added:'moedas adicionadas à sua conta',
     world_champion_q:'Qual seleção vai levantar a Taça?',
     top_scorer_q:'Artilheiro máximo do torneio',
@@ -320,9 +320,9 @@ const TRANSLATIONS={
     bets_title:'我的预测',long_term:'世界杯赛事',
     per_match:'按场次',specials:'特别预测',stats:'统计',
     world_champion:'世界冠军',golden_ball:'金球奖',
-    buy_package:'购买预测套餐',price:'$20 MXN',
+    buy_package:'购买预测套餐',price:'$30 MXN',
     pay_card:'银行卡',pay_oxxo:'OXXO',pay_transfer:'转账',
-    pay_btn:'支付 $20 MXN',payment_success:'支付成功！',
+    pay_btn:'支付 $30 MXN',payment_success:'支付成功！',
     coins_added:'金币已添加到您的账户',
     world_champion_q:'哪支球队将举起奖杯？',
     top_scorer_q:'本届赛事最佳射手',
@@ -394,9 +394,9 @@ const TRANSLATIONS={
     bets_title:'내 예측',long_term:'월드컵 경기',
     per_match:'경기별',specials:'특별 예측',stats:'통계',
     world_champion:'월드 챔피언',golden_ball:'골든 볼',
-    buy_package:'예측 패키지 구매',price:'$20 MXN',
+    buy_package:'예측 패키지 구매',price:'$30 MXN',
     pay_card:'카드',pay_oxxo:'OXXO',pay_transfer:'이체',
-    pay_btn:'$20 MXN 결제',payment_success:'결제 완료!',
+    pay_btn:'$30 MXN 결제',payment_success:'결제 완료!',
     coins_added:'코인이 계정에 추가되었습니다',
     world_champion_q:'어떤 팀이 우승컵을 들어올릴까요?',
     top_scorer_q:'대회 최다 득점자',
@@ -468,9 +468,9 @@ const TRANSLATIONS={
     bets_title:'MES PRONOSTICS',long_term:'Matchs Coupe du Monde',
     per_match:'Par Match',specials:'Spéciaux',stats:'Statistiques',
     world_champion:'Champion du Monde',golden_ball:"Ballon d'Or",
-    buy_package:'Acheter un Pack de Pronostics',price:'$20 MXN',
+    buy_package:'Acheter un Pack de Pronostics',price:'$30 MXN',
     pay_card:'Carte',pay_oxxo:'OXXO',pay_transfer:'Virement',
-    pay_btn:'Payer $20 MXN',payment_success:'PAIEMENT RÉUSSI!',
+    pay_btn:'Payer $30 MXN',payment_success:'PAIEMENT RÉUSSI!',
     coins_added:'pièces ajoutées à votre compte',
     world_champion_q:'Quelle équipe soulèvera le trophée?',
     top_scorer_q:'Meilleur buteur du tournoi',
@@ -1006,7 +1006,7 @@ const GRP_WIN=[
 
 
 // ── Coin System ───────────────────────────────────
-const COINS_PER_PAGO=1000; // 1 pago de $20 MXN = 1000 monedas
+const COINS_PER_PAGO=1000; // 1 pago de $30 MXN = 1000 monedas
 // 72 partidos × (1X2:7 + BTTS:6=13) = 936
 // Fijos: campeon:6 + bota:6 + balon:4 + gol1:15 + gol2:4 + gol3:5 + grupos(12×2):24 = 64
 // Total: 936 + 64 = 1000 exacto ✓
@@ -3514,7 +3514,7 @@ function GruposScreen({user,userBets,credito,creditoLoading,onPagar,onRecheckAcc
         <div style={{fontSize:12,color:'var(--dim)'}}>
           Acceso completo a Grupos + Pronósticos
         </div>
-        <div style={{fontSize:24,fontWeight:800,color:'var(--gold)',marginTop:6}}>$20 MXN</div>
+        <div style={{fontSize:24,fontWeight:800,color:'var(--gold)',marginTop:6}}>$30 MXN</div>
       </div>
       {onRecheckAccess&&(
         <div style={{marginBottom:10,width:'100%',maxWidth:300}}>
@@ -4551,7 +4551,7 @@ function PagoScreen({onExito,onCancelar,esReset=false,onRecheckAccess,user,onRec
               {esReset?'CAMBIAR PRONÓSTICOS':'ACTIVAR MI PRONÓSTICO'}
             </div>
             <div style={{fontSize:12,color:'var(--muted)'}}>
-              {esReset?'Paga $20 · reinicia todo y vuelve a apostar':'Acceso completo · $20 MXN una sola vez'}
+              {esReset?'Paga $30 · reinicia todo y vuelve a apostar':'Acceso completo · $30 MXN una sola vez'}
             </div>
           </div>
         </div>
@@ -4564,8 +4564,8 @@ function PagoScreen({onExito,onCancelar,esReset=false,onRecheckAccess,user,onRec
               {esReset?'COSTO DE REINICIO':'PRECIO DE ACCESO'}
             </div>
             <div style={{fontFamily:'var(--ff)',fontSize:48,color:'var(--gold)',lineHeight:1,marginTop:2}}>
-              $20
-            </div>
+              $30
+</div>
             <div style={{fontSize:12,color:'var(--dim)'}}>pesos mexicanos</div>
           </div>
           <div style={{textAlign:'center'}}>
@@ -4654,7 +4654,7 @@ function PagoScreen({onExito,onCancelar,esReset=false,onRecheckAccess,user,onRec
               <div style={{fontSize:30,marginBottom:8}}>🏪</div>
               <div style={{fontSize:13,fontWeight:700,marginBottom:6}}>Pago en efectivo OXXO</div>
               <div style={{fontSize:11,color:'var(--muted)',lineHeight:1.6}}>
-                Al hacer clic en <strong style={{color:'var(--gold)'}}>Pagar $20 MXN</strong>,
+                Al hacer clic en <strong style={{color:'var(--gold)'}}>Pagar $30 MXN</strong>,
                 MercadoPago generará tu referencia OXXO.<br/>
                 Válida 24 horas en cualquier tienda OXXO del país.
               </div>
@@ -4688,7 +4688,7 @@ function PagoScreen({onExito,onCancelar,esReset=false,onRecheckAccess,user,onRec
             borderRadius:12,padding:'16px',fontFamily:'var(--ff)',fontSize:20,
             letterSpacing:1,cursor:loading?'not-allowed':'pointer',transition:'all .2s',
             fontWeight:400,opacity:loading?0.7:1}}>
-          {loading?'Conectando…':esReset?'PAGAR $20 Y REINICIAR TODO':'PAGAR $20 MXN Y ACTIVAR'}
+          {loading?'Conectando…':esReset?'PAGAR $30 Y REINICIAR TODO':'PAGAR $30 MXN Y ACTIVAR'}
         </button>
         {!esReset&&onRecheckAccess&&(
           <div style={{textAlign:'center',marginTop:16,paddingTop:14,borderTop:'1px solid rgba(255,255,255,.07)'}}>
@@ -5166,7 +5166,7 @@ function BetsScreen({bets,placeBet,credito,creditoLoading,onPagar,onReset,betsSa
               ⚠️ ¿Cambiar todos tus pronósticos?
             </div>
             <div style={{fontSize:11,color:'var(--dim)',marginBottom:10,textAlign:'center',lineHeight:1.55}}>
-              Pagarás <strong style={{color:'var(--gold)'}}>$20 MXN</strong> y se borrarán tus {bets.length} pronósticos actuales. Recibirás <strong style={{color:'var(--gold)'}}>1,000🪙</strong> nuevas para volver a apostar.
+              Pagarás <strong style={{color:'var(--gold)'}}>$30 MXN</strong> y se borrarán tus {bets.length} pronósticos actuales. Recibirás <strong style={{color:'var(--gold)'}}>1,000🪙</strong> nuevas para volver a apostar.
             </div>
             <div style={{display:'flex',gap:9}}>
               <button onClick={()=>setConfirmReset(false)}
@@ -5177,7 +5177,7 @@ function BetsScreen({bets,placeBet,credito,creditoLoading,onPagar,onReset,betsSa
                 style={{flex:1,background:'var(--red)',border:'none',
                   color:'#fff',borderRadius:9,padding:'11px 6px',fontSize:12,
                   fontWeight:700,cursor:'pointer',fontFamily:'var(--fb)'}}>
-                🔄 Ir a pagar $20
+                🔄 Ir a pagar $30
               </button>
             </div>
           </div>
@@ -5226,7 +5226,7 @@ function BetsScreen({bets,placeBet,credito,creditoLoading,onPagar,onReset,betsSa
                   border:'1px solid rgba(240,165,0,.3)',color:'var(--gold)',
                   borderRadius:10,padding:'11px',fontSize:13,fontWeight:700,
                   cursor:'pointer',fontFamily:'var(--fb)'}}>
-                💳 Comprar otro paquete ($20 MXN)
+                💳 Comprar otro paquete ($30 MXN)
               </button>
             </div>
           ):(
@@ -5267,7 +5267,7 @@ function BetsScreen({bets,placeBet,credito,creditoLoading,onPagar,onReset,betsSa
               </button>
               <div style={{fontSize:10,color:'var(--muted)',lineHeight:1.5}}>
                 🔒 Una vez guardado, los pronósticos <strong style={{color:'var(--txt)'}}>no se podrán modificar</strong>.<br/>
-                Para cambiar necesitarás comprar un nuevo paquete de <strong style={{color:'var(--gold)'}}>$20 MXN</strong>.
+                Para cambiar necesitarás comprar un nuevo paquete de <strong style={{color:'var(--gold)'}}>$30 MXN</strong>.
               </div>
             </div>
           )}
