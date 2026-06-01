@@ -29,64 +29,88 @@ export const db  = getFirestore(app);
 export const auth= getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
 
-// ── USUARIOS ────────────────────────────────────────────────────
-
-// Busca usuario por email (normalizado) — retorna el doc con más datos o null
-export async function findUserByEmail(email) {
-  if (!email) return null;
-  const normalizedEmail = email.toLowerCase().trim();
-  try {
-    const q = query(collection(db,'users'), where('email','==', normalizedEmail));
-    const snap = await getDocs(q);
-    if (snap.empty) return null;
-    // Preferir doc con pago o regalo; si no, el primero
-    const best = snap.docs.find(d => (d.data().paquetes > 0) || d.data().gifted)
-                 || snap.docs[0];
-    return { id: best.id, ...best.data() };
-  } catch(e) { console.warn('findUserByEmail error:', e); return null; }
+// ── ID CANÓNICO ─────────────────────────────────────────────────
+// Email normalizado → ID de documento Firestore determinista.
+// Mismo email = mismo ID en cualquier dispositivo = imposible crear duplicados.
+// Ej: "luis@gmail.com" → "u_luis_at_gmail_com"
+function emailToDocId(email) {
+  return 'u_' + email.replace('@', '_at_').replace(/[^a-z0-9]/g, '_');
 }
 
+// ── USUARIOS ────────────────────────────────────────────────────
 export async function saveUserToFirestore(user) {
-  if(!user?.id || !user?.email) return;
+  if(!user?.id || !user?.email) return null;
   const normalizedEmail = user.email.toLowerCase().trim();
-  try {
-    let targetId = user.id;
+  const canonId = emailToDocId(normalizedEmail);
 
-    // SIEMPRE buscar primero por email para evitar duplicados
-    const existingByEmail = await findUserByEmail(normalizedEmail);
-    if (existingByEmail) {
-      // Ya existe un doc con este email — reutilizarlo
-      targetId = existingByEmail.id;
-    } else {
-      // No existe por email — verificar si user.id ya tiene doc (mismo dispositivo)
-      const directSnap = await getDoc(doc(db, 'users', user.id));
-      if (directSnap.exists()) {
-        targetId = user.id;
-      }
-      // Si tampoco existe por ID: usuario nuevo, usar user.id
+  try {
+    // Ruta rápida: doc canónico ya existe (login normal desde cualquier dispositivo)
+    const canonSnap = await getDoc(doc(db, 'users', canonId));
+    if (canonSnap.exists()) {
+      await setDoc(doc(db, 'users', canonId), {
+        name:      user.name      || '',
+        email:     normalizedEmail,
+        paquetes:  user.paquetes  || 0,
+        isAdmin:   user.isAdmin   || false,
+        sessionId: user.sessionId || '',
+        updatedAt: new Date().toISOString(),
+      }, { merge: true });
+      return canonId;
     }
 
-    // No incluir 'gifted' — solo giftCoinsInFirestore debe escribirlo.
-    await setDoc(doc(db,'users', targetId), {
-      name:      user.name      || '',
+    // Primera vez: buscar doc anterior para migrar datos de pago/regalo
+    let oldData = null;
+    if (user.id !== canonId) {
+      const oldSnap = await getDoc(doc(db, 'users', user.id));
+      if (oldSnap.exists()) oldData = oldSnap.data();
+    }
+    // Fallback por email (cubre docs creados por giftCoins sin campo email)
+    if (!oldData) {
+      const snap = await getDocs(query(collection(db, 'users'), where('email', '==', normalizedEmail)));
+      if (!snap.empty) {
+        const best = snap.docs.find(d => d.data().paquetes > 0 || d.data().gifted) || snap.docs[0];
+        oldData = best.data();
+      }
+    }
+
+    // Excluir flags de eliminación — permite re-registro limpio
+    const { forceDelete: _1, deleted: _2, deletedAt: _3, ...safeOld } = (oldData || {});
+
+    // Crear doc canónico preservando paquetes y regalo del doc anterior
+    await setDoc(doc(db, 'users', canonId), {
+      ...safeOld,
+      name:      user.name      || safeOld.name      || '',
       email:     normalizedEmail,
-      paquetes:  user.paquetes  || 0,
-      isAdmin:   user.isAdmin   || false,
+      paquetes:  Math.max(user.paquetes || 0, safeOld.paquetes || 0),
+      isAdmin:   user.isAdmin   || safeOld.isAdmin   || false,
       sessionId: user.sessionId || '',
       updatedAt: new Date().toISOString(),
-    }, { merge: true });
-    return targetId;
+    });
+
+    return canonId;
   } catch(e) { console.warn('saveUser error:', e); return null; }
 }
 
 export async function getAllUsersFromFirestore() {
   try {
     const snap = await getDocs(collection(db,'users'));
-    return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    const docs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+    // Deduplicar por email: cuando existen el doc viejo (u_TIMESTAMP) y el canónico
+    // (u_luis_at_gmail_com) para el mismo email, el canónico siempre gana.
+    // Sin esto, el doc viejo con gifted:true puede sobreescribir el canónico con gifted:false.
+    const isCanonical = id => id.includes('_at_');
+    const byEmail = new Map();
+    docs.forEach(d => {
+      const key = d.email?.toLowerCase() || d.id; // agrupar por email; sin email → por ID
+      const prev = byEmail.get(key);
+      if (!prev || isCanonical(d.id)) byEmail.set(key, d); // el canónico siempre reemplaza al viejo
+    });
+    return [...byEmail.values()];
   } catch(e) { console.warn('getUsers error:', e); return []; }
 }
 
-// Lee UN solo documento de usuario — 1 lectura en vez de N (usa para session check)
+// Lee UN solo documento — 1 lectura, usa para session check
 export async function getUserFromFirestore(userId) {
   try {
     const snap = await getDoc(doc(db, 'users', userId));
@@ -95,45 +119,47 @@ export async function getUserFromFirestore(userId) {
   } catch(e) { console.warn('getUser error:', e); return null; }
 }
 
+// Busca por email usando ID canónico (sin query — lectura directa O(1))
+export async function findUserByEmail(email) {
+  if(!email) return null;
+  const canonId = emailToDocId(email.toLowerCase().trim());
+  try {
+    const snap = await getDoc(doc(db, 'users', canonId));
+    if (snap.exists()) return { id: snap.id, ...snap.data() };
+    // Fallback: docs anteriores a la migración (u_TIMESTAMP)
+    const q = query(collection(db, 'users'), where('email', '==', email.toLowerCase().trim()));
+    const qsnap = await getDocs(q);
+    if (!qsnap.empty) return { id: qsnap.docs[0].id, ...qsnap.docs[0].data() };
+    return null;
+  } catch(e) { console.warn('findUserByEmail error:', e); return null; }
+}
+
 export async function giftCoinsInFirestore(userId, gifted, giftedCoins=1000) {
-  if(!userId) return null;
+  if(!userId) return;
   try {
     await setDoc(doc(db,'users', userId), {
       gifted,
       giftedAt:    gifted ? new Date().toISOString() : null,
       giftedCoins: gifted ? giftedCoins : null,
     }, { merge: true });
-    return userId;
-  } catch(e) { console.warn('giftCoins error:', e); return null; }
+  } catch(e) { console.warn('giftCoins error:', e); }
 }
 
-// Regalo de monedas buscando por EMAIL (más seguro que por ID)
+// Regalar monedas por email — usa ID canónico, no requiere query
 export async function giftCoinsByEmail(email, gifted, giftedCoins=1000) {
-  if(!email) return null;
+  if(!email) return;
+  const canonId = emailToDocId(email.toLowerCase().trim());
   try {
-    const existing = await findUserByEmail(email);
-    if (!existing) {
-      console.warn('giftCoinsByEmail: usuario no encontrado:', email);
-      return null;
-    }
-    await setDoc(doc(db,'users', existing.id), {
+    await setDoc(doc(db,'users', canonId), {
       gifted,
       giftedAt:    gifted ? new Date().toISOString() : null,
       giftedCoins: gifted ? giftedCoins : null,
     }, { merge: true });
-    return existing.id;
-  } catch(e) { console.warn('giftCoinsByEmail error:', e); return null; }
+  } catch(e) { console.warn('giftCoinsByEmail error:', e); }
 }
 
 // ── GRUPOS — usa el CÓDIGO como ID del documento ─────────────────
-// Estructura: groups/{CODE}            → datos del grupo
-//             groups/{CODE}/messages   → chat del grupo
-//
-// Usar el CÓDIGO como ID permite lookup directo sin índice:
-//   getDoc(doc(db,'groups','WC26-ABCDE')) ← siempre funciona
-
 export async function saveGroupToFirestore(group, userId) {
-  // Sanitize: Firestore rejects undefined values
   const data = {
     id:        group.id        || 'g_unknown',
     name:      group.name      || 'Grupo',
@@ -158,15 +184,12 @@ export async function saveGroupToFirestore(group, userId) {
 }
 
 export async function getGroupByCode(code) {
-  // Direct document read — no query, no index, always works
   const snap = await getDoc(doc(db, 'groups', code));
   if (!snap.exists()) return null;
   return { ...snap.data(), id: snap.data().id || snap.id };
 }
 
 // ── CHAT EN TIEMPO REAL ─────────────────────────────────────────
-// groupCode = the group's WC26-XXXXX code (same as Firestore document ID)
-
 export async function sendChatMessage(groupCode, userId, userName, text) {
   try {
     await addDoc(collection(db, 'groups', groupCode, 'messages'), {
@@ -203,7 +226,7 @@ export function subscribeToChatMessages(groupCode, callback) {
   }, err => console.warn('chat snapshot error:', err));
 }
 
-// ── Suscripción al documento de un usuario (expulsión en tiempo real) ──────
+// ── Suscripción al documento de un usuario ──────────────────────
 export function subscribeToUserDoc(userId, callback) {
   return onSnapshot(
     doc(db, 'users', userId),
@@ -212,8 +235,7 @@ export function subscribeToUserDoc(userId, callback) {
   );
 }
 
-// ── Suscripción a documentos en vivo (colección 'live') ─────────────────────
-// El servidor escribe aquí: live/matches, live/standings, live/scorers, live/fixtures
+// ── Suscripción a documentos en vivo (colección 'live') ─────────
 export function subscribeToLiveDoc(docId, callback) {
   return onSnapshot(
     doc(db, 'live', docId),
@@ -225,8 +247,6 @@ export function subscribeToLiveDoc(docId, callback) {
 export async function deleteUserFromFirestore(userId) {
   if(!userId) return;
   try {
-    // Marcar como eliminado en vez de borrar el documento.
-    // El flag forceDelete hace que checkAdminFlags expulse al usuario al abrir la app.
     await setDoc(doc(db,'users', userId), {
       forceDelete: true,
       deleted:     true,
