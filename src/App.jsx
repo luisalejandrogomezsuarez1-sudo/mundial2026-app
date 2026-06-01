@@ -5764,7 +5764,12 @@ export default function App(){
       if(!subscribeFn){console.warn('[gift-listener] _fbSubscribeUser aún no disponible');return;}
       // Encontrar el ID correcto en Firestore por email (puede diferir del local)
       let targetId=user.id;
-      if(findFn){
+      if(user.fromAuth){
+        // Usuario de Firebase Auth: su doc definitivo es users/{uid}. El regalo
+        // (giftCoinsByEmail) se escribe ahí porque el doc tiene el campo email.
+        // Suscribir directo al uid evita engancharse a un doc legado por email.
+        console.log('[gift-listener] fromAuth → doc Firestore: users/'+targetId);
+      } else if(findFn){
         try{
           const fsUser=await findFn(user.email);
           if(fsUser?.id) targetId=fsUser.id;
