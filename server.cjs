@@ -642,7 +642,7 @@ app.post('/api/mp/create-preference', async (req, res) => {
     const preference = new Preference(mpClient);
     const result = await preference.create({
       body: {
-        items: [{ title: 'Paquete 1000 monedas', quantity: 1, unit_price: 50, currency_id: 'MXN' }],
+        items: [{ title: 'Paquete 1000 monedas', quantity: 1, unit_price: 30, currency_id: 'MXN' }],
         payer: { email: userEmail },
         external_reference: userId,
         back_urls: {
