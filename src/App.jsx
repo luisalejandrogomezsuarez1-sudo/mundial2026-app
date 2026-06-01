@@ -615,7 +615,15 @@ const css = `
   --glow:0 0 24px rgba(240,165,0,.22);
 }
 body{font-family:var(--fb);background:var(--bg);color:var(--txt);height:100%;overflow:hidden;}
-.app{max-width:430px;margin:0 auto;height:100vh;overflow:hidden;display:flex;flex-direction:column;position:relative;background:linear-gradient(175deg,#0f0f24 0%,#09091a 50%,#0d060f 100%);}
+.app{max-width:430px;margin:0 auto;height:100vh;overflow:hidden;display:flex;flex-direction:column;position:relative;
+  background:
+    radial-gradient(ellipse 55% 30% at 12% 4%, rgba(200,16,46,0.09) 0%,transparent 65%),
+    radial-gradient(ellipse 55% 30% at 88% 4%, rgba(0,40,104,0.10) 0%,transparent 65%),
+    radial-gradient(ellipse 65% 25% at 50% 99%, rgba(0,104,71,0.08) 0%,transparent 65%),
+    linear-gradient(175deg,#0f0f24 0%,#09091a 50%,#0d060f 100%);}
+.app::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,#c8102e 0%,#c8102e 28%,#F0A500 50%,#006847 72%,#002868 100%);
+  z-index:200;opacity:.6;}
 .scr{flex:1;overflow-y:auto;overflow-x:hidden;padding-bottom:84px;}
 .scr::-webkit-scrollbar{display:none;}
 .bnav{position:absolute;bottom:0;left:0;right:0;height:76px;
@@ -660,8 +668,13 @@ body{font-family:var(--fb);background:var(--bg);color:var(--txt);height:100%;ove
 .btng:hover{border-color:var(--gold);background:var(--surf3);}
 .tpill{flex-shrink:0;padding:7px 16px;border-radius:20px;font-size:13px;font-weight:600;cursor:pointer;background:var(--surf2);color:var(--muted);border:1.5px solid transparent;transition:all .2s;font-family:var(--fb);}
 .tpill.on{background:rgba(240,165,0,.12);color:var(--gold);border-color:rgba(240,165,0,.4);}
-.mc{margin:0 16px 12px;background:var(--surf);border-radius:var(--r);border:1px solid var(--br);overflow:hidden;cursor:pointer;transition:transform .15s,border-color .2s,box-shadow .2s;}
-.mc:hover{transform:scale(1.015);border-color:rgba(240,165,0,.3);box-shadow:0 4px 24px rgba(0,0,0,.3);}
+.mc{margin:0 16px 12px;border-radius:var(--r);border:1px solid var(--br);overflow:hidden;cursor:pointer;transition:transform .15s,border-color .2s,box-shadow .2s;
+  background:
+    radial-gradient(ellipse 75% 55% at 2% 96%, rgba(0,104,71,0.08) 0%,transparent 55%),
+    radial-gradient(ellipse 75% 55% at 98% 4%, rgba(200,16,46,0.07) 0%,transparent 55%),
+    var(--surf);}
+.mc:hover{transform:scale(1.015);border-color:rgba(240,165,0,.3);
+  box-shadow:0 4px 28px rgba(0,0,0,.35),0 0 20px rgba(200,16,46,.08),0 0 20px rgba(0,40,104,.08);}
 .mc:active{transform:scale(.99);}
 `;
 
