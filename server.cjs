@@ -646,7 +646,7 @@ app.post('/api/mp/create-preference', async (req, res) => {
         payer: { email: userEmail },
         external_reference: userId,
         back_urls: {
-          success: `${process.env.APP_URL}/?payment_status=success&payment_id={{payment_id}}`,
+          success: `${process.env.APP_URL}/?payment_status=success`,
           failure: `${process.env.APP_URL}/?payment_status=failure`,
           pending: `${process.env.APP_URL}/?payment_status=pending`
         },
@@ -662,25 +662,38 @@ app.post('/api/mp/create-preference', async (req, res) => {
 
 app.post('/api/mp/verify', async (req, res) => {
   const { paymentId, userId } = req.body;
+  console.log(`[MP verify] paymentId=${paymentId} userId=${userId}`);
   if (!db) return res.status(503).json({ error: 'DB no disponible' });
+  if (!paymentId || paymentId === '{{payment_id}}') {
+    console.error('[MP verify] paymentId inválido:', paymentId);
+    return res.status(400).json({ error: 'paymentId inválido' });
+  }
   try {
     const paid = await db.collection('payments').doc(String(paymentId)).get();
-    if (paid.exists) return res.json({ ok: true, alreadyCredited: true });
+    if (paid.exists) {
+      console.log('[MP verify] ya acreditado:', paymentId);
+      return res.json({ ok: true, alreadyCredited: true });
+    }
     const payment = new Payment(mpClient);
     const data = await payment.get({ id: paymentId });
+    console.log(`[MP verify] estado MP: ${data.status}, ext_ref: ${data.external_reference}, esperado: ${userId}`);
     if (data.status === 'approved' && data.external_reference === userId) {
       const admin = require('firebase-admin');
-      await db.collection('users').doc(userId).update({
-        paquetes: admin.firestore.FieldValue.increment(1)
-      });
+      await db.collection('users').doc(userId).set(
+        { paquetes: admin.firestore.FieldValue.increment(1) },
+        { merge: true }
+      );
       await db.collection('payments').doc(String(paymentId)).set({
         userId, creditedAt: new Date().toISOString(), amount: data.transaction_amount
       });
+      console.log(`[MP verify] ✅ acreditado: paymentId=${paymentId} userId=${userId}`);
       res.json({ ok: true });
     } else {
-      res.json({ ok: false, status: data.status });
+      console.warn(`[MP verify] no acreditado: status=${data.status} ext_ref=${data.external_reference}`);
+      res.json({ ok: false, status: data.status, ext_ref: data.external_reference });
     }
   } catch (e) {
+    console.error('[MP verify] error:', e.message);
     res.status(500).json({ error: e.message });
   }
 });
@@ -697,12 +710,14 @@ app.post('/api/mp/webhook', async (req, res) => {
         const paid = await db.collection('payments').doc(String(data.id)).get();
         if (!paid.exists) {
           const admin = require('firebase-admin');
-          await db.collection('users').doc(userId).update({
-            paquetes: admin.firestore.FieldValue.increment(1)
-          });
+          await db.collection('users').doc(userId).set(
+            { paquetes: admin.firestore.FieldValue.increment(1) },
+            { merge: true }
+          );
           await db.collection('payments').doc(String(data.id)).set({
             userId, creditedAt: new Date().toISOString()
           });
+          console.log(`[MP webhook] ✅ acreditado: paymentId=${data.id} userId=${userId}`);
         }
       }
     }

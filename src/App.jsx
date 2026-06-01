@@ -5576,11 +5576,13 @@ export default function App(){
   },[]);
 
   // Detectar retorno de MercadoPago y verificar pago
+  // MP agrega payment_id y collection_id automáticamente al hacer redirect
   useEffect(()=>{
     const params=new URLSearchParams(window.location.search);
     const status=params.get('payment_status');
-    const paymentId=params.get('payment_id');
-    if(status==='success'&&paymentId&&user){
+    // MP añade payment_id y collection_id; collection_id es el más fiable
+    const paymentId=params.get('collection_id')||params.get('payment_id');
+    if(status==='success'&&paymentId&&paymentId!=='{{payment_id}}'&&user){
       fetch('/api/mp/verify',{
         method:'POST',
         headers:{'Content-Type':'application/json'},
