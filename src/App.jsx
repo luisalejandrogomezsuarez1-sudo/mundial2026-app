@@ -4746,7 +4746,7 @@ function BetsScreen({bets,placeBet,credito,creditoLoading,onPagar,onReset,betsSa
   // Coins
   const isAdminUser=credito?.isAdmin||false;
   const coinsUsed=isAdminUser?0:bets.reduce((s,b)=>s+getBetCost(b.id),0);
-  const totalCoins=credito?.coins??COINS_PER_PAGO;
+  const totalCoins=COINS_PER_PAGO;
   const coinsLeft=isAdminUser?999999:totalCoins-coinsUsed;
   const pctUsed=isAdminUser?0:Math.min(100,Math.round(coinsUsed/totalCoins*100));
 
