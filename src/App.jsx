@@ -5601,7 +5601,7 @@ export default function App(){
               if(!fsUser?.gifted&&!(fsUser?.paquetes>0)){
                 const getAllFn=fbGetAllUsers||window._fbGetAllUsers;
                 if(getAllFn){
-                  const all=await getAllUsersCached(getAllFn);
+                  const all=await getAllUsersCached(getAllFn,0); // lectura fresca: evita cache viejo tras un regalo reciente
                   const byEmail=all.find(x=>x.email?.toLowerCase()===u.email?.toLowerCase()&&(x.gifted||(x.paquetes>0)));
                   if(byEmail) fsUser=byEmail;
                 }
@@ -5738,17 +5738,20 @@ export default function App(){
     const doSubscribe=async()=>{
       const subscribeFn=window._fbSubscribeUser;
       const findFn=window._fbFindUserByEmail;
-      if(!subscribeFn) return;
+      if(!subscribeFn){console.warn('[gift-listener] _fbSubscribeUser aún no disponible');return;}
       // Encontrar el ID correcto en Firestore por email (puede diferir del local)
       let targetId=user.id;
       if(findFn){
         try{
           const fsUser=await findFn(user.email);
           if(fsUser?.id) targetId=fsUser.id;
-        }catch(e){}
+          console.log('[gift-listener] email',user.email,'→ doc Firestore:',targetId,'(id local:',user.id+')','| gifted actual:',fsUser?.gifted);
+        }catch(e){console.warn('[gift-listener] findUserByEmail error:',e);}
       }
+      console.log('[gift-listener] suscrito a users/'+targetId);
       unsub=subscribeFn(targetId,fsUser=>{
         if(cancelled) return;
+        console.log('[gift-listener] snapshot:',JSON.stringify({id:targetId,gifted:fsUser?.gifted,giftedCoins:fsUser?.giftedCoins,paquetes:fsUser?.paquetes}));
         // Detectar eliminación
         if(fsUser?.forceDelete||fsUser?.deleted){
           dbLoad().then(allDB=>dbSave(allDB.filter(x=>x.id!==user.id))).catch(()=>{});
@@ -5760,14 +5763,19 @@ export default function App(){
         }
         // Detectar regalo de monedas en tiempo real
         if(fsUser?.gifted){
-          const gc=fsUser.giftedCoins||1000;
+          const gc=Number(fsUser.giftedCoins)||1000; // coerción: el admin puede enviar string
+          console.log('[gift-listener] ✓ REGALO detectado, monedas:',gc);
           setCredito(prev=>{
-            if(prev?.gifted) return prev;
-            return {coins:gc+(fsUser.paquetes||0)*COINS_PER_PAGO,paquetes:fsUser.paquetes||1,paidAt:Date.now(),gifted:true,giftedCoins:gc};
+            if(prev?.gifted){console.log('[gift-listener] credito ya era gifted, sin cambio');return prev;}
+            const nuevo={coins:gc+(fsUser.paquetes||0)*COINS_PER_PAGO,paquetes:fsUser.paquetes||1,paidAt:Date.now(),gifted:true,giftedCoins:gc};
+            console.log('[gift-listener] setCredito →',JSON.stringify(nuevo));
+            return nuevo;
           });
           dbLoad().then(localUsers=>{
             dbSave(localUsers.map(x=>x.email?.toLowerCase()===user.email?.toLowerCase()?{...x,gifted:true,giftedCoins:gc}:x));
           });
+        } else if(fsUser&&fsUser.gifted===false){
+          console.log('[gift-listener] regalo revocado (gifted:false) — el saldo de regalo se actualizará al recargar');
         }
       });
     };
