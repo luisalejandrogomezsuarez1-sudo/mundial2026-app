@@ -658,6 +658,69 @@ app.post('/api/admin/cleanup-user-email', async (req, res) => {
   }
 });
 
+// ── Limpiar TODOS los duplicados en la colección users ───────────────────────
+app.post('/api/admin/cleanup-all-duplicates', async (req, res) => {
+  if (!ADMIN_KEY || req.body.key !== ADMIN_KEY)
+    return res.status(403).json({ error: 'Forbidden' });
+  if (!db) return res.status(503).json({ error: 'DB no disponible' });
+  try {
+    const snap = await db.collection('users').get();
+    const all = snap.docs.map(d => ({ _id: d.id, _ref: d.ref, ...d.data() }));
+
+    // Agrupar por email
+    const byEmail = {};
+    for (const u of all) {
+      const key = (u.email || '').toLowerCase().trim();
+      if (!key) continue;
+      if (!byEmail[key]) byEmail[key] = [];
+      byEmail[key].push(u);
+    }
+
+    // Para cada email con más de 1 doc, elegir el mejor y borrar el resto
+    const summary = [];
+    const batch = db.batch();
+    let totalDeleted = 0;
+
+    for (const [email, docs] of Object.entries(byEmail)) {
+      if (docs.length <= 1) continue;
+
+      // Criterio de selección del mejor doc:
+      // 1. Tiene paquetes > 0
+      // 2. Tiene gifted:true
+      // 3. updatedAt más reciente
+      const scored = docs.map(d => ({
+        doc: d,
+        score: (d.paquetes > 0 ? 1000 : 0)
+             + (d.gifted ? 100 : 0)
+             + (d.giftedCoins > 0 ? 50 : 0)
+             // updatedAt más reciente suma hasta 10 puntos
+             + (d.updatedAt ? Math.min(10, (new Date(d.updatedAt) - new Date('2024-01-01')) / 1e10) : 0)
+      }));
+      scored.sort((a, b) => b.score - a.score);
+
+      const keep = scored[0].doc;
+      const toDelete = scored.slice(1).map(s => s.doc);
+      toDelete.forEach(d => { batch.delete(d._ref); totalDeleted++; });
+
+      summary.push({
+        email,
+        total: docs.length,
+        kept: keep._id,
+        kept_paquetes: keep.paquetes || 0,
+        deleted: toDelete.map(d => d._id)
+      });
+    }
+
+    if (totalDeleted > 0) await batch.commit();
+
+    console.log(`[cleanup-all-duplicates] ${summary.length} emails con duplicados, ${totalDeleted} docs eliminados`);
+    res.json({ ok: true, duplicateEmails: summary.length, totalDeleted, summary });
+  } catch(e) {
+    console.error('[cleanup-all-duplicates] error:', e.message);
+    res.status(500).json({ error: e.message });
+  }
+});
+
 // ── MercadoPago Checkout Pro ─────────────────────────────────────────────────
 app.post('/api/mp/create-preference', async (req, res) => {
   const { userId, userEmail } = req.body;
