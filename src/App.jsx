@@ -26,6 +26,13 @@ import('./firebase.js').then(fb => {
   window._fbSubscribeUser   = fb.subscribeToUserDoc;
   window._fbFindUserByEmail = fb.findUserByEmail;
   window._fbGiftCoinsByEmail= fb.giftCoinsByEmail;
+  // Auth nativo (Fase 2)
+  window._fbAuthRegister    = fb.authRegister;
+  window._fbAuthLogin       = fb.authLogin;
+  window._fbAuthLogout      = fb.authLogout;
+  window._fbAuthOnChange    = fb.authOnChange;
+  window._fbSaveAuthUser    = fb.saveAuthUserToFirestore;
+  window._fbMigrateUser     = fb.migrateUserDataToUid;
   console.log('🔥 Firebase conectado — mundial2026-15686');
 }).catch(e => console.warn('Firebase error:', e));
 
@@ -1046,6 +1053,17 @@ const dbSave=async users=>{
 const dbFind=(users,email)=>
   users.find(u=>u.email.toLowerCase()===email.toLowerCase().trim());
 
+// Espera a que una función global de Firebase esté disponible (la importación
+// de ./firebase.js es asíncrona). Devuelve la función o null si expira.
+const waitForFb=(name,timeout=6000)=>new Promise(resolve=>{
+  if(window[name]) return resolve(window[name]);
+  let elapsed=0;
+  const t=setInterval(()=>{
+    if(window[name]){clearInterval(t);resolve(window[name]);}
+    else if((elapsed+=150)>=timeout){clearInterval(t);resolve(null);}
+  },150);
+});
+
 // Increment paquetes + record payment timestamp in DB
 const dbUpdatePaquetes=async email=>{
   try{
@@ -1483,124 +1501,107 @@ function Auth({onLogin,onLangChange=()=>{},logoutMsg='',onClearMsg=()=>{}}){
       }
     }catch(e){ /* si el servidor no responde, continúa con login normal */ }
 
-    // ── Load DB ──
-    const users=await dbLoad();
-
+    // ── Registro / Login con Firebase Auth nativo ──
     if(mode==='reg'){
       // Validate fields
       if(!f.name.trim()||!f.bd||!f.nat.trim()||!f.gen){
         setLoading(false);setErr('Por favor completa todos los campos del registro');return;
       }
-      // Check duplicate email
-      const existing=dbFind(users,email);
-      if(existing){
-        // If the account was deleted by admin, allow re-registration
-        let canReregister=false;
-        if(existing.id){
-          const getFn=await new Promise(resolve=>{
-            if(window._fbGetUser) return resolve(window._fbGetUser);
-            let elapsed=0;
-            const t=setInterval(()=>{
-              if(window._fbGetUser){clearInterval(t);resolve(window._fbGetUser);}
-              else if(elapsed>=4000){clearInterval(t);resolve(null);}
-              elapsed+=200;
-            },200);
-          });
-          if(getFn){
-            try{
-              const fsUser=await getFn(existing.id);
-              if(fsUser?.deleted||fsUser?.forceDelete){
-                canReregister=true;
-                ['wc2026_bets_','wc2026_saved_','wc2026_groups_','wc2026_session_'].forEach(k=>{
-                  try{localStorage.removeItem(k+existing.id);}catch(e){}
-                });
-              }
-            }catch(e){}
-          }
-        }
-        if(!canReregister){
-          setLoading(false);
-          setErr('⚠️ Este correo ya está registrado. Por favor inicia sesión.');
-          return;
-        }
+      if(pass.length<6){
+        setLoading(false);setErr('La contraseña debe tener al menos 6 caracteres.');return;
       }
-      // Save new user to DB
-      const newUser={
-        id:'u_'+Date.now(),
-        email,pass,
-        name:f.name.trim(),
-        bd:f.bd,nat:f.nat.trim(),gen:f.gen,
-        lang:f.lang||LANG_BY_NAT[f.nat.trim()]||'es',
-        createdAt:new Date().toISOString(),
-        paquetes:0,isAdmin:false
-      };
-      await dbSave([...users.filter(u=>u.email.toLowerCase()!==email.toLowerCase().trim()),newUser]);
-      setLoading(false);
-      onLogin(newUser);
-      fetch('/api/welcome-email',{method:'POST',headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({email:newUser.email,name:newUser.name})}).catch(()=>{});
+      const authRegister=await waitForFb('_fbAuthRegister');
+      if(!authRegister){
+        setLoading(false);setErr('No se pudo conectar con el servidor de cuentas. Revisa tu conexión.');return;
+      }
+      try{
+        const fbUser=await authRegister(email,pass);
+        const uid=fbUser.uid;
+        const newUser={
+          id:uid,email,
+          name:f.name.trim(),
+          bd:f.bd,nat:f.nat.trim(),gen:f.gen,
+          lang:f.lang||LANG_BY_NAT[f.nat.trim()]||'es',
+          createdAt:new Date().toISOString(),
+          paquetes:0,isAdmin:false,fromAuth:true
+        };
+        const saveAuthUser=window._fbSaveAuthUser;
+        if(saveAuthUser) await saveAuthUser(uid,newUser);
+        setLoading(false);
+        onLogin(newUser);
+        fetch('/api/welcome-email',{method:'POST',headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({email:newUser.email,name:newUser.name})}).catch(()=>{});
+      }catch(e){
+        setLoading(false);
+        if(e.code==='auth/email-already-in-use') setErr('⚠️ Este correo ya está registrado. Por favor inicia sesión.');
+        else if(e.code==='auth/weak-password') setErr('La contraseña debe tener al menos 6 caracteres.');
+        else if(e.code==='auth/invalid-email') setErr('El correo electrónico no es válido.');
+        else { console.warn('authRegister error:',e); setErr('No se pudo crear la cuenta. Intenta de nuevo.'); }
+      }
 
     }else{
-      // Login: find user in localStorage first
-      let found=dbFind(users,email);
-      if(!found){
-        // No está en localStorage — buscar en Firestore (otro dispositivo o localStorage limpiado)
-        const findFn=window._fbFindUserByEmail;
-        if(findFn){
-          try{
-            const fsUser=await findFn(email);
-            if(fsUser && !fsUser.deleted && !fsUser.forceDelete){
-              // Primera vez en este navegador: la cuenta ya existe en Firestore.
-              // Recreamos la entrada local con los datos de Firestore + la contraseña
-              // tecleada. (La verificación de credenciales de la app es client-side y
-              // vive en localStorage; Firestore no guarda la contraseña.)
-              found={...fsUser,pass};
-              await dbSave([...users.filter(x=>x.email?.toLowerCase()!==email),found]);
-            }
-          }catch(e){}
+      const authLogin=await waitForFb('_fbAuthLogin');
+      if(!authLogin){
+        setLoading(false);setErr('No se pudo conectar con el servidor de cuentas. Revisa tu conexión.');return;
+      }
+      // Carga el perfil (migra datos legados la primera vez) y entra a la app
+      const enterWithUid=async uid=>{
+        let profile=null;
+        const migrateFn=window._fbMigrateUser;
+        if(migrateFn){ try{ profile=await migrateFn(uid,email); }catch(_){} }
+        if(!profile){
+          const getFn=window._fbGetUser;
+          if(getFn){ try{ profile=await getFn(uid); }catch(_){} }
         }
-        if(!found){
+        // Cuenta desactivada por el admin
+        if(profile?.deleted||profile?.forceDelete){
+          const logoutFn=window._fbAuthLogout; if(logoutFn) try{ await logoutFn(); }catch(_){}
+          setLoading(false);
+          setErr('Esta cuenta ha sido desactivada. Contacta al administrador.');
+          return;
+        }
+        const u={email,fromAuth:true,...(profile||{}),id:uid,isAdmin:false};
+        setLoading(false);
+        onLogin(u);
+      };
+      try{
+        const fbUser=await authLogin(email,pass);
+        await enterWithUid(fbUser.uid);
+      }catch(e){
+        // auth/invalid-credential cubre "no existe" Y "contraseña incorrecta"
+        // (protección anti-enumeración de Firebase). Para distinguir: si el email
+        // existe como cuenta legada (sin cuenta Auth aún), la creamos con la
+        // contraseña tecleada — migración perezosa aprobada.
+        if(e.code==='auth/invalid-credential'||e.code==='auth/user-not-found'){
+          const findFn=window._fbFindUserByEmail;
+          let legacy=null;
+          if(findFn){ try{ legacy=await findFn(email); }catch(_){} }
+          if(legacy && !legacy.deleted && !legacy.forceDelete){
+            if(pass.length<6){
+              setLoading(false);
+              setErr('Por seguridad, tu contraseña debe tener al menos 6 caracteres. Escribe una de 6+ para activar tu cuenta.');
+              return;
+            }
+            const authRegister=window._fbAuthRegister;
+            try{
+              const fbUser=await authRegister(email,pass);
+              await enterWithUid(fbUser.uid);
+              return;
+            }catch(e2){
+              // email-already-in-use ⇒ la cuenta Auth ya existía ⇒ era contraseña incorrecta
+              setLoading(false);
+              setErr('Correo o contraseña incorrectos');
+              return;
+            }
+          }
           setLoading(false);
           setErr('Correo o contraseña incorrectos');
           return;
         }
-      }
-      if(found.pass!==pass){
         setLoading(false);
-        setErr('Correo o contraseña incorrectos');
-        return;
+        if(e.code==='auth/too-many-requests') setErr('Demasiados intentos. Espera un momento e inténtalo de nuevo.');
+        else { console.warn('authLogin error:',e); setErr('Correo o contraseña incorrectos'); }
       }
-      // Verificar en Firestore si la cuenta fue eliminada por admin
-      // Esperar hasta 4s a que Firebase esté listo (evita ventana de ~8s)
-      if(found.id){
-        const getFn=await new Promise(resolve=>{
-          if(window._fbGetUser) return resolve(window._fbGetUser);
-          let elapsed=0;
-          const t=setInterval(()=>{
-            if(window._fbGetUser){clearInterval(t);resolve(window._fbGetUser);}
-            else if(elapsed>=4000){clearInterval(t);resolve(null);}
-            elapsed+=200;
-          },200);
-        });
-        if(getFn){
-          try{
-            const fsUser=await getFn(found.id);
-            if(fsUser?.deleted||fsUser?.forceDelete){
-              // Limpiar datos locales del usuario eliminado
-              const allDB=await dbLoad();
-              await dbSave(allDB.filter(x=>x.id!==found.id));
-              ['wc2026_bets_','wc2026_saved_','wc2026_groups_','wc2026_session_'].forEach(k=>{
-                try{localStorage.removeItem(k+found.id);}catch(e){}
-              });
-              setLoading(false);
-              setErr('Esta cuenta ha sido desactivada. Contacta al administrador.');
-              return;
-            }
-          }catch(e){/* si falla la verificación, permitir login */}
-        }
-      }
-      setLoading(false);
-      onLogin(found);
     }
   };
 
@@ -5533,7 +5534,9 @@ export default function App(){
     };
     // El admin no se guarda como documento de usuario en Firestore (evita que
     // aparezca listado en su propio panel). Su sesión sí queda en localStorage.
-    if(!u.isAdmin) saveToFirestore();
+    // Usuarios de Auth (fromAuth) ya tienen su doc users/{uid}: no usar el guardado
+    // canónico viejo (crearía un doc u_..._at_... duplicado).
+    if(!u.isAdmin && !u.fromAuth) saveToFirestore();
     // Admin: verificar flags + TAMBIÉN detectar regalo (gifted) desde Firestore
     const checkAdminFlags=async(attempts=0)=>{
       const getFn=fbGetAllUsers||window._fbGetAllUsers;
@@ -5860,8 +5863,16 @@ export default function App(){
     });
     if(user&&!user.isAdmin){
       await dbUpdatePaquetes(user.email);
-      const saveFn=fbSaveUser||window._fbSaveUser;
-      if(saveFn&&user.id) saveFn({...user,paquetes:newPaquetes,sessionId:localStorage.getItem('wc2026_session_'+user.id)||''});
+      if(user.fromAuth){
+        // Usuario de Firebase Auth: su doc definitivo es users/{uid}. Guardar ahí con
+        // saveAuthUserToFirestore para acreditar el pago en el doc correcto y NO crear
+        // un doc duplicado u_..._at_... vía el guardado canónico viejo.
+        const saveAuthFn=window._fbSaveAuthUser;
+        if(saveAuthFn) saveAuthFn(user.id,{...user,paquetes:newPaquetes});
+      } else {
+        const saveFn=fbSaveUser||window._fbSaveUser;
+        if(saveFn&&user.id) saveFn({...user,paquetes:newPaquetes,sessionId:localStorage.getItem('wc2026_session_'+user.id)||''});
+      }
       console.log('[onPagar] Firestore sync: paquetes=',newPaquetes);
     }
   };
