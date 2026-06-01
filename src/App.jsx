@@ -5463,7 +5463,7 @@ export default function App(){
           // ── Regalo: otorgar acceso si Firestore dice gifted:true ──
           if(fsUser?.gifted&&!u.isAdmin){
             const gc=fsUser.giftedCoins||1000;
-            setCredito({coins:gc,paquetes:1,paidAt:Date.now(),gifted:true,giftedCoins:gc});
+            setCredito({coins:gc+(fsUser?.paquetes||0)*COINS_PER_PAGO,paquetes:fsUser?.paquetes||1,paidAt:Date.now(),gifted:true,giftedCoins:gc});
             const localUsers=await dbLoad();
             await dbSave(localUsers.map(x=>x.id===u.id?{...x,gifted:true,giftedCoins:gc}:x));
           }
@@ -5501,9 +5501,9 @@ export default function App(){
       const dbUser=users.find(x=>x.email.toLowerCase()===u.email.toLowerCase());
       if(dbUser?.gifted){
         const giftedCoins=dbUser.giftedCoins||1000;
-        setCredito({coins:giftedCoins,paquetes:1,paidAt:Date.now(),gifted:true,giftedCoins});
+        setCredito({coins:giftedCoins+(dbUser?.paquetes||0)*COINS_PER_PAGO,paquetes:dbUser?.paquetes||1,paidAt:Date.now(),gifted:true,giftedCoins});
       } else if(dbUser?.paquetes>0){
-        setCredito({coins:COINS_PER_PAGO,paquetes:dbUser.paquetes,paidAt:Date.now()});
+        setCredito({coins:dbUser.paquetes*COINS_PER_PAGO,paquetes:dbUser.paquetes,paidAt:Date.now()});
       } else {
         // Fallback: leer doc del usuario en Firestore (1 lectura rápida)
         setCreditoLoading(true);
@@ -5525,11 +5525,11 @@ export default function App(){
               }
               if(fsUser?.gifted){
                 const gc=fsUser.giftedCoins||1000;
-                setCredito({coins:gc,paquetes:1,paidAt:Date.now(),gifted:true,giftedCoins:gc});
+                setCredito({coins:gc+(fsUser?.paquetes||0)*COINS_PER_PAGO,paquetes:fsUser?.paquetes||1,paidAt:Date.now(),gifted:true,giftedCoins:gc});
                 const localUsers=await dbLoad();
                 await dbSave(localUsers.map(x=>x.id===u.id?{...x,gifted:true,giftedCoins:gc}:x));
               } else if(fsUser?.paquetes>0){
-                setCredito({coins:COINS_PER_PAGO,paquetes:fsUser.paquetes,paidAt:Date.now()});
+                setCredito({coins:fsUser.paquetes*COINS_PER_PAGO,paquetes:fsUser.paquetes,paidAt:Date.now()});
               }
             }catch(e){console.warn('checkFirestoreCredit error:',e);}
             setCreditoLoading(false);
@@ -5576,11 +5576,11 @@ export default function App(){
       }
       if(fsUser?.gifted){
         const gc=fsUser.giftedCoins||1000;
-        setCredito({coins:gc,paquetes:1,paidAt:Date.now(),gifted:true,giftedCoins:gc});
+        setCredito({coins:gc+(fsUser?.paquetes||0)*COINS_PER_PAGO,paquetes:fsUser?.paquetes||1,paidAt:Date.now(),gifted:true,giftedCoins:gc});
         const localUsers=await dbLoad();
         await dbSave(localUsers.map(x=>x.id===user.id?{...x,gifted:true,giftedCoins:gc}:x));
       } else if(fsUser?.paquetes>0){
-        setCredito({coins:COINS_PER_PAGO,paquetes:fsUser.paquetes,paidAt:Date.now()});
+        setCredito({coins:fsUser.paquetes*COINS_PER_PAGO,paquetes:fsUser.paquetes,paidAt:Date.now()});
       }
     }catch(e){console.warn('recheckAccess error:',e);}
     setCreditoLoading(false);
