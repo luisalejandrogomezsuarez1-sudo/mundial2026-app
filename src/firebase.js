@@ -94,7 +94,9 @@ export async function saveUserToFirestore(user) {
 export async function getAllUsersFromFirestore() {
   try {
     const snap = await getDocs(collection(db,'users'));
-    const docs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    // Descartar docs artefacto SIN email (fantasmas de regalos viejos): no son
+    // usuarios reales y aparecían como filas "Quitar" sin nombre en el panel.
+    const docs = snap.docs.map(d => ({ id: d.id, ...d.data() })).filter(d => d.email);
 
     // Deduplicar por email: cuando existen el doc viejo (u_TIMESTAMP) y el canónico
     // (u_luis_at_gmail_com) para el mismo email, el canónico siempre gana.
@@ -119,17 +121,24 @@ export async function getUserFromFirestore(userId) {
   } catch(e) { console.warn('getUser error:', e); return null; }
 }
 
-// Busca por email usando ID canónico (sin query — lectura directa O(1))
+// Busca el doc REAL por email. Antes resolvía el ID canónico primero, lo que
+// devolvía documentos fantasma (sin email, creados por la versión vieja de
+// giftCoinsByEmail) en vez del doc real. Como el regalo se escribe en el doc
+// hallado por email, leer por email primero asegura que el listener del receptor
+// y el login apunten al MISMO doc donde se escribe el regalo → las monedas llegan.
 export async function findUserByEmail(email) {
   if(!email) return null;
-  const canonId = emailToDocId(email.toLowerCase().trim());
+  const normalizedEmail = email.toLowerCase().trim();
   try {
-    const snap = await getDoc(doc(db, 'users', canonId));
+    const qsnap = await getDocs(query(collection(db, 'users'), where('email', '==', normalizedEmail)));
+    if (!qsnap.empty) {
+      // Si hubiera varios docs con el mismo email, preferir el que tiene regalo/pago
+      const best = qsnap.docs.find(d => d.data().gifted || d.data().paquetes > 0) || qsnap.docs[0];
+      return { id: best.id, ...best.data() };
+    }
+    // Fallback: doc canónico (usuarios creados directamente con ID canónico)
+    const snap = await getDoc(doc(db, 'users', emailToDocId(normalizedEmail)));
     if (snap.exists()) return { id: snap.id, ...snap.data() };
-    // Fallback: docs anteriores a la migración (u_TIMESTAMP)
-    const q = query(collection(db, 'users'), where('email', '==', email.toLowerCase().trim()));
-    const qsnap = await getDocs(q);
-    if (!qsnap.empty) return { id: qsnap.docs[0].id, ...qsnap.docs[0].data() };
     return null;
   } catch(e) { console.warn('findUserByEmail error:', e); return null; }
 }
