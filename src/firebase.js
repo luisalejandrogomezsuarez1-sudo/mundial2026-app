@@ -145,16 +145,27 @@ export async function giftCoinsInFirestore(userId, gifted, giftedCoins=1000) {
   } catch(e) { console.warn('giftCoins error:', e); }
 }
 
-// Regalar monedas por email — usa ID canónico, no requiere query
+// Regalar/revocar monedas por email — busca el/los documento(s) REAL(es) por email
+// y escribe en todos. Los docs con ID viejo (u_TIMESTAMP) no coinciden con el ID
+// canónico, así que escribir solo al canónico creaba un doc fantasma y nunca
+// actualizaba el real (revocar no surtía efecto).
 export async function giftCoinsByEmail(email, gifted, giftedCoins=1000) {
   if(!email) return;
-  const canonId = emailToDocId(email.toLowerCase().trim());
+  const normalizedEmail = email.toLowerCase().trim();
+  const data = {
+    gifted,
+    giftedAt:    gifted ? new Date().toISOString() : null,
+    giftedCoins: gifted ? giftedCoins : null,
+  };
   try {
-    await setDoc(doc(db,'users', canonId), {
-      gifted,
-      giftedAt:    gifted ? new Date().toISOString() : null,
-      giftedCoins: gifted ? giftedCoins : null,
-    }, { merge: true });
+    const snap = await getDocs(query(collection(db,'users'), where('email','==', normalizedEmail)));
+    if (!snap.empty) {
+      // Actualizar todos los docs reales con este email (cubre viejos + canónico)
+      await Promise.all(snap.docs.map(d => setDoc(doc(db,'users', d.id), data, { merge: true })));
+      return;
+    }
+    // Sin doc por email (usuario regalado antes de existir su doc): usar ID canónico
+    await setDoc(doc(db,'users', emailToDocId(normalizedEmail)), data, { merge: true });
   } catch(e) { console.warn('giftCoinsByEmail error:', e); }
 }
 
