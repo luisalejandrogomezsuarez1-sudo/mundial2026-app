@@ -4485,7 +4485,7 @@ function GruposScreen({user,userBets,credito,creditoLoading,onPagar,onRecheckAcc
 }
 
 // ── Pago Screen ───────────────────────────────────
-function PagoScreen({onExito,onCancelar,esReset=false,onRecheckAccess,user}){
+function PagoScreen({onExito,onCancelar,esReset=false,onRecheckAccess,user,onRecover}){
   const t=useLang();
   const [metodo,setMetodo]=useState('card');
   const [loading,setLoading]=useState(false);
@@ -4701,13 +4701,27 @@ function PagoScreen({onExito,onCancelar,esReset=false,onRecheckAccess,user}){
             </button>
           </div>
         )}
+        {!esReset&&onRecover&&(
+          <div style={{textAlign:'center',marginTop:10,paddingTop:12,
+            borderTop:'1px solid rgba(255,255,255,.05)'}}>
+            <div style={{fontSize:11,color:'var(--muted)',marginBottom:6}}>
+              ¿Pagaste pero no recibiste tus monedas?
+            </div>
+            <button onClick={onRecover}
+              style={{background:'rgba(246,201,14,.1)',border:'1px solid rgba(246,201,14,.3)',
+                color:'var(--gold)',borderRadius:10,padding:'8px 18px',fontSize:12,
+                cursor:'pointer',fontFamily:'var(--fb)',fontWeight:700}}>
+              🔄 Recuperar monedas
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
 }
 
 // ── Bets Screen ───────────────────────────────────
-function BetsScreen({bets,placeBet,credito,creditoLoading,onPagar,onReset,betsSaved=false,onSave,currentUser,onRecheckAccess}){
+function BetsScreen({bets,placeBet,credito,creditoLoading,onPagar,onReset,betsSaved=false,onSave,currentUser,onRecheckAccess,onRecover}){
   const t=useLang();
   const [tab,setTab]=useState('largo');
   const [exact,setExact]=useState({});
@@ -4721,7 +4735,7 @@ function BetsScreen({bets,placeBet,credito,creditoLoading,onPagar,onReset,betsSa
       <div style={{fontSize:13,color:'var(--muted)'}}>Verificando acceso…</div>
     </div>
   );
-  if(!credito) return <PagoScreen onExito={onPagar} onRecheckAccess={onRecheckAccess} user={currentUser}/>;
+  if(!credito) return <PagoScreen onExito={onPagar} onRecheckAccess={onRecheckAccess} user={currentUser} onRecover={onRecover}/>;
   if(showReset) return(
     <PagoScreen
       onExito={()=>{onReset();setShowReset(false);setConfirmReset(false);}}
@@ -5401,6 +5415,8 @@ export default function App(){
   };
   const [credito,setCredito]=useState(null);
   const [creditoLoading,setCreditoLoading]=useState(false);
+  const [mpVerify,setMpVerify]=useState(null);
+  // mpVerify: null | "verifying" | {ok:true,paymentId,coins} | {ok:false,paymentId,error}
   const [betsSaved,setBetsSaved]=useState(false); // predictions locked after saving
   const [logoutMsg,setLogoutMsg]=useState('');
   // credito = {coins:1000, paquetes:N, paidAt:timestamp} | null
@@ -5593,36 +5609,49 @@ export default function App(){
   },[]);
 
   // Detectar retorno de MercadoPago y verificar pago
-  // MP agrega collection_id y payment_id automaticamente al hacer redirect
   useEffect(()=>{
     const params=new URLSearchParams(window.location.search);
     const status=params.get('payment_status');
     const paymentId=params.get('collection_id')||params.get('payment_id');
-    console.log('[MP] URL params:', {status, paymentId, userId: user?.id});
     if(status==='success'&&paymentId&&paymentId!=='{{payment_id}}'&&user){
-      console.log('[MP] Llamando /api/mp/verify con paymentId:', paymentId);
-      fetch('/api/mp/verify',{
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({paymentId,userId:user.id})
-      })
-      .then(r=>r.json())
-      .then(data=>{
-        console.log('[MP] Respuesta verify:', data);
-        if(data.ok){
-          console.log('[MP] ok=true, llamando onPagar()...');
-          onPagar();
-          window.history.replaceState({},'','/');
-          setTab('pronostico');
-          // Re-leer desde Firestore para obtener el valor real de paquetes
-          // (el servidor ya actualizó Firestore; esperamos 1.5s a que propague)
-          setTimeout(()=>{ recheckAccess(); console.log('[MP] recheckAccess ejecutado'); }, 1500);
-          console.log('[MP] onPagar() ejecutado, navegando a pronostico');
-        } else {
-          console.warn('[MP] verify respondio ok=false:', data);
+      // Guardar en localStorage para botón de recuperación
+      try{localStorage.setItem('wc2026_last_payment_id',paymentId);}catch(e){}
+      setMpVerify('verifying');
+      window.history.replaceState({},''+'/');
+      // Reintentar hasta 3 veces con 2s entre intentos
+      const verifyWithRetry=async(attempts=1)=>{
+        try{
+          const r=await fetch('/api/mp/verify',{
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({paymentId,userId:user.id})
+          });
+          const data=await r.json();
+          console.log('[MP] verify intento',attempts,'respuesta:',data);
+          return data;
+        }catch(e){
+          console.warn('[MP] verify intento',attempts,'error:',e.message);
+          if(attempts<3){
+            await new Promise(res=>setTimeout(res,2000));
+            return verifyWithRetry(attempts+1);
+          }
+          throw e;
         }
-      })
-      .catch(e=>{console.error('[MP] verify error:', e);});
+      };
+      verifyWithRetry()
+        .then(data=>{
+          if(data.ok){
+            onPagar();
+            setTab('pronostico');
+            setTimeout(()=>{
+              recheckAccess();
+              setMpVerify(prev=>({ok:true,paymentId,coins:COINS_PER_PAGO}));
+            },1500);
+          } else {
+            setMpVerify({ok:false,paymentId,error:data.status||'Pago no aprobado'});
+          }
+        })
+        .catch(e=>{setMpVerify({ok:false,paymentId,error:e.message||'Error de red'});});
     }
   },[user]);
 
@@ -5690,6 +5719,34 @@ export default function App(){
       saveBets(user,next); // persist so bets survive logout
       return next;
     });
+  };
+
+  // Recuperar monedas de un pago ya aprobado en MP
+  const handleMpRecover=async()=>{
+    const lastId=localStorage.getItem('wc2026_last_payment_id');
+    if(!lastId||!user?.id){alert('No se encontró un pago reciente en este dispositivo.');return;}
+    setMpVerify('verifying');
+    const verifyWithRetry=async(attempts=1)=>{
+      try{
+        const r=await fetch('/api/mp/verify',{method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({paymentId:lastId,userId:user.id})});
+        return await r.json();
+      }catch(e){
+        if(attempts<3){await new Promise(res=>setTimeout(res,2000));return verifyWithRetry(attempts+1);}
+        throw e;
+      }
+    };
+    verifyWithRetry()
+      .then(data=>{
+        if(data.ok){
+          onPagar();
+          setTimeout(()=>{recheckAccess();setMpVerify({ok:true,paymentId:lastId,coins:COINS_PER_PAGO});},1500);
+        }else{
+          setMpVerify({ok:false,paymentId:lastId,error:data.status||'Pago no aprobado'});
+        }
+      })
+      .catch(e=>{setMpVerify({ok:false,paymentId:lastId,error:e.message||'Error de red'});});
   };
 
   // Called after successful $20 payment (first time)
@@ -5771,6 +5828,67 @@ export default function App(){
         {screen==='splash'&&<Splash done={()=>setScreen('auth')}/>}
         {screen==='auth'&&<Auth onLogin={login} onLangChange={setLang} logoutMsg={logoutMsg} onClearMsg={()=>setLogoutMsg('')}/>}
         {screen==='app'&&user&&<>
+          {/* ── Pantalla de verificación de pago MP ── */}
+          {mpVerify&&(
+            <div style={{position:'absolute',inset:0,zIndex:60,background:'var(--bg)',
+              display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',
+              gap:18,padding:'32px 24px',textAlign:'center'}}>
+              {mpVerify==='verifying'&&(<>
+                <div style={{width:48,height:48,border:'4px solid var(--gold)',
+                  borderTopColor:'transparent',borderRadius:'50%',
+                  animation:'spin .9s linear infinite'}}/>
+                <div style={{fontFamily:'var(--ff)',fontSize:22,letterSpacing:2,color:'var(--gold)'}}>
+                  VERIFICANDO PAGO
+                </div>
+                <div style={{fontSize:13,color:'var(--muted)'}}>
+                  Consultando con MercadoPago…
+                </div>
+              </>)}
+              {mpVerify?.ok&&(<>
+                <div style={{fontSize:52}}>✅</div>
+                <div style={{fontFamily:'var(--ff)',fontSize:26,color:'var(--grn)',letterSpacing:1}}>
+                  PAGO EXITOSO
+                </div>
+                <div style={{background:'rgba(30,198,108,.1)',border:'1px solid rgba(30,198,108,.3)',
+                  borderRadius:14,padding:'14px 28px'}}>
+                  <div style={{fontFamily:'var(--ff)',fontSize:40,color:'var(--gold)'}}>
+                    🪙 {(credito?.coins||COINS_PER_PAGO).toLocaleString()}
+                  </div>
+                  <div style={{fontSize:12,color:'var(--dim)',marginTop:4}}>monedas en tu cuenta</div>
+                </div>
+                <button onClick={()=>setMpVerify(null)}
+                  style={{background:'var(--gold)',color:'#000',border:'none',borderRadius:12,
+                    padding:'14px 32px',fontFamily:'var(--ff)',fontSize:18,cursor:'pointer'}}>
+                  CONTINUAR →
+                </button>
+              </>)}
+              {mpVerify?.ok===false&&(<>
+                <div style={{fontSize:52}}>❌</div>
+                <div style={{fontFamily:'var(--ff)',fontSize:22,color:'#FC8181',letterSpacing:1}}>
+                  ERROR AL VERIFICAR
+                </div>
+                <div style={{fontSize:13,color:'var(--muted)',lineHeight:1.6,maxWidth:280}}>
+                  {mpVerify.error}
+                </div>
+                <div style={{background:'rgba(255,255,255,.04)',borderRadius:10,
+                  padding:'10px 16px',fontSize:11,color:'var(--dim)'}}>
+                  ID de operación:<br/>
+                  <strong style={{color:'var(--acc)',fontFamily:'monospace',fontSize:13}}>
+                    {mpVerify.paymentId}
+                  </strong>
+                </div>
+                <div style={{fontSize:12,color:'var(--muted)'}}>
+                  Guarda este ID y usa el botón<br/>
+                  <strong>¿No recibiste tus monedas?</strong> en la pantalla de pago.
+                </div>
+                <button onClick={()=>setMpVerify(null)}
+                  style={{background:'rgba(255,255,255,.08)',color:'var(--txt)',border:'1px solid var(--br)',
+                    borderRadius:10,padding:'12px 24px',fontSize:14,cursor:'pointer'}}>
+                  Cerrar
+                </button>
+              </>)}
+            </div>
+          )}
           {/* Match detail overlay */}
           {match&&(
             <div style={{position:'absolute',inset:0,background:'var(--bg)',zIndex:50,display:'flex',flexDirection:'column'}}>
@@ -5785,7 +5903,7 @@ export default function App(){
                                   credito={credito} creditoLoading={creditoLoading} onPagar={onPagar} onReset={onReset}
                                   betsSaved={betsSaved}
                                   onSave={()=>{setBetsSaved(true);if(user?.id)localStorage.setItem('wc2026_saved_'+user.id,'true');}}
-                                  currentUser={user} onRecheckAccess={recheckAccess}/>}
+                                  currentUser={user} onRecheckAccess={recheckAccess} onRecover={handleMpRecover}/>}
           {tab==='grupos'     &&<GruposScreen user={user} userBets={userBets} credito={credito} creditoLoading={creditoLoading} onPagar={onPagar} onRecheckAccess={recheckAccess}/>}
           {tab==='perfil'     &&<PerfilScreen user={user} onLogout={logout} lang={lang}/>}
           {/* Bottom nav */}
