@@ -5593,13 +5593,14 @@ export default function App(){
   },[]);
 
   // Detectar retorno de MercadoPago y verificar pago
-  // MP agrega payment_id y collection_id automáticamente al hacer redirect
+  // MP agrega collection_id y payment_id automaticamente al hacer redirect
   useEffect(()=>{
     const params=new URLSearchParams(window.location.search);
     const status=params.get('payment_status');
-    // MP añade payment_id y collection_id; collection_id es el más fiable
     const paymentId=params.get('collection_id')||params.get('payment_id');
+    console.log('[MP] URL params:', {status, paymentId, userId: user?.id});
     if(status==='success'&&paymentId&&paymentId!=='{{payment_id}}'&&user){
+      console.log('[MP] Llamando /api/mp/verify con paymentId:', paymentId);
       fetch('/api/mp/verify',{
         method:'POST',
         headers:{'Content-Type':'application/json'},
@@ -5607,12 +5608,18 @@ export default function App(){
       })
       .then(r=>r.json())
       .then(data=>{
+        console.log('[MP] Respuesta verify:', data);
         if(data.ok){
+          console.log('[MP] ok=true, llamando onPagar()...');
           onPagar();
           window.history.replaceState({},'','/');
+          setTab('pronostico');
+          console.log('[MP] onPagar() ejecutado, navegando a pronostico');
+        } else {
+          console.warn('[MP] verify respondio ok=false:', data);
         }
       })
-      .catch(()=>{});
+      .catch(e=>{console.error('[MP] verify error:', e);});
     }
   },[user]);
 
@@ -5684,16 +5691,21 @@ export default function App(){
 
   // Called after successful $20 payment (first time)
   const onPagar=async()=>{
+    console.log('[onPagar] iniciando, credito actual:', credito?.paquetes);
     setBetsSaved(false);
     if(user?.id) localStorage.removeItem('wc2026_saved_'+user.id);
-    const newPaquetes=(credito?.paquetes||0)+1;
-    setCredito({coins:COINS_PER_PAGO,paquetes:newPaquetes,paidAt:Date.now()});
+    // setCredito funcional evita stale closure si credito cambio entre renders
+    let newPaquetes=1;
+    setCredito(prev=>{
+      newPaquetes=(prev?.paquetes||0)+1;
+      console.log('[onPagar] setCredito: prev.paquetes=',prev?.paquetes,'newPaquetes=',newPaquetes);
+      return {coins:COINS_PER_PAGO,paquetes:newPaquetes,paidAt:Date.now()};
+    });
     if(user&&!user.isAdmin){
-      // 1. Actualizar localStorage
       await dbUpdatePaquetes(user.email);
-      // 2. Sincronizar a Firestore (para acceso multi-dispositivo)
       const saveFn=fbSaveUser||window._fbSaveUser;
       if(saveFn&&user.id) saveFn({...user,paquetes:newPaquetes,sessionId:localStorage.getItem('wc2026_session_'+user.id)||''});
+      console.log('[onPagar] Firestore sync: paquetes=',newPaquetes);
     }
   };
 
