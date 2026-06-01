@@ -615,7 +615,7 @@ const css = `
   --glow:0 0 24px rgba(240,165,0,.22);
 }
 body{font-family:var(--fb);background:var(--bg);color:var(--txt);height:100%;overflow:hidden;}
-.app{max-width:430px;margin:0 auto;height:100vh;overflow:hidden;display:flex;flex-direction:column;position:relative;
+.app{max-width:430px;margin:0 auto;height:100vh;overflow:hidden;display:flex;flex-direction:column;position:relative;isolation:isolate;
   background:
     url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='430' height='900'><filter id='r' x='-80%' y='-80%' width='260%' height='260%'><feGaussianBlur stdDeviation='52'/></filter><path d='M-90,-50 C70,-100 330,-15 410,55 C320,195 195,335 30,380 C-60,340 -90,235 -90,-50Z' fill='%23C8102E' opacity='.5' filter='url(%23r)'/><path d='M-40,380 C30,360 130,370 90,460 C60,530 -40,490 -40,380Z' fill='%23C8102E' opacity='.25' filter='url(%23r)'/></svg>"),
     url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='430' height='900'><filter id='g' x='-80%' y='-80%' width='260%' height='260%'><feGaussianBlur stdDeviation='48'/></filter><path d='M520,-50 C350,-100 95,-15 20,55 C110,195 240,325 410,375 C490,335 520,235 520,-50Z' fill='%23006847' opacity='.45' filter='url(%23g)'/><path d='M470,370 C400,350 300,365 350,455 C380,525 470,490 470,370Z' fill='%23006847' opacity='.22' filter='url(%23g)'/></svg>"),
@@ -1492,17 +1492,27 @@ function Auth({onLogin,onLangChange=()=>{},logoutMsg='',onClearMsg=()=>{}}){
       if(existing){
         // If the account was deleted by admin, allow re-registration
         let canReregister=false;
-        const getFn=window._fbGetUser;
-        if(getFn&&existing.id){
-          try{
-            const fsUser=await getFn(existing.id);
-            if(fsUser?.deleted||fsUser?.forceDelete){
-              canReregister=true;
-              ['wc2026_bets_','wc2026_saved_','wc2026_groups_','wc2026_session_'].forEach(k=>{
-                try{localStorage.removeItem(k+existing.id);}catch(e){}
-              });
-            }
-          }catch(e){}
+        if(existing.id){
+          const getFn=await new Promise(resolve=>{
+            if(window._fbGetUser) return resolve(window._fbGetUser);
+            let elapsed=0;
+            const t=setInterval(()=>{
+              if(window._fbGetUser){clearInterval(t);resolve(window._fbGetUser);}
+              else if(elapsed>=4000){clearInterval(t);resolve(null);}
+              elapsed+=200;
+            },200);
+          });
+          if(getFn){
+            try{
+              const fsUser=await getFn(existing.id);
+              if(fsUser?.deleted||fsUser?.forceDelete){
+                canReregister=true;
+                ['wc2026_bets_','wc2026_saved_','wc2026_groups_','wc2026_session_'].forEach(k=>{
+                  try{localStorage.removeItem(k+existing.id);}catch(e){}
+                });
+              }
+            }catch(e){}
+          }
         }
         if(!canReregister){
           setLoading(false);
@@ -5715,6 +5725,34 @@ export default function App(){
     <div>
       <style>{css}</style>
       <div className="app">
+        {/* Abstract background shapes — Mundial 2026 */}
+        <svg style={{position:'absolute',top:0,left:0,width:'100%',height:'100%',pointerEvents:'none',zIndex:-1}} viewBox="0 0 430 900" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+          {/* Canada red — organic blob top-left */}
+          <path d="M 0 0 C 55,-18 190,12 232,82 C 268,138 252,208 194,230 C 138,252 56,222 12,164 C -28,112 -18,48 0,0 Z" fill="#C8102E" opacity="0.18"/>
+          <path d="M 192 158 C 224,136 272,152 276,194 C 280,230 248,250 206,238 C 168,226 162,178 192,158 Z" fill="#C8102E" opacity="0.11"/>
+          {/* Mexico green — tall brushstroke top-right */}
+          <path d="M 430 0 C 414,28 372,65 336,125 C 300,182 312,256 366,278 C 408,295 430,270 430,195 C 430,125 430,52 430,0 Z" fill="#006847" opacity="0.18"/>
+          <path d="M 248 192 C 274,168 326,180 330,220 C 334,254 302,270 266,258 C 234,246 228,214 248,192 Z" fill="#006847" opacity="0.11"/>
+          {/* USA blue — wave from bottom */}
+          <path d="M 0 900 L 0 838 C 48,800 106,782 160,788 C 196,792 234,792 270,788 C 324,782 382,800 430,838 L 430 900 Z" fill="#002868" opacity="0.22"/>
+          <path d="M 148 762 C 174,740 254,736 284,758 C 308,776 294,804 256,808 C 218,810 158,802 144,782 C 136,768 142,762 148,762 Z" fill="#002868" opacity="0.14"/>
+          {/* Gold destellos — scattered sparkles */}
+          <circle cx="64" cy="344" r="5" fill="#F0A500" opacity="0.14"/>
+          <circle cx="64" cy="344" r="11" fill="#F0A500" opacity="0.05"/>
+          <circle cx="158" cy="296" r="3.5" fill="#F0A500" opacity="0.11"/>
+          <circle cx="332" cy="418" r="5" fill="#F0A500" opacity="0.12"/>
+          <circle cx="332" cy="418" r="10" fill="#F0A500" opacity="0.05"/>
+          <circle cx="272" cy="528" r="3" fill="#F0A500" opacity="0.10"/>
+          <circle cx="88" cy="594" r="4.5" fill="#F0A500" opacity="0.11"/>
+          <circle cx="385" cy="464" r="3.5" fill="#F0A500" opacity="0.10"/>
+          <circle cx="385" cy="464" r="8" fill="#F0A500" opacity="0.04"/>
+          <circle cx="214" cy="658" r="2.5" fill="#F0A500" opacity="0.09"/>
+          <circle cx="46" cy="720" r="3" fill="#F0A500" opacity="0.08"/>
+          <circle cx="394" cy="314" r="3.5" fill="#F0A500" opacity="0.10"/>
+          <circle cx="180" cy="726" r="2.5" fill="#F0A500" opacity="0.08"/>
+          <circle cx="130" cy="490" r="2" fill="#F0A500" opacity="0.07"/>
+          <circle cx="300" cy="640" r="3" fill="#F0A500" opacity="0.09"/>
+        </svg>
         {screen==='splash'&&<Splash done={()=>setScreen('auth')}/>}
         {screen==='auth'&&<Auth onLogin={login} onLangChange={setLang} logoutMsg={logoutMsg} onClearMsg={()=>setLogoutMsg('')}/>}
         {screen==='app'&&user&&<>
