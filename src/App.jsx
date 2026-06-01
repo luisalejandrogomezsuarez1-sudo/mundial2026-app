@@ -5453,6 +5453,9 @@ export default function App(){
   const [betsSaved,setBetsSaved]=useState(false); // predictions locked after saving
   const [logoutMsg,setLogoutMsg]=useState('');
   // credito = {coins:1000, paquetes:N, paidAt:timestamp} | null
+  // Espejo del usuario activo para leerlo dentro de listeners sin stale closure
+  const userRef=useRef(null);
+  useEffect(()=>{userRef.current=user;},[user]);
 
   // ── Push Notification helper ──────────────────────────
   const requestPush = async () => {
@@ -5641,6 +5644,46 @@ export default function App(){
       }
     }catch(e){}
   },[]);
+  // Fase 3: enlazar la sesión de Firebase Auth. Firebase persiste la sesión por
+  // dispositivo y la restaura al recargar; si al cargar hay usuario de Auth y NO
+  // hay sesión activa (ni manual, ni localStorage, ni admin), restauramos el perfil
+  // y entramos a la app con el mismo flujo que el login manual (fromAuth:true, id:uid).
+  useEffect(()=>{
+    let unsub=null, cancelled=false, pollTimer=null;
+    const subscribe=()=>{
+      const authOnChange=window._fbAuthOnChange;
+      if(!authOnChange) return false;
+      unsub=authOnChange(async fbUser=>{
+        if(cancelled) return;
+        // Sin usuario de Firebase, o ya hay sesión activa (manual/localStorage/admin): no hacer nada
+        if(!fbUser||userRef.current) return;
+        const uid=fbUser.uid;
+        const email=(fbUser.email||'').toLowerCase().trim();
+        // Cargar el perfil (migra datos legados la primera vez), igual que enterWithUid del login
+        let profile=null;
+        const migrateFn=window._fbMigrateUser;
+        if(migrateFn){ try{ profile=await migrateFn(uid,email); }catch(_){} }
+        if(!profile){
+          const getFn=window._fbGetUser;
+          if(getFn){ try{ profile=await getFn(uid); }catch(_){} }
+        }
+        // Mientras tanto pudo entrar otra sesión o desmontarse el efecto
+        if(cancelled||userRef.current) return;
+        if(profile?.deleted||profile?.forceDelete) return; // cuenta desactivada por el admin
+        const u={email,fromAuth:true,...(profile||{}),id:uid,isAdmin:false};
+        login(u);
+      });
+      return true;
+    };
+    if(!subscribe()){
+      let elapsed=0;
+      pollTimer=setInterval(()=>{
+        if(subscribe()){clearInterval(pollTimer);}
+        else if((elapsed+=200)>=8000){clearInterval(pollTimer);}
+      },200);
+    }
+    return()=>{cancelled=true;clearInterval(pollTimer);unsub?.();};
+  },[]);
   // Re-verifica acceso en Firestore sin necesidad de cerrar sesión
   // Útil cuando el admin regala monedas mientras el usuario ya está en la app
   const recheckAccess=async()=>{
@@ -5727,6 +5770,9 @@ export default function App(){
 
   const logout=(reason='')=>{
     if(reason && typeof reason === 'string') setLogoutMsg(reason);
+    // Cerrar también la sesión de Firebase Auth (no afecta al admin, que no es usuario de Auth)
+    const authLogoutFn=window._fbAuthLogout;
+    if(authLogoutFn) try{ authLogoutFn(); }catch(_){}
     try{localStorage.removeItem('wc2026_current_user');}catch(e){}
     setUser(null);setScreen('auth');setMatch(null);
     setTab('home');setUserBets([]);setCredito(null);setBetsSaved(false);
