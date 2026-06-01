@@ -30,28 +30,40 @@ export const auth= getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
 
 // ── USUARIOS ────────────────────────────────────────────────────
+
+// Busca usuario por email (normalizado) — retorna el doc con más datos o null
+export async function findUserByEmail(email) {
+  if (!email) return null;
+  const normalizedEmail = email.toLowerCase().trim();
+  try {
+    const q = query(collection(db,'users'), where('email','==', normalizedEmail));
+    const snap = await getDocs(q);
+    if (snap.empty) return null;
+    // Preferir doc con pago o regalo; si no, el primero
+    const best = snap.docs.find(d => (d.data().paquetes > 0) || d.data().gifted)
+                 || snap.docs[0];
+    return { id: best.id, ...best.data() };
+  } catch(e) { console.warn('findUserByEmail error:', e); return null; }
+}
+
 export async function saveUserToFirestore(user) {
   if(!user?.id || !user?.email) return;
   const normalizedEmail = user.email.toLowerCase().trim();
   try {
     let targetId = user.id;
 
-    // 1. Check if user.id already has a Firestore doc — fast direct read, no query.
-    //    This is the common path (same device, same registration).
-    const directSnap = await getDoc(doc(db, 'users', user.id));
-    if (!directSnap.exists()) {
-      // 2. user.id is not in Firestore — this is a new ID (re-registration from
-      //    another device or cleared localStorage). Search by email to reuse the
-      //    existing doc instead of creating a duplicate.
-      const q = query(collection(db,'users'), where('email','==', normalizedEmail));
-      const snap = await getDocs(q);
-      if (!snap.empty) {
-        // Prefer the doc with payment data; fall back to the first one.
-        const best = snap.docs.find(d => (d.data().paquetes > 0) || d.data().gifted)
-                     || snap.docs[0];
-        targetId = best.id;
+    // SIEMPRE buscar primero por email para evitar duplicados
+    const existingByEmail = await findUserByEmail(normalizedEmail);
+    if (existingByEmail) {
+      // Ya existe un doc con este email — reutilizarlo
+      targetId = existingByEmail.id;
+    } else {
+      // No existe por email — verificar si user.id ya tiene doc (mismo dispositivo)
+      const directSnap = await getDoc(doc(db, 'users', user.id));
+      if (directSnap.exists()) {
+        targetId = user.id;
       }
-      // If snap is empty: truly new user — create with user.id (falls through below).
+      // Si tampoco existe por ID: usuario nuevo, usar user.id
     }
 
     // No incluir 'gifted' — solo giftCoinsInFirestore debe escribirlo.
@@ -63,7 +75,8 @@ export async function saveUserToFirestore(user) {
       sessionId: user.sessionId || '',
       updatedAt: new Date().toISOString(),
     }, { merge: true });
-  } catch(e) { console.warn('saveUser error:', e); }
+    return targetId;
+  } catch(e) { console.warn('saveUser error:', e); return null; }
 }
 
 export async function getAllUsersFromFirestore() {
@@ -83,16 +96,33 @@ export async function getUserFromFirestore(userId) {
 }
 
 export async function giftCoinsInFirestore(userId, gifted, giftedCoins=1000) {
-  if(!userId) return;
+  if(!userId) return null;
   try {
-    // setDoc+merge en vez de updateDoc: crea el documento si no existe todavía
-    // (usuarios nuevos pueden no tener doc en Firestore cuando el admin regala)
     await setDoc(doc(db,'users', userId), {
       gifted,
       giftedAt:    gifted ? new Date().toISOString() : null,
       giftedCoins: gifted ? giftedCoins : null,
     }, { merge: true });
-  } catch(e) { console.warn('giftCoins error:', e); }
+    return userId;
+  } catch(e) { console.warn('giftCoins error:', e); return null; }
+}
+
+// Regalo de monedas buscando por EMAIL (más seguro que por ID)
+export async function giftCoinsByEmail(email, gifted, giftedCoins=1000) {
+  if(!email) return null;
+  try {
+    const existing = await findUserByEmail(email);
+    if (!existing) {
+      console.warn('giftCoinsByEmail: usuario no encontrado:', email);
+      return null;
+    }
+    await setDoc(doc(db,'users', existing.id), {
+      gifted,
+      giftedAt:    gifted ? new Date().toISOString() : null,
+      giftedCoins: gifted ? giftedCoins : null,
+    }, { merge: true });
+    return existing.id;
+  } catch(e) { console.warn('giftCoinsByEmail error:', e); return null; }
 }
 
 // ── GRUPOS — usa el CÓDIGO como ID del documento ─────────────────

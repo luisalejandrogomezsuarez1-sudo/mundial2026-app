@@ -1,27 +1,31 @@
 import { useState, useEffect, useCallback, useRef, createContext, useContext } from "react";
 
 // ── Firebase ACTIVO ─────────────────────────────────────────────
-let fbSendMsg = null, fbSubscribeChat = null, fbSaveUser = null, fbGetAllUsers = null, fbGiftCoins = null, fbSaveGroup = null, fbGetGroupByCode = null, fbDeleteUser = null;
+let fbSendMsg = null, fbSubscribeChat = null, fbSaveUser = null, fbGetAllUsers = null, fbGiftCoins = null, fbGiftCoinsByEmail = null, fbFindUserByEmail = null, fbSaveGroup = null, fbGetGroupByCode = null, fbDeleteUser = null;
 import('./firebase.js').then(fb => {
-  fbSendMsg       = fb.sendChatMessage;
-  fbSubscribeChat = fb.subscribeToChatMessages;
-  fbSaveUser      = fb.saveUserToFirestore;
-  fbGetAllUsers   = fb.getAllUsersFromFirestore;
-  fbGiftCoins      = fb.giftCoinsInFirestore;
-  fbDeleteUser     = fb.deleteUserFromFirestore;
-  fbSaveGroup      = fb.saveGroupToFirestore;
-  fbGetGroupByCode = fb.getGroupByCode;
+  fbSendMsg         = fb.sendChatMessage;
+  fbSubscribeChat   = fb.subscribeToChatMessages;
+  fbSaveUser        = fb.saveUserToFirestore;
+  fbGetAllUsers     = fb.getAllUsersFromFirestore;
+  fbGiftCoins       = fb.giftCoinsInFirestore;
+  fbGiftCoinsByEmail= fb.giftCoinsByEmail;
+  fbFindUserByEmail = fb.findUserByEmail;
+  fbDeleteUser      = fb.deleteUserFromFirestore;
+  fbSaveGroup       = fb.saveGroupToFirestore;
+  fbGetGroupByCode  = fb.getGroupByCode;
   // Expose globally
-  window._fbGetAllUsers    = fb.getAllUsersFromFirestore;
-  window._fbSaveUser       = fb.saveUserToFirestore;
-  window._fbSaveGroup      = fb.saveGroupToFirestore;
-  window._fbGetGroupByCode = fb.getGroupByCode;
-  window._fbSendMsg        = fb.sendChatMessage;
-  window._fbSubscribeChat  = fb.subscribeToChatMessages;
-  window._fbReady          = true;
-  window._fbSubscribeLive  = fb.subscribeToLiveDoc;
-  window._fbGetUser        = fb.getUserFromFirestore; // 1 lectura (no getAllUsers)
-  window._fbSubscribeUser  = fb.subscribeToUserDoc;
+  window._fbGetAllUsers     = fb.getAllUsersFromFirestore;
+  window._fbSaveUser        = fb.saveUserToFirestore;
+  window._fbSaveGroup       = fb.saveGroupToFirestore;
+  window._fbGetGroupByCode  = fb.getGroupByCode;
+  window._fbSendMsg         = fb.sendChatMessage;
+  window._fbSubscribeChat   = fb.subscribeToChatMessages;
+  window._fbReady           = true;
+  window._fbSubscribeLive   = fb.subscribeToLiveDoc;
+  window._fbGetUser         = fb.getUserFromFirestore;
+  window._fbSubscribeUser   = fb.subscribeToUserDoc;
+  window._fbFindUserByEmail = fb.findUserByEmail;
+  window._fbGiftCoinsByEmail= fb.giftCoinsByEmail;
   console.log('🔥 Firebase conectado — mundial2026-15686');
 }).catch(e => console.warn('Firebase error:', e));
 
@@ -1537,9 +1541,30 @@ function Auth({onLogin,onLangChange=()=>{},logoutMsg='',onClearMsg=()=>{}}){
         body:JSON.stringify({email:newUser.email,name:newUser.name})}).catch(()=>{});
 
     }else{
-      // Login: find user
-      const found=dbFind(users,email);
-      if(!found||found.pass!==pass){
+      // Login: find user in localStorage first
+      let found=dbFind(users,email);
+      if(!found){
+        // No está en localStorage — buscar en Firestore (otro dispositivo o localStorage limpiado)
+        const findFn=window._fbFindUserByEmail;
+        if(findFn){
+          try{
+            const fsUser=await findFn(email);
+            if(fsUser && !fsUser.deleted && !fsUser.forceDelete){
+              // Usuario existe en Firestore — crear entrada local con su ID
+              // El usuario debe usar la misma contraseña con la que se registró
+              // Como no tenemos la contraseña en Firestore, pedimos que se registre de nuevo
+              // pero con el mismo email (saveUserToFirestore reutilizará el doc existente)
+              setLoading(false);
+              setErr('⚠️ Primera vez en este navegador. Usa "Registrarse" con el mismo correo y contraseña para sincronizar tu cuenta.');
+              return;
+            }
+          }catch(e){}
+        }
+        setLoading(false);
+        setErr('Correo o contraseña incorrectos');
+        return;
+      }
+      if(found.pass!==pass){
         setLoading(false);
         setErr('Correo o contraseña incorrectos');
         return;
@@ -3176,8 +3201,11 @@ function PerfilScreen({user,onLogout,lang='es'}){
                               setAdminDlg(null);
                               const ok=await dbRevokeGift(u.email);
                               if(ok){
-                                if(fbGiftCoins&&u.id) try{await fbGiftCoins(u.id,false);}catch(e){console.warn('fbGiftCoins error:',e);}
+                                // Usar email para encontrar el doc correcto en Firestore
+                                const giftFn=fbGiftCoinsByEmail||window._fbGiftCoinsByEmail;
+                                if(giftFn) try{await giftFn(u.email,false);}catch(e){console.warn('fbGiftCoinsByEmail error:',e);}
                                 const updated=await dbLoad();setDbUsers(updated);
+                                refreshAdminUsers();
                               }
                             }
                           });
@@ -3189,11 +3217,14 @@ function PerfilScreen({user,onLogout,lang='es'}){
                             onOk:async amount=>{
                               const ok=await dbGiftCoins(u.email,amount);
                               if(ok){
-                                if(fbGiftCoins&&u.id) try{await fbGiftCoins(u.id,true,amount);}catch(e){console.warn('fbGiftCoins error:',e);}
+                                // Usar email para encontrar el doc correcto en Firestore
+                                const giftFn=fbGiftCoinsByEmail||window._fbGiftCoinsByEmail;
+                                if(giftFn) try{await giftFn(u.email,true,amount);}catch(e){console.warn('fbGiftCoinsByEmail error:',e);}
                                 setAdminDlg(null);
                                 setAdminMsg(`✅ ${amount} monedas regaladas a ${u.name||u.email}`);
                                 setTimeout(()=>setAdminMsg(''),4000);
                                 const updated=await dbLoad();setDbUsers(updated);
+                                refreshAdminUsers();
                               }
                             }
                           });
@@ -5460,7 +5491,30 @@ export default function App(){
     const saveToFirestore = async(attempts=0) => {
       const saveFn=fbSaveUser||window._fbSaveUser;
       if(saveFn){
-        try{ await saveFn({...u, sessionId}); }
+        try{
+          const fsId=await saveFn({...u, sessionId});
+          if(fsId && fsId!==u.id){
+            // Firestore tiene un ID canónico diferente al local (re-registro desde otro dispositivo).
+            // Sincronizar localStorage y estado de React para que usen el ID de Firestore.
+            const canonUser={...u,id:fsId};
+            setUser(canonUser);
+            try{localStorage.setItem('wc2026_current_user',JSON.stringify(canonUser));}catch(e){}
+            const localDB=await dbLoad();
+            const myEntry=localDB.find(x=>x.id===u.id);
+            if(myEntry){
+              await dbSave([...localDB.filter(x=>x.id!==u.id&&x.id!==fsId),{...myEntry,id:fsId}]);
+              // Migrar claves de apuestas/sesión al nuevo ID
+              try{
+                ['wc2026_bets_','wc2026_saved_','wc2026_groups_'].forEach(prefix=>{
+                  const v=localStorage.getItem(prefix+u.id);
+                  if(v){localStorage.setItem(prefix+fsId,v);localStorage.removeItem(prefix+u.id);}
+                });
+                localStorage.removeItem('wc2026_session_'+u.id);
+                localStorage.setItem('wc2026_session_'+fsId,sessionId);
+              }catch(e){}
+            }
+          }
+        }
         catch(e){ console.warn('saveUser error:',e); }
       } else if(attempts < 10){
         setTimeout(()=>saveToFirestore(attempts+1), 600);
@@ -5662,23 +5716,45 @@ export default function App(){
     setTab('home');setUserBets([]);setCredito(null);setBetsSaved(false);
   };
 
-  // Expulsión en tiempo real: onSnapshot al doc del usuario activo
+  // Suscripción en tiempo real al doc del usuario: expulsión + regalo de monedas
   useEffect(()=>{
-    if(!user?.id||user.isAdmin) return;
+    if(!user?.id||!user?.email||user.isAdmin) return;
     let unsub=null;
     let cancelled=false;
     let pollTimer=null;
-    const doSubscribe=()=>{
-      const fn=window._fbSubscribeUser;
-      if(!fn) return;
-      unsub=fn(user.id,fsUser=>{
+    const doSubscribe=async()=>{
+      const subscribeFn=window._fbSubscribeUser;
+      const findFn=window._fbFindUserByEmail;
+      if(!subscribeFn) return;
+      // Encontrar el ID correcto en Firestore por email (puede diferir del local)
+      let targetId=user.id;
+      if(findFn){
+        try{
+          const fsUser=await findFn(user.email);
+          if(fsUser?.id) targetId=fsUser.id;
+        }catch(e){}
+      }
+      unsub=subscribeFn(targetId,fsUser=>{
         if(cancelled) return;
+        // Detectar eliminación
         if(fsUser?.forceDelete||fsUser?.deleted){
           dbLoad().then(allDB=>dbSave(allDB.filter(x=>x.id!==user.id))).catch(()=>{});
           ['wc2026_bets_','wc2026_saved_','wc2026_groups_','wc2026_session_'].forEach(k=>{
             try{localStorage.removeItem(k+user.id);}catch(e){}
           });
           logout('Tu cuenta fue eliminada. Puedes registrarte de nuevo con el mismo correo.');
+          return;
+        }
+        // Detectar regalo de monedas en tiempo real
+        if(fsUser?.gifted){
+          const gc=fsUser.giftedCoins||1000;
+          setCredito(prev=>{
+            if(prev?.gifted) return prev;
+            return {coins:gc+(fsUser.paquetes||0)*COINS_PER_PAGO,paquetes:fsUser.paquetes||1,paidAt:Date.now(),gifted:true,giftedCoins:gc};
+          });
+          dbLoad().then(localUsers=>{
+            dbSave(localUsers.map(x=>x.email?.toLowerCase()===user.email?.toLowerCase()?{...x,gifted:true,giftedCoins:gc}:x));
+          });
         }
       });
     };
@@ -5692,7 +5768,7 @@ export default function App(){
       },200);
     }
     return()=>{cancelled=true;clearInterval(pollTimer);unsub?.();};
-  },[user?.id]);
+  },[user?.id,user?.email]);
 
   // Session check cada 5 min — usa 1 sola lectura (getUserFromFirestore) en vez de getAllUsers
   useEffect(()=>{
