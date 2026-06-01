@@ -635,6 +635,29 @@ app.post('/api/welcome-email', async(req,res)=>{
 });
 
 
+// ── Limpiar documentos duplicados para un email (Admin) ──────────────────────
+app.post('/api/admin/cleanup-user-email', async (req, res) => {
+  if (!ADMIN_KEY || req.body.key !== ADMIN_KEY)
+    return res.status(403).json({ error: 'Forbidden' });
+  const { email, keepId } = req.body;
+  if (!email || !keepId || !db)
+    return res.status(400).json({ error: 'Faltan email, keepId o DB no disponible' });
+  try {
+    const snap = await db.collection('users').where('email', '==', email).get();
+    const toDelete = snap.docs.filter(d => d.id !== keepId);
+    if (toDelete.length > 0) {
+      const batch = db.batch();
+      toDelete.forEach(d => batch.delete(d.ref));
+      await batch.commit();
+    }
+    console.log(`[cleanup-user-email] email=${email} kept=${keepId} deleted=${toDelete.length}`);
+    res.json({ ok: true, total: snap.docs.length, deleted: toDelete.length, kept: keepId,
+               deletedIds: toDelete.map(d => d.id) });
+  } catch(e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 // ── MercadoPago Checkout Pro ─────────────────────────────────────────────────
 app.post('/api/mp/create-preference', async (req, res) => {
   const { userId, userEmail } = req.body;

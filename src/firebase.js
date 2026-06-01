@@ -31,11 +31,24 @@ export const googleProvider = new GoogleAuthProvider();
 
 // ── USUARIOS ────────────────────────────────────────────────────
 export async function saveUserToFirestore(user) {
-  if(!user?.id) return;
+  if(!user?.id || !user?.email) return;
   try {
-    // No incluir 'gifted' aquí — solo giftCoinsInFirestore debe escribirlo.
-    // Si se incluye con false, sobreescribe el regalo que el admin puso.
-    await setDoc(doc(db,'users', user.id), {
+    // Buscar si ya existe un documento con este email para evitar duplicados
+    // (ocurre cuando el mismo usuario se registra desde otro dispositivo)
+    let targetId = user.id;
+    try {
+      const q = query(collection(db,'users'), where('email','==', user.email));
+      const snap = await getDocs(q);
+      if (!snap.empty) {
+        // Preferir el doc con más datos (paquetes > 0 o gifted), si no, el primero
+        const best = snap.docs.find(d => (d.data().paquetes > 0) || d.data().gifted)
+                     || snap.docs[0];
+        targetId = best.id;
+      }
+    } catch(e) { /* si falla la query, usar user.id */ }
+
+    // No incluir 'gifted' — solo giftCoinsInFirestore debe escribirlo.
+    await setDoc(doc(db,'users', targetId), {
       name:      user.name      || '',
       email:     user.email     || '',
       paquetes:  user.paquetes  || 0,
