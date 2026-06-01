@@ -1477,7 +1477,7 @@ function Auth({onLogin,onLangChange=()=>{},logoutMsg='',onClearMsg=()=>{}}){
       const {ok}=await r.json();
       if(ok){
         setLoading(false);
-        onLogin({email,name:'Administrador General',isAdmin:true,
+        onLogin({id:'admin',email,name:'Administrador General',isAdmin:true,
                  nat:'México',gen:'Prefiero no decir'});
         return;
       }
@@ -1550,19 +1550,20 @@ function Auth({onLogin,onLangChange=()=>{},logoutMsg='',onClearMsg=()=>{}}){
           try{
             const fsUser=await findFn(email);
             if(fsUser && !fsUser.deleted && !fsUser.forceDelete){
-              // Usuario existe en Firestore — crear entrada local con su ID
-              // El usuario debe usar la misma contraseña con la que se registró
-              // Como no tenemos la contraseña en Firestore, pedimos que se registre de nuevo
-              // pero con el mismo email (saveUserToFirestore reutilizará el doc existente)
-              setLoading(false);
-              setErr('⚠️ Primera vez en este navegador. Usa "Registrarse" con el mismo correo y contraseña para sincronizar tu cuenta.');
-              return;
+              // Primera vez en este navegador: la cuenta ya existe en Firestore.
+              // Recreamos la entrada local con los datos de Firestore + la contraseña
+              // tecleada. (La verificación de credenciales de la app es client-side y
+              // vive en localStorage; Firestore no guarda la contraseña.)
+              found={...fsUser,pass};
+              await dbSave([...users.filter(x=>x.email?.toLowerCase()!==email),found]);
             }
           }catch(e){}
         }
-        setLoading(false);
-        setErr('Correo o contraseña incorrectos');
-        return;
+        if(!found){
+          setLoading(false);
+          setErr('Correo o contraseña incorrectos');
+          return;
+        }
       }
       if(found.pass!==pass){
         setLoading(false);
@@ -5487,6 +5488,16 @@ export default function App(){
     localStorage.setItem('wc2026_session_'+u.id, sessionId);
     // Persistir sesión para restauración automática al recargar
     try{localStorage.setItem('wc2026_current_user',JSON.stringify(u));}catch(e){}
+    // Persistir/actualizar al usuario en la DB local (upsert por email). Antes esto
+    // solo ocurría en el registro o en el bloque de migración canónica, dejando
+    // wc2026_users_db vacío en una máquina nueva (admin o usuario sincronizado
+    // desde Firestore al iniciar sesión por primera vez en este navegador).
+    try{
+      const localDB=await dbLoad();
+      const prev=localDB.find(x=>x.email?.toLowerCase()===u.email?.toLowerCase());
+      const others=localDB.filter(x=>x.email?.toLowerCase()!==u.email?.toLowerCase());
+      await dbSave([...others,{...prev,...u}]);
+    }catch(e){}
     // Guardar en Firestore — con reintentos si Firebase aún carga
     const saveToFirestore = async(attempts=0) => {
       const saveFn=fbSaveUser||window._fbSaveUser;
@@ -5520,7 +5531,9 @@ export default function App(){
         setTimeout(()=>saveToFirestore(attempts+1), 600);
       }
     };
-    saveToFirestore();
+    // El admin no se guarda como documento de usuario en Firestore (evita que
+    // aparezca listado en su propio panel). Su sesión sí queda en localStorage.
+    if(!u.isAdmin) saveToFirestore();
     // Admin: verificar flags + TAMBIÉN detectar regalo (gifted) desde Firestore
     const checkAdminFlags=async(attempts=0)=>{
       const getFn=fbGetAllUsers||window._fbGetAllUsers;
