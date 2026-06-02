@@ -2009,7 +2009,12 @@ function MatchDetail({m,onBack}){
 
 // ── Countdown to first match ─────────────────────
 function Countdown(){
-  const FIRST_MATCH=new Date('2026-06-12T00:00:00Z'); // Jun 11 19:00 CDT (UTC-5)
+  // Derivado del primer partido del calendario (México vs Sudáfrica, id:1).
+  // Los horarios de NEXT_MATCHES están en hora CDMX = UTC-6 (México no aplica
+  // horario de verano desde 2022), por eso fijamos el offset -06:00:
+  // 13:00 CDMX → instante UTC 2026-06-11T19:00:00Z.
+  const FM=NEXT_MATCHES[0];
+  const FIRST_MATCH=new Date(`${FM.isoDate}T${FM.time}:00-06:00`);
   const [t,setT]=useState(null);
   useEffect(()=>{
     const calc=()=>{
@@ -2039,7 +2044,7 @@ function Countdown(){
           ⏱️ Cuenta regresiva · Primer partido
         </div>
         <div style={{fontSize:12,color:'var(--dim)',marginBottom:12}}>
-          🇲🇽 México · Estadio Azteca · 11 Jun 2026 · 19:00 h
+          🇲🇽 México · Estadio Azteca · 11 Jun 2026 · {FM.time} h
         </div>
         <div style={{display:'flex',justifyContent:'center',gap:8}}>
           {[['DÍAS',t.d],['HRS',t.h],['MIN',t.m],['SEG',t.s]].map(([label,val])=>(
