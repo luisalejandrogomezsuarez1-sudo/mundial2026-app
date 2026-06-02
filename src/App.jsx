@@ -2658,62 +2658,66 @@ function GolesScreen(){
 
   const top3=sorted.slice(0,3);
   const rest=sorted.slice(3);
-  // Mientras nadie anote, no se destaca el podio: todos van a la lista (numerada desde 1).
-  // Conforme anoten (anyGoals), aparece el podio top-3 y la lista arranca en el 4º.
-  const listPlayers=anyGoals?rest:sorted;
-  const listStart=anyGoals?4:1;
+  // El podio (3 posiciones) se muestra SIEMPRE; cada posición se llena solo con un
+  // goleador real (g>0) y si no, muestra un placeholder "Por definir".
+  // La lista muestra a los goleadores reales del 4º en adelante; si nadie ha anotado, queda vacía.
+  const listPlayers=rest.filter(p=>p.g>0);
 
-  // ── Lugar del podio (top 3) ──
+  // ── Lugar del podio (top 3) — se renderiza siempre; placeholder si la posición está vacía ──
   const PodiumSpot=({p,rank})=>{
-    if(!p) return <div style={{flex:1}}/>;
-    const active=sel===p.n;
     const col=rankColors[rank];
     const pedestalH=rank===1?92:rank===2?68:52;
     const avatarSz=rank===1?80:66;
     const flagSz=rank===1?52:44;
+    const filled=!!(p&&p.g>0);            // posición ocupada solo por un goleador real
+    const active=filled&&sel===p.n;
     return(
-      <div onClick={()=>setSel(active?null:p.n)}
+      <div onClick={filled?()=>setSel(active?null:p.n):undefined}
         style={{flex:1,minWidth:0,display:'flex',flexDirection:'column',
-          alignItems:'center',justifyContent:'flex-end',cursor:'pointer'}}>
-        {/* Medalla */}
+          alignItems:'center',justifyContent:'flex-end',
+          cursor:filled?'pointer':'default'}}>
+        {/* Medalla — siempre visible para ver el estrado completo */}
         <div style={{fontSize:rank===1?28:22,lineHeight:1,marginBottom:3,
-          filter:'drop-shadow(0 2px 5px rgba(0,0,0,.45))'}}>
-          {anyGoals?medal[rank]:'⚽'}
+          filter:'drop-shadow(0 2px 5px rgba(0,0,0,.45))',opacity:filled?1:.5}}>
+          {medal[rank]}
         </div>
-        {/* Bandera del jugador */}
+        {/* Avatar / bandera (placeholder gris si la posición está vacía) */}
         <div style={{width:avatarSz,height:avatarSz,borderRadius:'50%',
-          border:`3px solid ${active?'var(--gold)':col}`,
-          boxShadow:active?`0 0 18px ${col}aa`:`0 5px 14px rgba(0,0,0,.35)`,
-          background:'var(--surf2)',display:'flex',alignItems:'center',
-          justifyContent:'center',overflow:'hidden',flexShrink:0,
+          border:`3px solid ${active?'var(--gold)':filled?col:'var(--br)'}`,
+          boxShadow:active?`0 0 18px ${col}aa`:filled?`0 5px 14px rgba(0,0,0,.35)`:'none',
+          background:filled?'var(--surf2)':'rgba(255,255,255,.03)',
+          display:'flex',alignItems:'center',justifyContent:'center',
+          overflow:'hidden',flexShrink:0,
           transition:'border-color .15s,box-shadow .15s'}}>
-          <span style={{fontSize:flagSz,lineHeight:1,
-            filter:'drop-shadow(0 3px 6px rgba(0,0,0,.4))'}}>
-            {FLAGS[p.team]||'🏳'}
+          <span style={{fontSize:filled?flagSz:Math.round(flagSz*.7),lineHeight:1,
+            filter:'drop-shadow(0 3px 6px rgba(0,0,0,.4))',
+            color:'var(--muted)',opacity:filled?1:.55}}>
+            {filled?(FLAGS[p.team]||'🏳'):'—'}
           </span>
         </div>
-        {/* Nombre */}
+        {/* Nombre / "Por definir" */}
         <div style={{fontSize:rank===1?13:11,fontWeight:700,marginTop:7,
-          color:active?'var(--gold)':'var(--txt)',textAlign:'center',
+          color:active?'var(--gold)':filled?'var(--txt)':'var(--muted)',textAlign:'center',
           maxWidth:'100%',whiteSpace:'nowrap',overflow:'hidden',
-          textOverflow:'ellipsis',padding:'0 2px'}}>
-          {p.n.split(' ').slice(-1)[0]}
+          textOverflow:'ellipsis',padding:'0 2px',fontStyle:filled?'normal':'italic'}}>
+          {filled?p.n.split(' ').slice(-1)[0]:'Por definir'}
         </div>
         {/* Goles */}
         <div style={{display:'flex',alignItems:'baseline',gap:3,marginTop:2,marginBottom:7}}>
-          <span style={{fontFamily:'var(--ff)',fontSize:rank===1?20:16,color:col,lineHeight:1}}>
-            {p.g}
+          <span style={{fontFamily:'var(--ff)',fontSize:rank===1?20:16,
+            color:filled?col:'var(--muted)',lineHeight:1}}>
+            {filled?p.g:0}
           </span>
           <span style={{fontSize:10,color:'var(--muted)'}}>⚽</span>
         </div>
-        {/* Pedestal */}
+        {/* Pedestal — color de la posición siempre, atenuado si está vacío */}
         <div style={{width:'100%',height:pedestalH,
-          background:`linear-gradient(180deg,${col}3a,${col}10)`,
-          border:`1px solid ${col}55`,borderBottom:'none',
+          background:`linear-gradient(180deg,${col}${filled?'3a':'1c'},${col}${filled?'10':'08'})`,
+          border:`1px solid ${col}${filled?'55':'30'}`,borderBottom:'none',
           borderRadius:'10px 10px 0 0',display:'flex',
           alignItems:'flex-start',justifyContent:'center',paddingTop:9}}>
           <span style={{fontFamily:'var(--ff)',fontSize:rank===1?32:24,
-            color:col,opacity:.92,textShadow:`0 2px 10px ${col}66`}}>
+            color:col,opacity:filled?.92:.5,textShadow:`0 2px 10px ${col}66`}}>
             {rank}
           </span>
         </div>
@@ -2777,21 +2781,19 @@ function GolesScreen(){
           </div>
         )}
 
-        {/* ── PODIO — solo cuando ya hay goles (2º izq · 1º centro · 3º der) ── */}
-        {anyGoals&&(
-          <div style={{display:'flex',alignItems:'flex-end',gap:8,
-            padding:'8px 4px 0',marginBottom:18}}>
-            <PodiumSpot p={top3[1]} rank={2}/>
-            <PodiumSpot p={top3[0]} rank={1}/>
-            <PodiumSpot p={top3[2]} rank={3}/>
-          </div>
-        )}
+        {/* ── PODIO — siempre visible (2º izq · 1º centro · 3º der); placeholder si falta jugador ── */}
+        <div style={{display:'flex',alignItems:'flex-end',gap:8,
+          padding:'8px 4px 0',marginBottom:18}}>
+          <PodiumSpot p={top3[1]} rank={2}/>
+          <PodiumSpot p={top3[0]} rank={1}/>
+          <PodiumSpot p={top3[2]} rank={3}/>
+        </div>
 
-        {/* ── LISTA — todos si nadie anota; del 4º en adelante si ya hay podio ── */}
+        {/* ── LISTA — goleadores reales del 4º en adelante ── */}
         {listPlayers.length>0&&(
           <div style={{display:'flex',flexDirection:'column',gap:8}}>
             {listPlayers.map((p,i)=>(
-              <ListRow key={p.n} p={p} rank={i+listStart}/>
+              <ListRow key={p.n} p={p} rank={i+4}/>
             ))}
           </div>
         )}
