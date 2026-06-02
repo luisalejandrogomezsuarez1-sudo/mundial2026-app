@@ -2656,44 +2656,99 @@ function GolesScreen(){
   const rankColors={1:'#F0A500',2:'#C0C0C0',3:'#CD7F32'};
   const medal={1:'🥇',2:'🥈',3:'🥉'};
 
-  const PlayerCard=({p,rank})=>{
+  const top3=sorted.slice(0,3);
+  const rest=sorted.slice(3);
+
+  // ── Lugar del podio (top 3) ──
+  const PodiumSpot=({p,rank})=>{
+    if(!p) return <div style={{flex:1}}/>;
     const active=sel===p.n;
-    const borderCol=rank<=3?rankColors[rank]+'66':'var(--br)';
+    const col=rankColors[rank];
+    const pedestalH=rank===1?92:rank===2?68:52;
+    const avatarSz=rank===1?80:66;
+    const flagSz=rank===1?52:44;
     return(
       <div onClick={()=>setSel(active?null:p.n)}
-        style={{display:'flex',flexDirection:'column',alignItems:'center',
-          cursor:'pointer',position:'relative',width:'100%'}}>
-        {/* Badge de posición */}
-        <div style={{position:'absolute',top:-8,left:'50%',transform:'translateX(-50%)',
-          zIndex:3,background:rank<=3?rankColors[rank]:'var(--surf2)',
-          color:rank<=3?'#000':'var(--muted)',fontFamily:'var(--ff)',
-          fontSize:rank<=3?12:10,letterSpacing:.5,padding:'2px 9px',
-          borderRadius:10,boxShadow:'0 2px 6px rgba(0,0,0,.3)',whiteSpace:'nowrap'}}>
-          {anyGoals?(rank<=3?medal[rank]:`#${rank}`):'–'}
+        style={{flex:1,minWidth:0,display:'flex',flexDirection:'column',
+          alignItems:'center',justifyContent:'flex-end',cursor:'pointer'}}>
+        {/* Medalla */}
+        <div style={{fontSize:rank===1?28:22,lineHeight:1,marginBottom:3,
+          filter:'drop-shadow(0 2px 5px rgba(0,0,0,.45))'}}>
+          {anyGoals?medal[rank]:'⚽'}
         </div>
-        {/* Bandera */}
-        <div style={{width:'100%',aspectRatio:'1/1.15',borderRadius:10,overflow:'hidden',
-          border:`2px solid ${active?'var(--gold)':borderCol}`,
-          boxShadow:active?'0 0 12px rgba(240,165,0,.4)':'0 4px 10px rgba(0,0,0,.25)',
-          marginTop:8,display:'flex',alignItems:'center',justifyContent:'center',
-          background:'var(--surf2)',transition:'border-color .15s,box-shadow .15s'}}>
-          <span style={{fontSize:rank<=3?52:40,lineHeight:1,filter:'drop-shadow(0 3px 6px rgba(0,0,0,.4))'}}>
+        {/* Bandera del jugador */}
+        <div style={{width:avatarSz,height:avatarSz,borderRadius:'50%',
+          border:`3px solid ${active?'var(--gold)':col}`,
+          boxShadow:active?`0 0 18px ${col}aa`:`0 5px 14px rgba(0,0,0,.35)`,
+          background:'var(--surf2)',display:'flex',alignItems:'center',
+          justifyContent:'center',overflow:'hidden',flexShrink:0,
+          transition:'border-color .15s,box-shadow .15s'}}>
+          <span style={{fontSize:flagSz,lineHeight:1,
+            filter:'drop-shadow(0 3px 6px rgba(0,0,0,.4))'}}>
             {FLAGS[p.team]||'🏳'}
           </span>
         </div>
-        {/* Nombre y goles */}
-        <div style={{width:'100%',background:'var(--surf)',borderRadius:'0 0 8px 8px',
-          border:`1px solid ${active?'var(--gold)':borderCol}`,
-          borderTop:'none',padding:'4px 4px 5px',textAlign:'center',transition:'border-color .15s'}}>
-          <div style={{fontSize:9,fontWeight:700,color:active?'var(--gold)':'var(--txt)',
+        {/* Nombre */}
+        <div style={{fontSize:rank===1?13:11,fontWeight:700,marginTop:7,
+          color:active?'var(--gold)':'var(--txt)',textAlign:'center',
+          maxWidth:'100%',whiteSpace:'nowrap',overflow:'hidden',
+          textOverflow:'ellipsis',padding:'0 2px'}}>
+          {p.n.split(' ').slice(-1)[0]}
+        </div>
+        {/* Goles */}
+        <div style={{display:'flex',alignItems:'baseline',gap:3,marginTop:2,marginBottom:7}}>
+          <span style={{fontFamily:'var(--ff)',fontSize:rank===1?20:16,color:col,lineHeight:1}}>
+            {p.g}
+          </span>
+          <span style={{fontSize:10,color:'var(--muted)'}}>⚽</span>
+        </div>
+        {/* Pedestal */}
+        <div style={{width:'100%',height:pedestalH,
+          background:`linear-gradient(180deg,${col}3a,${col}10)`,
+          border:`1px solid ${col}55`,borderBottom:'none',
+          borderRadius:'10px 10px 0 0',display:'flex',
+          alignItems:'flex-start',justifyContent:'center',paddingTop:9}}>
+          <span style={{fontFamily:'var(--ff)',fontSize:rank===1?32:24,
+            color:col,opacity:.92,textShadow:`0 2px 10px ${col}66`}}>
+            {rank}
+          </span>
+        </div>
+      </div>
+    );
+  };
+
+  // ── Renglón de la lista (4º en adelante) ──
+  const ListRow=({p,rank})=>{
+    const active=sel===p.n;
+    return(
+      <div onClick={()=>setSel(active?null:p.n)}
+        style={{display:'flex',alignItems:'center',gap:12,
+          background:active?'rgba(240,165,0,.08)':'var(--surf)',
+          border:`1px solid ${active?'var(--gold)':'var(--br)'}`,
+          borderRadius:12,padding:'10px 14px',cursor:'pointer',
+          transition:'background .15s,border-color .15s'}}>
+        {/* Posición */}
+        <div style={{fontFamily:'var(--ff)',fontSize:15,color:'var(--muted)',
+          minWidth:22,textAlign:'center',flexShrink:0}}>{rank}</div>
+        {/* Bandera */}
+        <span style={{fontSize:30,lineHeight:1,flexShrink:0,
+          filter:'drop-shadow(0 2px 4px rgba(0,0,0,.3))'}}>
+          {FLAGS[p.team]||'🏳'}
+        </span>
+        {/* Nombre + equipo */}
+        <div style={{flex:1,minWidth:0}}>
+          <div style={{fontSize:14,fontWeight:700,
+            color:active?'var(--gold)':'var(--txt)',
             whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>
-            {p.n.split(' ').slice(-1)[0].toUpperCase()}
+            {p.n}
           </div>
-          <div style={{display:'flex',justifyContent:'center',gap:4,marginTop:1}}>
-            <span style={{fontSize:11,fontFamily:'var(--ff)',
-              color:p.g>0?'var(--gold)':'var(--muted)'}}>{p.g}⚽</span>
-            {p.a>0&&<span style={{fontSize:9,color:'var(--acc)'}}>{p.a}A</span>}
-          </div>
+          <div style={{fontSize:10,color:'var(--muted)',marginTop:1}}>{p.team}</div>
+        </div>
+        {/* Goles */}
+        <div style={{display:'flex',alignItems:'baseline',gap:3,flexShrink:0}}>
+          <span style={{fontFamily:'var(--ff)',fontSize:18,
+            color:p.g>0?'var(--gold)':'var(--muted)'}}>{p.g}</span>
+          <span style={{fontSize:11,color:'var(--muted)'}}>⚽</span>
         </div>
       </div>
     );
@@ -2709,7 +2764,6 @@ function GolesScreen(){
         </div>
       </div>
 
-      {/* ── GRID ÚNICO — todos los jugadores ── */}
       <div style={{padding:'0 12px 24px'}}>
         {!anyGoals&&(
           <div style={{fontSize:11,color:'var(--muted)',textAlign:'center',
@@ -2718,11 +2772,23 @@ function GolesScreen(){
             ⏳ El ranking se actualizará conforme anoten goles
           </div>
         )}
-        <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:10}}>
-          {sorted.map((p,i)=>(
-            <PlayerCard key={p.n} p={p} rank={i+1}/>
-          ))}
+
+        {/* ── PODIO — top 3 (2º izq · 1º centro · 3º der) ── */}
+        <div style={{display:'flex',alignItems:'flex-end',gap:8,
+          padding:'8px 4px 0',marginBottom:18}}>
+          <PodiumSpot p={top3[1]} rank={2}/>
+          <PodiumSpot p={top3[0]} rank={1}/>
+          <PodiumSpot p={top3[2]} rank={3}/>
         </div>
+
+        {/* ── LISTA — 4º en adelante ── */}
+        {rest.length>0&&(
+          <div style={{display:'flex',flexDirection:'column',gap:8}}>
+            {rest.map((p,i)=>(
+              <ListRow key={p.n} p={p} rank={i+4}/>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* ── MODAL BIO — siempre visible en pantalla ── */}
