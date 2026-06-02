@@ -194,12 +194,17 @@ export async function getAllUsersFromFirestore() {
     // Deduplicar por email: cuando existen el doc viejo (u_TIMESTAMP) y el canónico
     // (u_luis_at_gmail_com) para el mismo email, el canónico siempre gana.
     // Sin esto, el doc viejo con gifted:true puede sobreescribir el canónico con gifted:false.
-    const isCanonical = id => id.includes('_at_');
+    // Desempate por email: gana el doc con MÁS datos reales (pago/regalo/paquetes),
+    // no ciegamente el canónico. Los pagos reales se acreditan en users/{uid} de Auth
+    // (id sin '_at_'), así que priorizar el canónico hacía que el panel leyera un doc
+    // viejo sin totalPagado → ingresos en $0. Puntaje: pago > regalo > paquetes > recencia.
+    const score = d => (d.totalPagado||0)*1e6 + (d.gifted?5e5:0) + (d.paquetes||0)*1e3
+                       + (d.updatedAt ? Date.parse(d.updatedAt)/1e9 : 0);
     const byEmail = new Map();
     docs.forEach(d => {
       const key = d.email?.toLowerCase() || d.id; // agrupar por email; sin email → por ID
       const prev = byEmail.get(key);
-      if (!prev || isCanonical(d.id)) byEmail.set(key, d); // el canónico siempre reemplaza al viejo
+      if (!prev || score(d) > score(prev)) byEmail.set(key, d); // gana el de más datos reales
     });
     return [...byEmail.values()];
   } catch(e) { console.warn('getUsers error:', e); return []; }

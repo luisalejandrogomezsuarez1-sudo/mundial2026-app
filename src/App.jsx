@@ -1018,6 +1018,7 @@ const GRP_WIN=[
 
 // ── Coin System ───────────────────────────────────
 const COINS_PER_PAGO=1000; // 1 pago de $30 MXN = 1000 monedas
+const PRECIO_PAQUETE=30; // MXN por paquete — fuente única para ingresos del panel
 // 72 partidos × (1X2:7 + BTTS:6=13) = 936
 // Fijos: campeon:6 + bota:6 + balon:4 + gol1:15 + gol2:4 + gol3:5 + grupos(12×2):24 = 64
 // Total: 936 + 64 = 1000 exacto ✓
@@ -1073,7 +1074,7 @@ const dbUpdatePaquetes=async email=>{
         ?{...u,
           paquetes:(u.paquetes||0)+1,
           lastPayment:new Date().toISOString(),
-          totalPagado:((u.paquetes||0)+1)*20}
+          totalPagado:((u.paquetes||0)+1)*PRECIO_PAQUETE}
         :u
     );
     await dbSave(updated);
@@ -3014,7 +3015,7 @@ function PerfilScreen({user,onLogout,lang='es'}){
                 ['🔮','Con paquete',dbUsers.filter(u=>u.paquetes>0).length,'var(--gold)'],
                 ['⏳','Sin paquete',dbUsers.filter(u=>!u.paquetes&&!u.gifted).length,'var(--muted)'],
                 ['🎁','Monedas regalo',dbUsers.filter(u=>u.gifted).length,'var(--gold)'],
-                ['💰','Ingresos MXN','$'+(dbUsers.reduce((s,u)=>s+(u.totalPagado||0),0)).toLocaleString(),'var(--grn)'],
+                ['💰','Ingresos MXN','$'+(dbUsers.reduce((s,u)=>s+((u.paquetes||0)*PRECIO_PAQUETE),0)).toLocaleString(),'var(--grn)'],
               ].map(([ic,lb,val,col])=>(
                 <div key={lb} style={{background:'var(--surf)',borderRadius:11,
                   padding:'12px 10px',border:'1px solid var(--br)',textAlign:'center'}}>
@@ -3151,8 +3152,8 @@ function PerfilScreen({user,onLogout,lang='es'}){
                     {/* Total pagado */}
                     <div style={{textAlign:'center',flexShrink:0,minWidth:44}}>
                       <div style={{fontSize:11,fontWeight:700,
-                        color:u.totalPagado>0?'var(--grn)':'var(--muted)'}}>
-                        {u.totalPagado>0?'$'+(u.totalPagado||0):'—'}
+                        color:(u.paquetes||0)>0?'var(--grn)':'var(--muted)'}}>
+                        {(u.paquetes||0)>0?'$'+((u.paquetes||0)*PRECIO_PAQUETE):'—'}
                       </div>
                       <div style={{fontSize:8,color:'var(--muted)',fontWeight:600}}>MXN</div>
                     </div>
@@ -3228,7 +3229,7 @@ function PerfilScreen({user,onLogout,lang='es'}){
             {/* ── CSV Export ── */}
             <button onClick={()=>{
               const totalPaq=dbUsers.reduce((s,u)=>s+(u.paquetes||0),0);
-              const totalIngresos=dbUsers.reduce((s,u)=>s+(u.totalPagado||0),0);
+              const totalIngresos=dbUsers.reduce((s,u)=>s+((u.paquetes||0)*PRECIO_PAQUETE),0);
               const conPaq=dbUsers.filter(u=>u.paquetes>0).length;
               const sinPaq=dbUsers.filter(u=>!u.paquetes||u.paquetes===0).length;
               const conv=dbUsers.length?Math.round(conPaq/dbUsers.length*100):0;
@@ -3257,7 +3258,7 @@ function PerfilScreen({user,onLogout,lang='es'}){
                   u.createdAt?new Date(u.createdAt).toLocaleDateString('es'):'',
                   u.paquetes||0,
                   u.lastPayment?new Date(u.lastPayment).toLocaleDateString('es'):'Sin pago',
-                  '$'+(u.totalPagado||0),
+                  '$'+((u.paquetes||0)*PRECIO_PAQUETE),
                 ].join(',')),
               ];
               console.log(lines.join('\n'));
