@@ -2660,8 +2660,9 @@ function GolesScreen(){
   const rest=sorted.slice(3);
   // El podio (3 posiciones) se muestra SIEMPRE; cada posición se llena solo con un
   // goleador real (g>0) y si no, muestra un placeholder "Por definir".
-  // La lista muestra a los goleadores reales del 4º en adelante; si nadie ha anotado, queda vacía.
-  const listPlayers=rest.filter(p=>p.g>0);
+  // La lista muestra a TODOS los jugadores del 4º en adelante (incluidos los de 0 goles);
+  // conforme anoten, 'sorted' los reordena por goles y pueden subir al podio.
+  const listPlayers=rest;
 
   // ── Lugar del podio (top 3) — se renderiza siempre; placeholder si la posición está vacía ──
   const PodiumSpot=({p,rank})=>{
@@ -2789,13 +2790,19 @@ function GolesScreen(){
           <PodiumSpot p={top3[2]} rank={3}/>
         </div>
 
-        {/* ── LISTA — goleadores reales del 4º en adelante ── */}
+        {/* ── LISTA — todos los jugadores del 4º en adelante (incl. 0 goles) ── */}
         {listPlayers.length>0&&(
-          <div style={{display:'flex',flexDirection:'column',gap:8}}>
-            {listPlayers.map((p,i)=>(
-              <ListRow key={p.n} p={p} rank={i+4}/>
-            ))}
-          </div>
+          <>
+            <div style={{fontFamily:'var(--ff)',fontSize:15,letterSpacing:1.5,
+              color:'var(--gold)',margin:'4px 2px 10px'}}>
+              Posibles goleadores
+            </div>
+            <div style={{display:'flex',flexDirection:'column',gap:8}}>
+              {listPlayers.map((p,i)=>(
+                <ListRow key={p.n} p={p} rank={i+4}/>
+              ))}
+            </div>
+          </>
         )}
       </div>
 
