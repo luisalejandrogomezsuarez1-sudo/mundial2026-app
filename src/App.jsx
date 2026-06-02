@@ -5982,13 +5982,6 @@ export default function App(){
                 <div style={{fontFamily:'var(--ff)',fontSize:26,color:'var(--grn)',letterSpacing:1}}>
                   PAGO EXITOSO
                 </div>
-                <div style={{background:'rgba(30,198,108,.1)',border:'1px solid rgba(30,198,108,.3)',
-                  borderRadius:14,padding:'14px 28px'}}>
-                  <div style={{fontFamily:'var(--ff)',fontSize:40,color:'var(--gold)'}}>
-                    🪙 {(credito?.coins||COINS_PER_PAGO).toLocaleString()}
-                  </div>
-                  <div style={{fontSize:12,color:'var(--dim)',marginTop:4}}>monedas en tu cuenta</div>
-                </div>
                 <button onClick={()=>setMpVerify(null)}
                   style={{background:'var(--gold)',color:'#000',border:'none',borderRadius:12,
                     padding:'14px 32px',fontFamily:'var(--ff)',fontSize:18,cursor:'pointer'}}>
