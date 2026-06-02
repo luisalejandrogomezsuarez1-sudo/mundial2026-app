@@ -581,7 +581,7 @@ app.post('/api/welcome-email', async(req,res)=>{
 <body>
 <div class="wrap">
   <div class="logo">⚽ MUNDIAL 2026</div>
-  <div class="sub">FIFA WORLD CUP · USA · MÉXICO · CANADÁ</div>
+  <div class="sub">MUNDIAL DE FÚTBOL · USA · MÉXICO · CANADÁ</div>
   <div class="card">
     <h1>¡Bienvenido, ${displayName}! 🎉</h1>
     <p>Gracias por unirte a <strong>Mundial 2026</strong>, la app para vivir el torneo más grande del mundo en tiempo real.</p>

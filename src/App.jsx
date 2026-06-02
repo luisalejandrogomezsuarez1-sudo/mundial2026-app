@@ -82,7 +82,7 @@ const TRANSLATIONS={
     wc_starts:'El Mundial comienza',live_soon:'Los marcadores en vivo aparecerán aquí',
     live_now:'EN VIVO',updated_at:'Actualizado:',auto_refresh:'Auto-refresh 30s',
     live_info:'Los goles, tarjetas y estadísticas se actualizarán en tiempo real.',
-    wc_date:'El Mundial FIFA 2026 comienza el 11 de junio de 2026',
+    wc_date:'El Mundial 2026 comienza el 11 de junio de 2026',
     wc_opening:'📍 Apertura: Estadio Azteca · Ciudad de México',
     // Matches
     matches_title:'PARTIDOS',all:'Todos',today:'Hoy',tomorrow:'Mañana',
@@ -164,7 +164,7 @@ const TRANSLATIONS={
     wc_starts:'The World Cup starts',live_soon:'Live scores will appear here',
     live_now:'LIVE',updated_at:'Updated:',auto_refresh:'Auto-refresh 30s',
     live_info:'Goals, cards and stats will update in real time.',
-    wc_date:'FIFA World Cup 2026 begins June 11, 2026',
+    wc_date:'World Cup 2026 begins June 11, 2026',
     wc_opening:'📍 Opening: Estadio Azteca · Mexico City',
     matches_title:'MATCHES',all:'All',today:'Today',tomorrow:'Tomorrow',
     venues:'Official Venues',
@@ -238,7 +238,7 @@ const TRANSLATIONS={
     wc_starts:'A Copa começa',live_soon:'Os placares ao vivo aparecerão aqui',
     live_now:'AO VIVO',updated_at:'Atualizado:',auto_refresh:'Atualização 30s',
     live_info:'Gols, cartões e estatísticas serão atualizados em tempo real.',
-    wc_date:'A Copa do Mundo FIFA 2026 começa em 11 de junho de 2026',
+    wc_date:'A Copa do Mundo 2026 começa em 11 de junho de 2026',
     wc_opening:'📍 Abertura: Estadio Azteca · Cidade do México',
     matches_title:'JOGOS',all:'Todos',today:'Hoje',tomorrow:'Amanhã',
     venues:'Estádios Oficiais',
@@ -312,7 +312,7 @@ const TRANSLATIONS={
     wc_starts:'世界杯开幕',live_soon:'实时比分将显示在这里',
     live_now:'直播',updated_at:'更新于:',auto_refresh:'30秒自动刷新',
     live_info:'进球、黄牌和统计数据将实时更新。',
-    wc_date:'2026年FIFA世界杯将于2026年6月11日开幕',
+    wc_date:'2026年世界杯将于2026年6月11日开幕',
     wc_opening:'📍 开幕：阿兹特克球场 · 墨西哥城',
     matches_title:'赛程',all:'全部',today:'今天',tomorrow:'明天',
     venues:'官方球场',
@@ -386,7 +386,7 @@ const TRANSLATIONS={
     wc_starts:'월드컵 시작',live_soon:'실시간 점수가 여기에 표시됩니다',
     live_now:'생중계',updated_at:'업데이트:',auto_refresh:'30초 자동 새로고침',
     live_info:'골, 카드, 통계가 실시간으로 업데이트됩니다.',
-    wc_date:'2026 FIFA 월드컵은 2026년 6월 11일 시작됩니다',
+    wc_date:'2026 월드컵은 2026년 6월 11일 시작됩니다',
     wc_opening:'📍 개막: 에스타디오 아스테카 · 멕시코시티',
     matches_title:'경기',all:'전체',today:'오늘',tomorrow:'내일',
     venues:'공식 경기장',
@@ -460,7 +460,7 @@ const TRANSLATIONS={
     wc_starts:'La Coupe du Monde commence',live_soon:'Les scores en direct apparaîtront ici',
     live_now:'EN DIRECT',updated_at:'Mis à jour:',auto_refresh:'Actualisation 30s',
     live_info:'Les buts, cartons et statistiques seront mis à jour en temps réel.',
-    wc_date:'La Coupe du Monde FIFA 2026 commence le 11 juin 2026',
+    wc_date:'La Coupe du Monde 2026 commence le 11 juin 2026',
     wc_opening:'📍 Ouverture: Estadio Azteca · Mexico',
     matches_title:'MATCHS',all:'Tous',today:"Aujourd'hui",tomorrow:'Demain',
     venues:'Stades Officiels',
@@ -2610,7 +2610,7 @@ function TablaScreen(){
       <div style={{padding:'16px 16px 6px'}}>
         <div style={{fontFamily:'var(--ff)',fontSize:24,letterSpacing:2}}>LLAVE ELIMINATORIA</div>
         <div style={{fontSize:11,color:'var(--muted)',marginBottom:12}}>
-          Copa Mundial FIFA 2026 · Las banderas aparecen automáticamente conforme avanza el torneo
+          Copa Mundial 2026 · Las banderas aparecen automáticamente conforme avanza el torneo
         </div>
       </div>
       <BracketView bracket={bracket}/>
@@ -2658,6 +2658,10 @@ function GolesScreen(){
 
   const top3=sorted.slice(0,3);
   const rest=sorted.slice(3);
+  // Mientras nadie anote, no se destaca el podio: todos van a la lista (numerada desde 1).
+  // Conforme anoten (anyGoals), aparece el podio top-3 y la lista arranca en el 4º.
+  const listPlayers=anyGoals?rest:sorted;
+  const listStart=anyGoals?4:1;
 
   // ── Lugar del podio (top 3) ──
   const PodiumSpot=({p,rank})=>{
@@ -2773,19 +2777,21 @@ function GolesScreen(){
           </div>
         )}
 
-        {/* ── PODIO — top 3 (2º izq · 1º centro · 3º der) ── */}
-        <div style={{display:'flex',alignItems:'flex-end',gap:8,
-          padding:'8px 4px 0',marginBottom:18}}>
-          <PodiumSpot p={top3[1]} rank={2}/>
-          <PodiumSpot p={top3[0]} rank={1}/>
-          <PodiumSpot p={top3[2]} rank={3}/>
-        </div>
+        {/* ── PODIO — solo cuando ya hay goles (2º izq · 1º centro · 3º der) ── */}
+        {anyGoals&&(
+          <div style={{display:'flex',alignItems:'flex-end',gap:8,
+            padding:'8px 4px 0',marginBottom:18}}>
+            <PodiumSpot p={top3[1]} rank={2}/>
+            <PodiumSpot p={top3[0]} rank={1}/>
+            <PodiumSpot p={top3[2]} rank={3}/>
+          </div>
+        )}
 
-        {/* ── LISTA — 4º en adelante ── */}
-        {rest.length>0&&(
+        {/* ── LISTA — todos si nadie anota; del 4º en adelante si ya hay podio ── */}
+        {listPlayers.length>0&&(
           <div style={{display:'flex',flexDirection:'column',gap:8}}>
-            {rest.map((p,i)=>(
-              <ListRow key={p.n} p={p} rank={i+4}/>
+            {listPlayers.map((p,i)=>(
+              <ListRow key={p.n} p={p} rank={i+listStart}/>
             ))}
           </div>
         )}
@@ -3017,7 +3023,7 @@ function PerfilScreen({user,onLogout,lang='es'}){
   // ── Share the app ────────────────────────────────
   const shareApp=async()=>{
     const shareData={
-      title:'⚽ Mundial FIFA 2026',
+      title:'⚽ Mundial 2026',
       text:'¡Únete a mis pronósticos del Mundial! La app más completa para seguir cada partido.',
       url:window.location.href,
     };
@@ -3034,7 +3040,7 @@ function PerfilScreen({user,onLogout,lang='es'}){
   };
 
   const shareWhatsApp=()=>{
-    const txt=encodeURIComponent('⚽ ¡Únete a mis pronósticos del Mundial FIFA 2026! '+window.location.href);
+    const txt=encodeURIComponent('⚽ ¡Únete a mis pronósticos del Mundial 2026! '+window.location.href);
     window.open(`https://wa.me/?text=${txt}`,'_blank');
   };
 
@@ -5506,7 +5512,7 @@ export default function App(){
       if(perm === 'granted') {
         console.log('Push notifications activadas ✓');
         // Notificación de bienvenida
-        new Notification('⚽ Mundial FIFA 2026', {
+        new Notification('⚽ Mundial 2026', {
           body: 'Notificaciones activadas. Te avisaremos cuando empiece cada partido.',
           icon: '/icon-192.png',
           badge: '/icon-192.png',
