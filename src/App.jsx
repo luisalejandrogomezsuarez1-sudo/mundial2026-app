@@ -2009,12 +2009,12 @@ function MatchDetail({m,onBack}){
 
 // ── Countdown to first match ─────────────────────
 function Countdown(){
-  // Derivado del primer partido del calendario (México vs Sudáfrica, id:1).
-  // Los horarios de NEXT_MATCHES están en hora CDMX = UTC-6 (México no aplica
-  // horario de verano desde 2022), por eso fijamos el offset -06:00:
-  // 13:00 CDMX → instante UTC 2026-06-11T19:00:00Z.
+  // Primer partido del calendario (México vs Sudáfrica, id:1) — solo para el header.
   const FM=NEXT_MATCHES[0];
-  const FIRST_MATCH=new Date(`${FM.isoDate}T${FM.time}:00-06:00`);
+  // Objetivo en UTC ABSOLUTO para evitar cualquier ambigüedad de zona horaria del
+  // navegador. 11 jun 2026 13:00 hora CDMX (UTC-6, sin horario de verano) = 19:00 UTC.
+  // Date.UTC usa mes 0-indexed → junio = 5.
+  const FIRST_MATCH=new Date(Date.UTC(2026, 5, 11, 19, 0, 0)); // 2026-06-11T19:00:00.000Z
   const [t,setT]=useState(null);
   useEffect(()=>{
     const calc=()=>{
