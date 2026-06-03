@@ -15,6 +15,9 @@ export default defineConfig({
         globPatterns: ['**/*.{js,css,html,svg,png,ico,woff,woff2,jpg,jpeg,webp}'],
         // SPA: navegaciones sin caché caen al index.html cacheado (offline básico)
         navigateFallback: '/index.html',
+        // ...PERO nunca para /api/: esas peticiones deben ir SIEMPRE a la red
+        // (Express), no ser respondidas con el index.html por el SW.
+        navigateFallbackDenylist: [/^\/api\//],
         cleanupOutdatedCaches: true
       },
       devOptions: {
