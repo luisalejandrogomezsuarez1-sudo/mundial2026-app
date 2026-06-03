@@ -356,12 +356,27 @@ export function subscribeToUserDoc(userId, callback) {
 }
 
 // ── Suscripción a documentos en vivo (colección 'live') ─────────
+// Antes abría un onSnapshot a Firestore por cada usuario, multiplicando las
+// lecturas. Ahora hace polling al endpoint /api/live/:docId del servidor, que
+// mantiene los datos en memoria y es el ÚNICO que lee Firestore.
+// Misma firma: (docId, callback) → función de limpieza que detiene el polling.
+// El callback recibe el mismo objeto que devolvía snap.data() ({...data, updatedAt}).
 export function subscribeToLiveDoc(docId, callback) {
-  return onSnapshot(
-    doc(db, 'live', docId),
-    snap => { if (snap.exists()) callback(snap.data()); },
-    err => console.warn(`live/${docId} snapshot error:`, err)
-  );
+  let stopped = false;
+  const fetchOnce = async () => {
+    try {
+      const res = await fetch(`/api/live/${docId}`);
+      if (!res.ok) return;                       // error transitorio: reintenta el próximo ciclo
+      const data = await res.json();
+      // Solo invocar al callback si hay datos (equivale al snap.exists() de onSnapshot)
+      if (!stopped && data && Object.keys(data).length) callback(data);
+    } catch (e) {
+      console.warn(`live/${docId} poll error:`, e); // no romper; reintenta en el siguiente ciclo
+    }
+  };
+  fetchOnce();                                    // inmediato al suscribirse
+  const id = setInterval(fetchOnce, 60000);       // luego cada 60s
+  return () => { stopped = true; clearInterval(id); };
 }
 
 export async function deleteUserFromFirestore(userId) {

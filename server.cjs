@@ -47,13 +47,19 @@ function afFetch(endpoint){
   });
 }
 
+// ── Datos en vivo: whitelist de documentos y copia en memoria ────
+// liveCache guarda la última versión de cada doc para servirla por HTTP
+// (GET /api/live/:docId) sin que cada usuario abra un onSnapshot a Firestore.
+const LIVE_DOCS  = ['matches','standings','scorers','fixtures','bracket'];
+const liveCache  = {};
+
 // ── Save to Firestore ───────────────────────────────────
 async function save(docId, data){
+  const payload = { ...data, updatedAt: new Date().toISOString() };
+  liveCache[docId] = payload;          // copia en memoria (ADEMÁS de Firestore)
   if(!db) return;
   try{
-    await db.collection('live').doc(docId).set({
-      ...data, updatedAt: new Date().toISOString()
-    });
+    await db.collection('live').doc(docId).set(payload);
     console.log(`[${new Date().toLocaleTimeString()}] ✓ Firestore: live/${docId} updated`);
   }catch(e){ console.warn('Firestore save error:', e.message); }
 }
@@ -867,6 +873,29 @@ app.post('/api/mp/webhook', async (req, res) => {
   } catch (e) {
     console.error('Webhook error:', e.message);
   }
+});
+
+// ── Datos en vivo servidos desde el servidor ────────────
+// Evita que cada usuario lea Firestore: el servidor mantiene los datos en
+// memoria (vía save() durante el polling) y aquí los entrega por HTTP.
+// DEBE ir ANTES del catch-all app.get('*') o lo interceptaría el index.html.
+app.get('/api/live/:docId', async (req,res)=>{
+  const { docId } = req.params;
+  if(!LIVE_DOCS.includes(docId)) return res.status(404).json({ error:'not found' });
+  res.set('Cache-Control','public, max-age=30');   // caché HTTP suave
+  // Vía normal: copia en memoria mantenida por el polling
+  if(liveCache[docId]) return res.json(liveCache[docId]);
+  // Fallback (servidor recién arrancado, aún sin polling): leer Firestore 1 vez
+  if(db){
+    try{
+      const snap = await db.collection('live').doc(docId).get();
+      if(snap.exists){
+        liveCache[docId] = snap.data();             // cachear para próximas peticiones
+        return res.json(liveCache[docId]);
+      }
+    }catch(e){ console.warn('live fallback read error:', e.message); }
+  }
+  return res.json({});                              // aún no hay datos
 });
 
 // Serve React app
