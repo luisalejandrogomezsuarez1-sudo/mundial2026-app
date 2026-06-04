@@ -731,9 +731,12 @@ app.post('/api/admin/cleanup-all-duplicates', async (req, res) => {
 // ── MercadoPago Checkout Pro ─────────────────────────────────────────────────
 app.post('/api/mp/create-preference', async (req, res) => {
   const { userId, userEmail, userName } = req.body;
-const nameParts = (userName || '').trim().split(' ');
-const firstName = nameParts[0] || '';
-const lastName = nameParts.slice(1).join(' ') || nameParts[0] || '';
+  const nameParts = (userName || '').trim().split(' ');
+  const firstName = nameParts[0] || '';
+  const lastName = nameParts.slice(1).join(' ') || nameParts[0] || '';
+  try {
+    const preference = new Preference(mpClient);
+    const result = await preference.create({
       body: {
         items: [{ title: 'Paquete 1000 monedas', quantity: 1, unit_price: 30, currency_id: 'MXN', description: 'Acceso premium Mundial 2026 App - 1000 monedas para pronósticos' }],
         payer: { email: userEmail, first_name: firstName, last_name: lastName },
@@ -747,6 +750,11 @@ const lastName = nameParts.slice(1).join(' ') || nameParts[0] || '';
         notification_url: `${process.env.APP_URL}/api/mp/webhook`
       }
     });
+    res.json({ checkoutUrl: result.init_point });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
     res.json({ checkoutUrl: result.init_point });
   } catch (e) {
     res.status(500).json({ error: e.message });
