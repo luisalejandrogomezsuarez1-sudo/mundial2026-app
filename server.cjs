@@ -201,11 +201,12 @@ function startPolling(){
   pollFixtures(); // llamada inicial siempre
   if(isActive()){
     console.log('⚽ Mundial ACTIVO — polling cada 60s');
-    pollLive();      setInterval(pollLive,      60000);
-    pollStandings(); setInterval(pollStandings, 5*60000);
-    pollScorers();   setInterval(pollScorers,   10*60000);
-    setInterval(pollFixtures, 30*60000);   // cada 30min durante el Mundial
-    pollBracket();   setInterval(pollBracket, 2*60*60000); // llave cada 2h
+  // Plan Free 100 llamadas/dia: live×72 + resto×14 = 86/dia
+pollLive();      setInterval(pollLive,      20*60000);    // cada 20min
+pollStandings(); setInterval(pollStandings, 6*60*60000);  // cada 6h
+pollScorers();   setInterval(pollScorers,   12*60*60000); // cada 12h
+setInterval(pollFixtures, 6*60*60000);                    // cada 6h
+pollBracket();   setInterval(pollBracket,   6*60*60000);  // cada 6h
   } else {
     console.log('⏳ Pre-Mundial — clasificación y fixtures cada 6h');
     pollStandings(); pollScorers();
