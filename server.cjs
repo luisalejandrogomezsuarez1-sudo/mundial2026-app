@@ -755,11 +755,7 @@ app.post('/api/mp/create-preference', async (req, res) => {
     res.status(500).json({ error: e.message });
   }
 });
-    res.json({ checkoutUrl: result.init_point });
-  } catch (e) {
-    res.status(500).json({ error: e.message });
-  }
-});
+ 
 
 // Diagnóstico: ver datos de un pago en MP y Firestore (protegido con ADMIN_KEY)
 app.get('/api/admin/mp-payment/:id', async (req, res) => {
