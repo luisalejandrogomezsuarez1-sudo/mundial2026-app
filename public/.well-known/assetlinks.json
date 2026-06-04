@@ -2,9 +2,9 @@
   "relation": ["delegate_permission/common.handle_all_urls"],
   "target": {
     "namespace": "android_app",
-    "package_name": "com.mundial2026.app",
+    "package_name": "com.mundial2026.mx",
     "sha256_cert_fingerprints": [
-      "PLACEHOLDER:REEMPLAZAR:CON:HUELLA:REAL:DESPUES:DE:BUBBLEWRAP:INIT"
+      "0A:E0:0E:02:CE:E7:6A:84:7B:B0:6F:52:15:F8:D6:D9:52:1E:08:D2:5B:3A:9B:0C:98:0E:05:41:F8:E7:15:DC"
     ]
   }
 }]
