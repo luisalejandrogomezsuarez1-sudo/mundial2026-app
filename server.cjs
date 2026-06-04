@@ -902,7 +902,10 @@ app.get('/api/live/:docId', async (req,res)=>{
   }
   return res.json({});                              // aún no hay datos
 });
-
+// Servir manifest e íconos explícitamente (antes del catch-all)
+app.get('/manifest.json', (req,res)=>res.sendFile(path.join(__dirname,'dist','manifest.json')));
+app.get('/icon-512.png',  (req,res)=>res.sendFile(path.join(__dirname,'dist','icon-512.png')));
+app.get('/icon-192.png',  (req,res)=>res.sendFile(path.join(__dirname,'dist','icon-192.png')));
 // Serve React app
 
 app.use(express.static(path.join(__dirname,'dist')));
