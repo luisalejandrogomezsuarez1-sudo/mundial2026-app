@@ -906,6 +906,7 @@ app.get('/api/live/:docId', async (req,res)=>{
 app.get('/manifest.json', (req,res)=>res.sendFile(path.join(__dirname,'dist','manifest.json')));
 app.get('/icon-512.png',  (req,res)=>res.sendFile(path.join(__dirname,'dist','icon-512.png')));
 app.get('/icon-192.png',  (req,res)=>res.sendFile(path.join(__dirname,'dist','icon-192.png')));
+app.get('/.well-known/assetlinks.json', (req,res)=>res.sendFile(path.join(__dirname,'dist','.well-known','assetlinks.json')));
 // Serve React app
 
 app.use(express.static(path.join(__dirname,'dist')));
