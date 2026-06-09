@@ -5003,7 +5003,7 @@ function BetsScreen({bets,placeBet,credito,creditoLoading,onPagar,onReset,betsSa
   // ── Tab: Por Partido ──
   const PorPartido=()=>(
     <div style={{padding:'0 12px'}}>
-      {[...LIVE_MATCHES,...NEXT_MATCHES].map(m=>{
+      {[...LIVE_MATCHES,...NEXT_MATCHES].filter(m => m.home !== 'Por definir' && m.away !== 'Por definir').map(m=>{
         const mid=m.id;
         const isLive=m.min!=null;
         const o=m.odds||[2.2,3.2,3.0];
