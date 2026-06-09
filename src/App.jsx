@@ -5219,9 +5219,14 @@ function BetsScreen({bets,placeBet,credito,creditoLoading,onPagar,onReset,betsSa
             </div>
           </div>
           <button onClick={()=>setConfirmReset(true)}
+            disabled={coinsLeft > 0}
+            title={coinsLeft > 0
+              ? `Usa tus ${coinsLeft} monedas restantes antes de cambiar`
+              : 'Cambiar paquete de pronósticos'}
             style={{background:'rgba(200,16,46,.1)',border:'1px solid rgba(200,16,46,.25)',
               color:'#FC8181',borderRadius:10,padding:'7px 11px',fontSize:11,fontWeight:700,
-              cursor:'pointer',fontFamily:'var(--fb)',flexShrink:0}}>
+              cursor:coinsLeft > 0 ? 'not-allowed' : 'pointer',fontFamily:'var(--fb)',flexShrink:0,
+              opacity:coinsLeft > 0 ? 0.4 : 1}}>
             🔄 Cambiar
           </button>
         </div>
