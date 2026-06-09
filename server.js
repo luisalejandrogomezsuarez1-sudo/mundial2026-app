@@ -180,10 +180,10 @@ app.post('/poll', async (req, res) => {
 
 // ── MercadoPago ───────────────────────────────────────────────────
 app.post('/api/mp/create-preference', async (req, res) => {
-  const { userId, userEmail } = req.body;
-  const mpToken = process.env.MP_ACCESS_TOKEN;
-  if (!mpToken) return res.status(500).json({ error: 'MP_ACCESS_TOKEN no configurado' });
-  if (!userId)  return res.status(400).json({ error: 'userId requerido' });
+ const { userId, userEmail, userName } = req.body;
+const nameParts = (userName || '').trim().split(' ');
+const firstName = nameParts[0] || '';
+const lastName = nameParts.slice(1).join(' ') || nameParts[0] || '';
 
   const appUrl = process.env.APP_URL || 'https://mundial2026-app-production.up.railway.app';
 
@@ -196,12 +196,12 @@ app.post('/api/mp/create-preference', async (req, res) => {
       },
       body: JSON.stringify({
         items: [{
-          title: 'Mundial 2026 — Paquete de 1,000 monedas',
-          quantity: 1,
-          unit_price: 30,
-          currency_id: 'MXN'
-        }],
-        payer: { email: userEmail || 'usuario@mundial2026.app' },
+  title: 'Mundial 2026 — Paquete de 1,000 monedas',
+  description: 'Acceso premium Mundial 2026 App - 1000 monedas para pronósticos',
+  quantity: 1,
+  unit_price: 30,
+  currency_id: 'MXN'
+        payer: { email: userEmail || 'usuario@mundial2026.app', first_name: firstName, last_name: lastName },
         back_urls: {
           success: `${appUrl}/api/mp/success?userId=${userId}`,
           failure: `${appUrl}/api/mp/failure?userId=${userId}`,

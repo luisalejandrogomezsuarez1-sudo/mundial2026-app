@@ -201,11 +201,12 @@ function startPolling(){
   pollFixtures(); // llamada inicial siempre
   if(isActive()){
     console.log('⚽ Mundial ACTIVO — polling cada 60s');
-    pollLive();      setInterval(pollLive,      60000);
-    pollStandings(); setInterval(pollStandings, 5*60000);
-    pollScorers();   setInterval(pollScorers,   10*60000);
-    setInterval(pollFixtures, 30*60000);   // cada 30min durante el Mundial
-    pollBracket();   setInterval(pollBracket, 2*60*60000); // llave cada 2h
+  // Plan Free 100 llamadas/dia: live×72 + resto×14 = 86/dia
+pollLive();      setInterval(pollLive,      20*60000);    // cada 20min
+pollStandings(); setInterval(pollStandings, 6*60*60000);  // cada 6h
+pollScorers();   setInterval(pollScorers,   12*60*60000); // cada 12h
+setInterval(pollFixtures, 6*60*60000);                    // cada 6h
+pollBracket();   setInterval(pollBracket,   6*60*60000);  // cada 6h
   } else {
     console.log('⏳ Pre-Mundial — clasificación y fixtures cada 6h');
     pollStandings(); pollScorers();
@@ -729,13 +730,16 @@ app.post('/api/admin/cleanup-all-duplicates', async (req, res) => {
 
 // ── MercadoPago Checkout Pro ─────────────────────────────────────────────────
 app.post('/api/mp/create-preference', async (req, res) => {
-  const { userId, userEmail } = req.body;
+  const { userId, userEmail, userName } = req.body;
+  const nameParts = (userName || '').trim().split(' ');
+  const firstName = nameParts[0] || '';
+  const lastName = nameParts.slice(1).join(' ') || nameParts[0] || '';
   try {
     const preference = new Preference(mpClient);
     const result = await preference.create({
       body: {
-        items: [{ title: 'Paquete 1000 monedas', quantity: 1, unit_price: 30, currency_id: 'MXN' }],
-        payer: { email: userEmail },
+        items: [{ title: 'Paquete 1000 monedas', quantity: 1, unit_price: 30, currency_id: 'MXN', description: 'Acceso premium Mundial 2026 App - 1000 monedas para pronósticos' }],
+        payer: { email: userEmail, first_name: firstName, last_name: lastName },
         external_reference: userId,
         back_urls: {
           success: `${process.env.APP_URL}/?payment_status=success`,
@@ -751,6 +755,7 @@ app.post('/api/mp/create-preference', async (req, res) => {
     res.status(500).json({ error: e.message });
   }
 });
+ 
 
 // Diagnóstico: ver datos de un pago en MP y Firestore (protegido con ADMIN_KEY)
 app.get('/api/admin/mp-payment/:id', async (req, res) => {
@@ -897,7 +902,11 @@ app.get('/api/live/:docId', async (req,res)=>{
   }
   return res.json({});                              // aún no hay datos
 });
-
+// Servir manifest e íconos explícitamente (antes del catch-all)
+app.get('/manifest.json', (req,res)=>res.sendFile(path.join(__dirname,'dist','manifest.json')));
+app.get('/icon-512.png',  (req,res)=>res.sendFile(path.join(__dirname,'dist','icon-512.png')));
+app.get('/icon-192.png',  (req,res)=>res.sendFile(path.join(__dirname,'dist','icon-192.png')));
+app.get('/.well-known/assetlinks.json', (req,res)=>res.sendFile(path.join(__dirname,'dist','.well-known','assetlinks.json')));
 // Serve React app
 
 app.use(express.static(path.join(__dirname,'dist')));
