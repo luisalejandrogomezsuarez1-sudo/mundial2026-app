@@ -5532,6 +5532,7 @@ export default function App(){
   const [creditoLoading,setCreditoLoading]=useState(false);
   const [mpVerify,setMpVerify]=useState(null);
   // mpVerify: null | "verifying" | {ok:true,paymentId,coins} | {ok:false,paymentId,error}
+  //         | {kind:'pending'} | {kind:'failure'}
   const [betsSaved,setBetsSaved]=useState(false); // predictions locked after saving
   const [logoutMsg,setLogoutMsg]=useState('');
   // credito = {coins:1000, paquetes:N, paidAt:timestamp} | null
@@ -5847,6 +5848,12 @@ export default function App(){
           }
         })
         .catch(e=>{setMpVerify({ok:false,paymentId,error:e.message||'Error de red'});});
+    } else if(status==='pending'){
+      setMpVerify({kind:'pending'});
+      window.history.replaceState({},'','/');
+    } else if(status==='failure'){
+      setMpVerify({kind:'failure'});
+      window.history.replaceState({},'','/');
     }
   },[user]);
 
@@ -6114,6 +6121,34 @@ export default function App(){
                 <div style={{fontSize:12,color:'var(--muted)'}}>
                   Guarda este ID y usa el botón<br/>
                   <strong>¿No recibiste tus monedas?</strong> en la pantalla de pago.
+                </div>
+                <button onClick={()=>setMpVerify(null)}
+                  style={{background:'rgba(255,255,255,.08)',color:'var(--txt)',border:'1px solid var(--br)',
+                    borderRadius:10,padding:'12px 24px',fontSize:14,cursor:'pointer'}}>
+                  Cerrar
+                </button>
+              </>)}
+              {mpVerify?.kind==='pending'&&(<>
+                <div style={{fontSize:52}}>⏳</div>
+                <div style={{fontFamily:'var(--ff)',fontSize:22,color:'var(--gold)',letterSpacing:1}}>
+                  PAGO EN PROCESO
+                </div>
+                <div style={{fontSize:13,color:'var(--muted)',lineHeight:1.6,maxWidth:300}}>
+                  Una vez que pagues en OXXO o se confirme tu transferencia, recibirás tus 1,000 monedas automáticamente. Puede tardar hasta 24 horas.
+                </div>
+                <button onClick={()=>setMpVerify(null)}
+                  style={{background:'var(--gold)',color:'#000',border:'none',borderRadius:12,
+                    padding:'14px 32px',fontFamily:'var(--ff)',fontSize:18,cursor:'pointer'}}>
+                  ENTENDIDO
+                </button>
+              </>)}
+              {mpVerify?.kind==='failure'&&(<>
+                <div style={{fontSize:52}}>❌</div>
+                <div style={{fontFamily:'var(--ff)',fontSize:22,color:'#FC8181',letterSpacing:1}}>
+                  PAGO NO COMPLETADO
+                </div>
+                <div style={{fontSize:13,color:'var(--muted)',lineHeight:1.6,maxWidth:300}}>
+                  El pago no se completó. Puedes intentarlo de nuevo.
                 </div>
                 <button onClick={()=>setMpVerify(null)}
                   style={{background:'rgba(255,255,255,.08)',color:'var(--txt)',border:'1px solid var(--br)',
