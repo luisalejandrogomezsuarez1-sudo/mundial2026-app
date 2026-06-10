@@ -4724,7 +4724,7 @@ function PagoScreen({onExito,onCancelar,esReset=false,onRecheckAccess,user,onRec
             MÉTODO DE PAGO
           </div>
           <div style={{display:'flex',gap:8,marginBottom:12}}>
-            {[['card','💳','Tarjeta'],['oxxo','🏪','OXXO'],['transfer','🏦','Transferencia']].map(([m,ic,lb])=>(
+            {[['card','💳','Tarjeta'],['oxxo','🏪','OXXO']].map(([m,ic,lb])=>(
               <button key={m} onClick={()=>setMetodo(m)}
                 style={{flex:1,padding:'10px 4px',
                   background:metodo===m?'rgba(240,165,0,.12)':'var(--surf)',
@@ -4775,21 +4775,6 @@ function PagoScreen({onExito,onCancelar,esReset=false,onRecheckAccess,user,onRec
             </div>
           )}
 
-          {/* Transfer — SPEI */}
-          {metodo==='transfer'&&(
-            <div style={{background:'var(--surf)',borderRadius:12,padding:14,border:'1px solid var(--br)'}}>
-              <div style={{fontSize:11,fontWeight:700,color:'var(--muted)',marginBottom:9,letterSpacing:.5}}>
-                TRANSFERENCIA SPEI — VÍA MERCADOPAGO
-              </div>
-              <div style={{fontSize:12,color:'var(--muted)',lineHeight:1.7}}>
-                Al hacer clic en <strong style={{color:'var(--gold)'}}>Pagar</strong>, 
-                MercadoPago te asignará una CLABE interbancaria única para este pago.<br/><br/>
-                ✅ Se acredita en minutos<br/>
-                ✅ Sin comisión adicional<br/>
-                ✅ Funciona con cualquier banco de México
-              </div>
-            </div>
-          )}
         </div>
 
         {/* Pay button */}
