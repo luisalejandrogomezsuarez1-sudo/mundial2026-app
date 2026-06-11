@@ -3418,7 +3418,17 @@ function PerfilScreen({user,onLogout,lang='es'}){
                   '$'+((u.paquetes||0)*PRECIO_PAQUETE),
                 ].join(',')),
               ];
-              console.log(lines.join('\n'));
+              const csvContent='﻿'+lines.join('\n'); // BOM para acentos en Excel
+              const blob=new Blob([csvContent],{type:'text/csv;charset=utf-8;'});
+              const url=URL.createObjectURL(blob);
+              const a=document.createElement('a');
+              a.href=url;
+              const fecha=new Date().toISOString().slice(0,10);
+              a.download=`reporte_mundial2026_${fecha}.csv`;
+              document.body.appendChild(a);
+              a.click();
+              document.body.removeChild(a);
+              setTimeout(()=>URL.revokeObjectURL(url),1000);
               setSaved(true);setTimeout(()=>setSaved(false),3000);
             }}
               style={{width:'100%',background:'rgba(30,198,108,.08)',
@@ -3427,13 +3437,13 @@ function PerfilScreen({user,onLogout,lang='es'}){
                 cursor:'pointer',fontFamily:'var(--fb)',
                 display:'flex',alignItems:'center',justifyContent:'center',gap:8}}>
               <span style={{fontSize:16}}>📥</span>
-              {saved?'✓ CSV listo en consola (F12 → Console)':'Exportar Reporte CSV Completo'}
+              {saved?'✓ Archivo descargado correctamente':'Exportar Reporte CSV Completo'}
             </button>
             {saved&&(
               <div style={{marginTop:6,padding:'8px 12px',background:'rgba(30,198,108,.06)',
                 borderRadius:8,border:'1px solid rgba(30,198,108,.2)',fontSize:11,
                 color:'var(--grn)',textAlign:'center',lineHeight:1.5}}>
-                Abre el navegador → F12 → pestaña "Console" → copia el texto completo
+                El archivo CSV se descargó. Ábrelo con Excel o Google Sheets.
               </div>
             )}
 
@@ -4253,7 +4263,7 @@ function GruposScreen({user,userBets,credito,creditoLoading,onPagar,onRecheckAcc
         </div>
 
         {/* Content */}
-        <div style={{flex:1,overflowY:'auto'}}>
+        <div style={{flex:1,overflowY:'auto',paddingBottom:90}}>
 
           {/* ── Ranking ── */}
           {dtab==='ranking'&&(
