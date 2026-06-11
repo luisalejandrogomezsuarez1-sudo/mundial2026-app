@@ -2117,7 +2117,7 @@ function CommentMarquee(){
     if(!textRef.current) return;
     // ancho del texto + el padding-left:100% (ancho del contenedor)
     const textWidth=textRef.current.scrollWidth;
-    const SPEED=60; // píxeles por segundo (más bajo = más lento). Ajustable.
+    const SPEED=50; // píxeles por segundo (más bajo = más lento). Ajustable.
     const duration=textWidth/SPEED;
     setDur(Math.max(duration,15)); // mínimo 15s para textos muy cortos
   },[texto]);
