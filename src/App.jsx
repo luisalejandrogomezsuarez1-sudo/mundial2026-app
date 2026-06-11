@@ -3656,6 +3656,54 @@ function GruposScreen({user,userBets,credito,creditoLoading,onPagar,onRecheckAcc
     catch(e){console.warn('Groups save error:',e);}
   },[groups]);
 
+  // Migración silenciosa (una sola vez por usuario+grupo): sube al servidor los
+  // pronósticos que se bloquearon ANTES del Paso 1 y solo viven en localStorage.
+  // Sin botón ni interacción. Reusa POST /api/groups/:code/lock.
+  useEffect(()=>{
+    if(!user?.id) return;
+    let cancelled=false;
+    const syncOldLocks=async()=>{
+      let savedLocks={};
+      try{ savedLocks=JSON.parse(localStorage.getItem('wc2026_locks_'+user.id)||'{}'); }
+      catch{ return; }
+      // locks se indexa por id de grupo; el endpoint usa code → mapear id→code
+      const codeByGid={};
+      groups.forEach(g=>{ if(g?.id) codeByGid[g.id]=g.code; if(g?.code) codeByGid[g.code]=g.code; });
+      for(const [gid,lockData] of Object.entries(savedLocks)){
+        if(cancelled) return;
+        const bets=lockData?.bets;
+        if(!Array.isArray(bets)||bets.length===0) continue;
+        const code=codeByGid[gid];
+        if(!code||code==='WC26-AMIGOS') continue;   // sin code conocido o grupo demo → omitir
+        const syncedKey='wc2026_synced_'+user.id+'_'+gid;
+        if(localStorage.getItem(syncedKey)) continue;
+        try{
+          // Asegurar que el servidor tenga el grupo en memoria (rehidrata de Firestore)
+          await fetch('/api/groups/'+encodeURIComponent(code)).catch(()=>{});
+          if(cancelled) return;
+          const res=await fetch('/api/groups/'+encodeURIComponent(code)+'/lock',{
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({
+              id:user.id,
+              name:user.name||'Usuario',
+              ini:(user.name||'U')[0].toUpperCase(),
+              col:'#4F8EF7',
+              bets:bets.map(b=>({
+                id:b.id, category:b.category||b.cat,
+                selection:b.selection||b.sel, odds:b.odds, ts:b.ts,
+              })),
+              lockedAt:lockData.lockedAt||Date.now(),
+            }),
+          });
+          if(res.ok) localStorage.setItem(syncedKey,'1');
+        }catch(e){}
+      }
+    };
+    syncOldLocks();
+    return()=>{ cancelled=true; };
+  },[user?.id,groups]);
+
   const [selGroup,setSelGroup]=useState(null);
   const [dtab,setDtab]=useState('ranking');
   const [newName,setNewName]=useState('');
