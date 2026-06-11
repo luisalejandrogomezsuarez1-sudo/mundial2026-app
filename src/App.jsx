@@ -3991,14 +3991,26 @@ function GruposScreen({user,userBets,credito,creditoLoading,onPagar,onRecheckAcc
     const code=selGroup?.code;
     if(code && code!=='WC26-AMIGOS' && user?.id){
       const bets=userBets.map(b=>({id:b.id,category:b.category,selection:b.selection,odds:b.odds,ts:b.ts}));
-      fetch('/api/groups/'+encodeURIComponent(code)+'/lock',{
-        method:'POST',headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({
-          id:user.id, name:user.name||'Usuario',
-          ini:(user.name||'U')[0].toUpperCase(), col:'#4F8EF7',
-          bets, lockedAt,
-        }),
-      }).catch(e=>console.warn('lock persist error:',e));
+      const body=JSON.stringify({
+        id:user.id, name:user.name||'Usuario',
+        ini:(user.name||'U')[0].toUpperCase(), col:'#4F8EF7',
+        bets, lockedAt,
+      });
+      // Reintentar hasta 3 veces si el servidor no responde OK (404 transitorio, red, etc.)
+      const postLock=async(attempt=1)=>{
+        try{
+          const res=await fetch('/api/groups/'+encodeURIComponent(code)+'/lock',{
+            method:'POST',headers:{'Content-Type':'application/json'},body,
+          });
+          if(res.ok) return;
+          if(attempt<3){ await new Promise(r=>setTimeout(r,1500)); return postLock(attempt+1); }
+          console.warn('lock persist: servidor respondió',res.status);
+        }catch(e){
+          if(attempt<3){ await new Promise(r=>setTimeout(r,1500)); return postLock(attempt+1); }
+          console.warn('lock persist error:',e);
+        }
+      };
+      postLock();
     }
   };
 

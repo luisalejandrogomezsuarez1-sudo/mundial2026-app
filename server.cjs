@@ -253,7 +253,10 @@ async function restoreGroupsFromFirestore(){
     let restored = 0;
     snap.docs.forEach(d=>{
       const g = d.data();
-      if(g.code && !serverGroups[g.code]){
+      const mem = serverGroups[g.code];
+      // Restaurar si NO está en memoria, o si solo hay un stub de chat (sin members)
+      if(g.code && (!mem || !Array.isArray(mem.members))){
+        if(mem?._msgs) g._msgs = mem._msgs;   // preservar cache de mensajes del stub
         serverGroups[g.code] = g;
         restored++;
       }
@@ -274,11 +277,12 @@ function persistGroups() {
 
 // Also save to Firestore as backup (if available)
 async function backupGroupToFirestore(g) {
-  if(!db) return;
+  if(!db || !g?.code) return;   // sin code no se puede respaldar (evita .doc(undefined))
   try {
+    // merge:true → NUNCA borra campos que no vengan en el payload (p. ej. members).
     await db.collection('groups').doc(g.code).set({
       ...g, createdAt: new Date().toISOString()
-    });
+    }, { merge: true });
   } catch(e) { console.warn('Group Firestore backup error:', e.message); }
 }
 
@@ -315,8 +319,8 @@ app.get('/api/groups/:code', async(req,res)=>{
   const code = (req.params.code||'').toUpperCase().trim();
   if(!code) return res.status(400).json({error:'Falta code'});
 
-  // 1. Encontrado en memoria → respuesta inmediata
-  if(serverGroups[code])
+  // 1. En memoria Y COMPLETO (no un stub de chat sin members) → respuesta inmediata
+  if(serverGroups[code] && Array.isArray(serverGroups[code].members))
     return res.json({found:true, group:serverGroups[code]});
 
   // 2. Ya confirmado inexistente → respuesta inmediata sin tocar Firestore
@@ -332,6 +336,7 @@ app.get('/api/groups/:code', async(req,res)=>{
       ]);
       if(snap.exists){
         const g = snap.data();
+        if(serverGroups[code]?._msgs) g._msgs = serverGroups[code]._msgs; // preservar mensajes del stub
         serverGroups[code] = g;
         return res.json({found:true, group:g});
       }
@@ -375,10 +380,25 @@ app.post('/api/groups/:code/members', (req,res)=>{
 // Paso 1 del ranking: guarda en el servidor (memoria + archivo + Firestore) los
 // pronósticos que el usuario bloquea, para que el resto del grupo pueda verlos.
 // NO calcula puntos (eso es otro paso): solo persiste bets + locked + lockedAt.
-app.post('/api/groups/:code/lock', (req,res)=>{
+app.post('/api/groups/:code/lock', async (req,res)=>{
   const code = (req.params.code||'').toUpperCase().trim();
   const { id, name, ini, col, bets, lockedAt } = req.body || {};
   if(!code || !id) return res.status(400).json({error:'Faltan datos'});
+  // Rehidratar el grupo real desde Firestore si no está en memoria o solo hay un
+  // stub de chat (sin members). Evita 404 por /tmp efímero y evita escribir los
+  // bets en un stub que luego no se puede respaldar.
+  if(!serverGroups[code] || !Array.isArray(serverGroups[code].members)){
+    if(db){
+      try{
+        const snap = await db.collection('groups').doc(code).get();
+        if(snap.exists){
+          const g0 = snap.data();
+          if(serverGroups[code]?._msgs) g0._msgs = serverGroups[code]._msgs;
+          serverGroups[code] = g0;
+        }
+      }catch(e){}
+    }
+  }
   if(!serverGroups[code]) return res.status(404).json({error:'Grupo no encontrado'});
 
   const g = serverGroups[code];
@@ -466,8 +486,15 @@ app.post('/api/chat/:code', async(req,res)=>{
     }catch(e){ console.warn('chat save FB error:', e.message); }
   }
 
-  // Cache en memoria: máx 50
-  if(!serverGroups[code]) serverGroups[code] = {};
+  // Cache en memoria: máx 50. Antes de tocar el grupo, asegurarlo desde Firestore
+  // para NO crear un stub sin members (que envenenaba GET/restore/backup).
+  if(!serverGroups[code] && db){
+    try{
+      const gsnap = await db.collection('groups').doc(code).get();
+      if(gsnap.exists) serverGroups[code] = gsnap.data();
+    }catch(e){}
+  }
+  if(!serverGroups[code]) serverGroups[code] = { code }; // stub mínimo PERO con code
   if(!serverGroups[code]._msgs) serverGroups[code]._msgs = [];
   serverGroups[code]._msgs.push(msg);
   if(serverGroups[code]._msgs.length > MSG_LIMIT)
