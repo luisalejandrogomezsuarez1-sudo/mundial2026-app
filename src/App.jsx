@@ -665,7 +665,7 @@ body{font-family:var(--fb);background:var(--bg);color:var(--txt);height:100%;ove
 @keyframes pulse{0%,100%{box-shadow:var(--glow)}50%{box-shadow:0 0 32px rgba(240,165,0,.3)}}
 @keyframes marquee{0%{transform:translateX(100%)}100%{transform:translateX(-100%)}}
 .marquee-wrap{overflow:hidden;white-space:nowrap;background:linear-gradient(90deg,rgba(200,16,46,.12),rgba(240,165,0,.08));border-top:1px solid rgba(240,165,0,.2);border-bottom:1px solid rgba(240,165,0,.2);padding:8px 0;}
-.marquee-text{display:inline-block;padding-left:100%;font-size:13px;font-weight:700;color:var(--gold);animation:marquee 25s linear infinite;}
+.marquee-text{display:inline-block;padding-left:100%;font-size:13px;font-weight:700;color:var(--gold);animation-name:marquee;animation-timing-function:linear;animation-iteration-count:infinite;}
 .marquee-text:hover{animation-play-state:paused;}
 .fin{animation:fin .35s ease forwards;}
 .inp{width:100%;background:var(--surf2);border:1.5px solid var(--br);
@@ -2090,6 +2090,9 @@ function Countdown(){
 // ── Marquesina de comentarios (texto desde Firestore live/banner) ──
 function CommentMarquee(){
   const [texto,setTexto]=useState('');
+  const [dur,setDur]=useState(30);
+  const textRef=useRef(null);
+
   useEffect(()=>{
     let unsub, mounted=true;
     const cached=getCachedLive('banner');
@@ -2108,11 +2111,26 @@ function CommentMarquee(){
     trySub();
     return()=>{ mounted=false; if(typeof unsub==='function') unsub(); };
   },[]);
+
+  // Velocidad constante: recalcula la duración cuando cambia el texto
+  useEffect(()=>{
+    if(!textRef.current) return;
+    // ancho del texto + el padding-left:100% (ancho del contenedor)
+    const textWidth=textRef.current.scrollWidth;
+    const SPEED=60; // píxeles por segundo (más bajo = más lento). Ajustable.
+    const duration=textWidth/SPEED;
+    setDur(Math.max(duration,15)); // mínimo 15s para textos muy cortos
+  },[texto]);
+
   // Texto por defecto si Firestore aún no tiene nada
   const display = texto || '📢 ¡Bienvenido a Mundial 2026! Haz tus pronósticos y compite con tus amigos · ⚽ El torneo comienza el 11 de Junio';
+
   return(
     <div className="marquee-wrap" style={{margin:'0 0 14px'}}>
-      <div className="marquee-text">{display}</div>
+      <div className="marquee-text" ref={textRef}
+        style={{animationDuration:dur+'s'}}>
+        {display}
+      </div>
     </div>
   );
 }
