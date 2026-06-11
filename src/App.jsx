@@ -3924,8 +3924,23 @@ function GruposScreen({user,userBets,credito,creditoLoading,onPagar,onRecheckAcc
   };
 
   const lockBets=gid=>{
-    setLocks(p=>({...p,[gid]:{bets:[...userBets],lockedAt:Date.now()}}));
+    const lockedAt=Date.now();
+    setLocks(p=>({...p,[gid]:{bets:[...userBets],lockedAt}}));
     setConfirmLock(false);
+    // Paso 1: persistir los pronósticos bloqueados en el servidor para que el resto
+    // del grupo pueda verlos. Solo grupos reales (el demo WC26-AMIGOS es local).
+    const code=selGroup?.code;
+    if(code && code!=='WC26-AMIGOS' && user?.id){
+      const bets=userBets.map(b=>({id:b.id,category:b.category,selection:b.selection,odds:b.odds,ts:b.ts}));
+      fetch('/api/groups/'+encodeURIComponent(code)+'/lock',{
+        method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({
+          id:user.id, name:user.name||'Usuario',
+          ini:(user.name||'U')[0].toUpperCase(), col:'#4F8EF7',
+          bets, lockedAt,
+        }),
+      }).catch(e=>console.warn('lock persist error:',e));
+    }
   };
 
   const isLocked=gid=>!!locks[gid];

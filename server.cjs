@@ -371,6 +371,38 @@ app.post('/api/groups/:code/members', (req,res)=>{
   res.json({ok:true, group:g});
 });
 
+// ── Bloquear pronósticos de un miembro (persistir bets) ──────────────────────
+// Paso 1 del ranking: guarda en el servidor (memoria + archivo + Firestore) los
+// pronósticos que el usuario bloquea, para que el resto del grupo pueda verlos.
+// NO calcula puntos (eso es otro paso): solo persiste bets + locked + lockedAt.
+app.post('/api/groups/:code/lock', (req,res)=>{
+  const code = (req.params.code||'').toUpperCase().trim();
+  const { id, name, ini, col, bets, lockedAt } = req.body || {};
+  if(!code || !id) return res.status(400).json({error:'Faltan datos'});
+  if(!serverGroups[code]) return res.status(404).json({error:'Grupo no encontrado'});
+
+  const g = serverGroups[code];
+  const lockData = {
+    bets:     Array.isArray(bets) ? bets : [],
+    locked:   true,
+    lockedAt: lockedAt || Date.now(),
+  };
+  const idx = (g.members||[]).findIndex(m=>m.id===id);
+  if(idx>=0){
+    g.members[idx] = { ...g.members[idx], ...lockData };
+  } else {
+    // El usuario podría bloquear sin haberse registrado antes como miembro
+    g.members = [...(g.members||[]), {
+      id, name: name||'Usuario', ini: ini||'U', col: col||'#4F8EF7',
+      joined: Date.now(), pts: 0, ...lockData,
+    }];
+  }
+  persistGroups();
+  backupGroupToFirestore(g);
+  console.log(`🔒 ${id} bloqueó ${lockData.bets.length} pronósticos en ${code}`);
+  res.json({ok:true, group:g});
+});
+
 // ── Limpieza de mensajes: solo cuando supera el límite, no en cada mensaje ───
 const MSG_LIMIT = 50;
 // Contador por grupo: cuántos mensajes se han acumulado desde la última limpieza
