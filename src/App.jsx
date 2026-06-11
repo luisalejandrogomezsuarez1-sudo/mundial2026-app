@@ -4232,10 +4232,14 @@ function GruposScreen({user,userBets,credito,creditoLoading,onPagar,onRecheckAcc
     const allCats=[...new Set(allM.flatMap(m=>(m.bets||[]).map(b=>b.cat)))];
 
     const POINTS_INFO=[
-      ['Campeón del Mundo','20 pts'],['Bota de Oro','15 pts'],['Balón de Oro','12 pts'],
-      ['Ganador de Grupo','5 pts / grupo'],['1X2 correcto','3 pts'],
-      ['Total Goles / BTTS','2 pts'],['Doble Oportunidad','1 pt'],
-      ['Marcador Exacto','10 pts'],['Jugador que Anota','5 pts'],['Hándicap','3 pts'],
+      ['1X2 correcto','3 pts × cuota'],
+      ['Campeón del Mundo','20 pts × cuota'],
+      ['Bota de Oro','15 pts × cuota'],
+      ['Balón de Oro','12 pts × cuota'],
+      ['Ganador de Grupo','5 pts × cuota'],
+      ['Mejor Goleador 1°','15 pts × cuota'],
+      ['Mejor Goleador 2°','4 pts × cuota'],
+      ['Mejor Goleador 3°','5 pts × cuota'],
     ];
 
     const visibleTabs=[
@@ -5135,11 +5139,6 @@ function BetsScreen({bets,placeBet,credito,creditoLoading,onPagar,onReset,betsSa
                 <OBtn id={`m${mid}-1x2`} category="1X2" val="1" odds={o[0]} display={homeShort}/>
                 <OBtn id={`m${mid}-1x2`} category="1X2" val="X" odds={o[1]} display="EMP"/>
                 <OBtn id={`m${mid}-1x2`} category="1X2" val="2" odds={o[2]} display={awayShort}/>
-              </div>
-              {/* Fila 2: Ambos anotan */}
-              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:3}}>
-                <OBtn id={`m${mid}-btts`} category="BTTS" val="si" odds={1.75} display="✓ Anotan"/>
-                <OBtn id={`m${mid}-btts`} category="BTTS" val="no" odds={2.05} display="✗ No"/>
               </div>
             </div>
           </div>
