@@ -50,8 +50,8 @@ function afFetch(endpoint){
 // ── Datos en vivo: whitelist de documentos y copia en memoria ────
 // liveCache guarda la última versión de cada doc para servirla por HTTP
 // (GET /api/live/:docId) sin que cada usuario abra un onSnapshot a Firestore.
-const LIVE_DOCS    = ['matches','standings','scorers','fixtures','bracket','banner'];
-const ALWAYS_FRESH = ['banner'];   // se leen de Firestore en cada request (banner editable, sin polling)
+const LIVE_DOCS    = ['matches','standings','scorers','fixtures','bracket','banner','livemanual'];
+const ALWAYS_FRESH = ['banner','livemanual'];   // se leen de Firestore en cada request (editables a mano, sin polling)
 const liveCache  = {};
 
 // ── Save to Firestore ───────────────────────────────────

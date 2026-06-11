@@ -2142,6 +2142,8 @@ function HomeScreen({onMatch,onGoToCal}){
   // API-Football live data
   const [liveMatches,setLiveMatches]=useState(LIVE_MATCHES);
   const [apiStatus,setApiStatus]=useState(true?'connecting':'off');
+  // Partido(s) en vivo MANUAL — doc Firestore live/livemanual editado por el admin
+  const [liveManual,setLiveManual]=useState(null);
 
   // Firestore: marcadores en vivo (con cache para evitar re-leer al volver al tab)
   useEffect(()=>{
@@ -2164,10 +2166,34 @@ function HomeScreen({onMatch,onGoToCal}){
     trySubscribe();
     return()=>{ mounted=false; if(typeof unsub==='function') unsub(); };
   },[]);
+
+  // Suscripción al partido en vivo manual (live/livemanual), mismo patrón que matches
+  useEffect(()=>{
+    let unsub,mounted=true;
+    const cached=getCachedLive('livemanual');
+    if(cached) setLiveManual(cached);
+    const trySub=()=>{
+      if(!mounted)return;
+      const fn=window._fbSubscribeLive;
+      if(!fn){setTimeout(trySub,800);return;}
+      try{ unsub=fn('livemanual',data=>{ setCachedLive('livemanual',data); setLiveManual(data); }); }catch(e){}
+    };
+    trySub();
+    return()=>{ mounted=false; if(typeof unsub==='function') unsub(); };
+  },[]);
+
   const doRef=useCallback(()=>{
     setRef(true);setTimeout(()=>{setRef(false);setUpd(new Date());},900);
   },[]);
   useEffect(()=>{const t=setInterval(doRef,30000);return()=>clearInterval(t);},[]);
+
+  // Partidos en vivo manuales activos (prioridad sobre la API)
+  const livMan = (liveManual?.activo && Array.isArray(liveManual.partidos)) ? liveManual.partidos : [];
+  const liveCount = livMan.length;
+  // Próximos partidos: solo los de HOY (hora de México); si no hay, los más cercanos
+  const hoyMX = new Date().toLocaleDateString('en-CA',{timeZone:'America/Mexico_City'}); // YYYY-MM-DD
+  const partidosHoy = NEXT_MATCHES.filter(m=>m.isoDate===hoyMX);
+  const lista = partidosHoy.length>0 ? partidosHoy : NEXT_MATCHES.filter(m=>m.isoDate>hoyMX).slice(0,3);
 
   return(
     <div className="scr fin">
@@ -2196,9 +2222,9 @@ function HomeScreen({onMatch,onGoToCal}){
         {new Date()>=new Date(Date.UTC(2026,5,11,19,0,0))&&(
           <div style={{display:'flex',gap:8,alignItems:'center',padding:'8px 0',
             borderTop:'1px solid rgba(255,255,255,.04)'}}>
-            <span className="live" style={{fontSize:11}}><span className="ldot"/>EN VIVO</span>
+            <span className="live" style={{fontSize:11,opacity:liveCount>0?1:.5}}><span className="ldot"/>EN VIVO</span>
             <span style={{fontSize:12,color:'var(--muted)'}}>
-              {liveMatches.length} partido{liveMatches.length!==1?'s':''} en curso
+              {liveCount} partido{liveCount!==1?'s':''} en curso
             </span>
             <span style={{marginLeft:'auto',fontSize:11,color:'var(--muted)'}}>
               🔄 Auto-refresh 30s
@@ -2213,11 +2239,33 @@ function HomeScreen({onMatch,onGoToCal}){
       {/* ── Marquesina de comentarios (siempre visible) ── */}
       <CommentMarquee/>
 
-      {/* ── LIVE matches (only when WC is active) ── */}
-      {new Date()>=new Date(Date.UTC(2026,5,11,19,0,0))&&(
-        <div>
-          <div style={{height:10}}/>
-          {liveMatches.map(m=><MatchCard key={m.id} m={m} onClick={()=>onMatch(m)}/>)}
+      {/* ── LIVE matches manuales (Firestore live/livemanual) ── */}
+      {livMan.length>0&&(
+        <div style={{padding:'0 16px',marginBottom:14}}>
+          {livMan.map((p,i)=>(
+            <div key={i} style={{background:'var(--surf)',borderRadius:14,
+              border:'1px solid rgba(200,16,46,.35)',padding:'14px 16px',marginBottom:10,
+              boxShadow:'0 0 14px rgba(200,16,46,.12)'}}>
+              <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:10}}>
+                <span className="live" style={{fontSize:11}}><span className="ldot"/>EN VIVO</span>
+                {p.min&&<span style={{fontSize:12,color:'var(--gold)',fontWeight:700}}>{p.min}'</span>}
+                {p.venue&&<span style={{marginLeft:'auto',fontSize:10,color:'var(--muted)'}}>🏟️ {p.venue}</span>}
+              </div>
+              <div style={{display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+                <div style={{display:'flex',alignItems:'center',gap:8,flex:1}}>
+                  <span style={{fontSize:26}}>{FLAGS[p.home]||'🏳️'}</span>
+                  <span style={{fontSize:14,fontWeight:700}}>{p.home}</span>
+                </div>
+                <div style={{fontSize:24,fontWeight:800,color:'var(--gold)',padding:'0 14px'}}>
+                  {p.hs??0} - {p.as??0}
+                </div>
+                <div style={{display:'flex',alignItems:'center',gap:8,flex:1,justifyContent:'flex-end'}}>
+                  <span style={{fontSize:14,fontWeight:700}}>{p.away}</span>
+                  <span style={{fontSize:26}}>{FLAGS[p.away]||'🏳️'}</span>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       )}
 
@@ -2240,7 +2288,7 @@ function HomeScreen({onMatch,onGoToCal}){
         <div style={{fontFamily:'var(--ff)',fontSize:22,letterSpacing:1}}>{t.next_matches}</div>
         <span onClick={onGoToCal} style={{fontSize:12,color:'var(--gold)',fontWeight:600,cursor:'pointer'}}>{t.see_all}</span>
       </div>
-      {NEXT_MATCHES.slice(0,4).map(m=><NextCard key={m.id} m={m}/>)}
+      {lista.map(m=><NextCard key={m.id} m={m}/>)}
     </div>
   );
 }
