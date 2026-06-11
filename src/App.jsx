@@ -4599,18 +4599,18 @@ function GruposScreen({user,userBets,credito,creditoLoading,onPagar,onRecheckAcc
                       )}
                       <div style={{maxWidth:'72%'}}>
                         {!isMe&&(
-                          <div style={{fontSize:10,color:'var(--muted)',marginBottom:2,paddingLeft:4}}>
+                          <div style={{fontSize:12,color:'var(--muted)',marginBottom:2,paddingLeft:4}}>
                             {msg.name||'Usuario'}
                           </div>
                         )}
                         <div style={{background:isMe?'var(--gold)':'var(--surf2)',
                           color:isMe?'#000':'var(--txt)',
                           borderRadius:isMe?'16px 16px 4px 16px':'16px 16px 16px 4px',
-                          padding:'9px 13px',fontSize:13,lineHeight:1.5,
+                          padding:'10px 14px',fontSize:15,lineHeight:1.5,
                           border:isMe?'none':'1px solid var(--br)'}}>
                           {msg.text}
                         </div>
-                        <div style={{fontSize:9,color:'var(--muted)',marginTop:3,
+                        <div style={{fontSize:11,color:'var(--muted)',marginTop:3,
                           textAlign:isMe?'right':'left',paddingLeft:4}}>
                           {timeStr}
                         </div>
