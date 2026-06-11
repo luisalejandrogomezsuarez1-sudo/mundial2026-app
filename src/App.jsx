@@ -3661,7 +3661,15 @@ function GruposScreen({user,userBets,credito,creditoLoading,onPagar,onRecheckAcc
   const [newName,setNewName]=useState('');
   const [newDesc,setNewDesc]=useState('');
   const [joinCode,setJoinCode]=useState('');
-  const [locks,setLocks]=useState({});
+  // Bloqueos por grupo — se restauran desde localStorage para sobrevivir recargas
+  const [locks,setLocks]=useState(()=>{
+    try{
+      const saved=localStorage.getItem('wc2026_locks_'+(user?.id||''));
+      const p=saved?JSON.parse(saved):null;
+      if(p && typeof p==='object') return p;
+    }catch(e){}
+    return {};
+  });
   const [confirmLock,setConfirmLock]=useState(false);
   const [copied,setCopied]=useState(false);
   const [joinErr,setJoinErr]=useState('');
@@ -3925,7 +3933,10 @@ function GruposScreen({user,userBets,credito,creditoLoading,onPagar,onRecheckAcc
 
   const lockBets=gid=>{
     const lockedAt=Date.now();
-    setLocks(p=>({...p,[gid]:{bets:[...userBets],lockedAt}}));
+    const nextLocks={...locks,[gid]:{bets:[...userBets],lockedAt}};
+    setLocks(nextLocks);
+    // Persistir el bloqueo en el dispositivo para que sobreviva recargas
+    try{localStorage.setItem('wc2026_locks_'+(user?.id||''),JSON.stringify(nextLocks));}catch(e){}
     setConfirmLock(false);
     // Paso 1: persistir los pronósticos bloqueados en el servidor para que el resto
     // del grupo pueda verlos. Solo grupos reales (el demo WC26-AMIGOS es local).
