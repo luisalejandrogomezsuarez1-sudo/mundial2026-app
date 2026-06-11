@@ -2218,11 +2218,11 @@ function HomeScreen({onMatch,onGoToCal}){
               title="Actualizar">🔄</button>
           </div>
         </div>
-        {/* Live banner - only shown when WC is active */}
-        {new Date()>=new Date(Date.UTC(2026,5,11,19,0,0))&&(
+        {/* Live banner - solo visible cuando hay partidos en vivo (livemanual) */}
+        {liveCount>0&&(
           <div style={{display:'flex',gap:8,alignItems:'center',padding:'8px 0',
             borderTop:'1px solid rgba(255,255,255,.04)'}}>
-            <span className="live" style={{fontSize:11,opacity:liveCount>0?1:.5}}><span className="ldot"/>EN VIVO</span>
+            <span className="live" style={{fontSize:11}}><span className="ldot"/>EN VIVO</span>
             <span style={{fontSize:12,color:'var(--muted)'}}>
               {liveCount} partido{liveCount!==1?'s':''} en curso
             </span>
