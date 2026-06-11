@@ -2127,7 +2127,7 @@ function HomeScreen({onMatch,onGoToCal}){
 
   // Firestore: marcadores en vivo (con cache para evitar re-leer al volver al tab)
   useEffect(()=>{
-    if(new Date()<new Date('2026-06-11')) return;
+    if(new Date()<new Date(Date.UTC(2026,5,11,19,0,0))) return;
     const cached=getCachedLive('matches');
     if(cached?.matches?.length){ setLiveMatches(cached.matches); setApiStatus('live'); return; }
     let unsub, mounted=true;
@@ -2175,7 +2175,7 @@ function HomeScreen({onMatch,onGoToCal}){
           </div>
         </div>
         {/* Live banner - only shown when WC is active */}
-        {new Date()>=new Date('2026-06-11')&&(
+        {new Date()>=new Date(Date.UTC(2026,5,11,19,0,0))&&(
           <div style={{display:'flex',gap:8,alignItems:'center',padding:'8px 0',
             borderTop:'1px solid rgba(255,255,255,.04)'}}>
             <span className="live" style={{fontSize:11}}><span className="ldot"/>EN VIVO</span>
@@ -2190,13 +2190,13 @@ function HomeScreen({onMatch,onGoToCal}){
       </div>
 
       {/* ── COUNTDOWN when WC hasn't started ── */}
-      {new Date()<new Date('2026-06-11')&&<Countdown/>}
+      {new Date()<new Date(Date.UTC(2026,5,11,19,0,0))&&<Countdown/>}
 
       {/* ── Marquesina de comentarios (siempre visible) ── */}
       <CommentMarquee/>
 
       {/* ── LIVE matches (only when WC is active) ── */}
-      {new Date()>=new Date('2026-06-11')&&(
+      {new Date()>=new Date(Date.UTC(2026,5,11,19,0,0))&&(
         <div>
           <div style={{height:10}}/>
           {liveMatches.map(m=><MatchCard key={m.id} m={m} onClick={()=>onMatch(m)}/>)}
@@ -2204,7 +2204,7 @@ function HomeScreen({onMatch,onGoToCal}){
       )}
 
       {/* Countdown message before WC starts */}
-      {new Date()<new Date('2026-06-11')&&(
+      {new Date()<new Date(Date.UTC(2026,5,11,19,0,0))&&(
         <div style={{margin:'0 16px 14px',background:'rgba(240,165,0,.04)',
           borderRadius:14,border:'1px dashed rgba(240,165,0,.2)',padding:'14px 16px',
           textAlign:'center'}}>
@@ -2314,7 +2314,7 @@ function CalScreen(){
       </div>
 
       {/* Live matches only show during WC period (Jun 11 - Jul 19 2026) */}
-      {fil==='todos'&&LIVE_MATCHES.length>0&&new Date()>=new Date('2026-06-11')&&(
+      {fil==='todos'&&LIVE_MATCHES.length>0&&new Date()>=new Date(Date.UTC(2026,5,11,19,0,0))&&(
         <div>
           <div style={{padding:'4px 16px 7px',fontSize:12,fontWeight:700,
             color:'var(--muted)',letterSpacing:.8,display:'flex',alignItems:'center',gap:6}}>
