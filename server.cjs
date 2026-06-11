@@ -50,7 +50,8 @@ function afFetch(endpoint){
 // ── Datos en vivo: whitelist de documentos y copia en memoria ────
 // liveCache guarda la última versión de cada doc para servirla por HTTP
 // (GET /api/live/:docId) sin que cada usuario abra un onSnapshot a Firestore.
-const LIVE_DOCS  = ['matches','standings','scorers','fixtures','bracket'];
+const LIVE_DOCS    = ['matches','standings','scorers','fixtures','bracket','banner'];
+const ALWAYS_FRESH = ['banner'];   // se leen de Firestore en cada request (banner editable, sin polling)
 const liveCache  = {};
 
 // ── Save to Firestore ───────────────────────────────────
@@ -887,16 +888,18 @@ app.post('/api/mp/webhook', async (req, res) => {
 app.get('/api/live/:docId', async (req,res)=>{
   const { docId } = req.params;
   if(!LIVE_DOCS.includes(docId)) return res.status(404).json({ error:'not found' });
-  res.set('Cache-Control','public, max-age=30');   // caché HTTP suave
-  // Vía normal: copia en memoria mantenida por el polling
-  if(liveCache[docId]) return res.json(liveCache[docId]);
-  // Fallback (servidor recién arrancado, aún sin polling): leer Firestore 1 vez
+  const fresh = ALWAYS_FRESH.includes(docId);
+  res.set('Cache-Control', fresh ? 'no-store' : 'public, max-age=30');
+  // Vía normal: copia en memoria mantenida por el polling (los "fresh" la omiten)
+  if(!fresh && liveCache[docId]) return res.json(liveCache[docId]);
+  // Leer Firestore: los "fresh" (banner) en cada request; el resto solo en frío
+  // como fallback cuando aún no hay copia en memoria.
   if(db){
     try{
       const snap = await db.collection('live').doc(docId).get();
       if(snap.exists){
-        liveCache[docId] = snap.data();             // cachear para próximas peticiones
-        return res.json(liveCache[docId]);
+        if(!fresh) liveCache[docId] = snap.data();  // cachear solo los no-fresh
+        return res.json(snap.data());
       }
     }catch(e){ console.warn('live fallback read error:', e.message); }
   }

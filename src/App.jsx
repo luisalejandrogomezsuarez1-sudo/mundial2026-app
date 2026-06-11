@@ -663,6 +663,10 @@ body{font-family:var(--fb);background:var(--bg);color:var(--txt);height:100%;ove
 @keyframes popbadge{0%{transform:scale(0)}80%{transform:scale(1.2)}100%{transform:scale(1)}}
 @keyframes slide{0%{transform:translateX(-100%)}100%{transform:translateX(350%)}}
 @keyframes pulse{0%,100%{box-shadow:var(--glow)}50%{box-shadow:0 0 32px rgba(240,165,0,.3)}}
+@keyframes marquee{0%{transform:translateX(100%)}100%{transform:translateX(-100%)}}
+.marquee-wrap{overflow:hidden;white-space:nowrap;background:linear-gradient(90deg,rgba(200,16,46,.12),rgba(240,165,0,.08));border-top:1px solid rgba(240,165,0,.2);border-bottom:1px solid rgba(240,165,0,.2);padding:8px 0;}
+.marquee-text{display:inline-block;padding-left:100%;font-size:13px;font-weight:700;color:var(--gold);animation:marquee 25s linear infinite;}
+.marquee-text:hover{animation-play-state:paused;}
 .fin{animation:fin .35s ease forwards;}
 .inp{width:100%;background:var(--surf2);border:1.5px solid var(--br);
   border-radius:12px;padding:14px 16px;color:var(--txt);font-family:var(--fb);
@@ -2083,6 +2087,36 @@ function Countdown(){
 }
 
 // ── Home Screen ──────────────────────────────────
+// ── Marquesina de comentarios (texto desde Firestore live/banner) ──
+function CommentMarquee(){
+  const [texto,setTexto]=useState('');
+  useEffect(()=>{
+    let unsub, mounted=true;
+    const cached=getCachedLive('banner');
+    if(cached?.texto){ setTexto(cached.texto); }
+    const trySub=()=>{
+      if(!mounted) return;
+      const fn=window._fbSubscribeLive;
+      if(!fn){ setTimeout(trySub,800); return; }
+      try{
+        unsub=fn('banner',data=>{
+          setCachedLive('banner',data);
+          if(data?.texto) setTexto(data.texto);
+        });
+      }catch(e){}
+    };
+    trySub();
+    return()=>{ mounted=false; if(typeof unsub==='function') unsub(); };
+  },[]);
+  // Texto por defecto si Firestore aún no tiene nada
+  const display = texto || '📢 ¡Bienvenido a Mundial 2026! Haz tus pronósticos y compite con tus amigos · ⚽ El torneo comienza el 11 de Junio';
+  return(
+    <div className="marquee-wrap" style={{margin:'0 0 14px'}}>
+      <div className="marquee-text">{display}</div>
+    </div>
+  );
+}
+
 function HomeScreen({onMatch,onGoToCal}){
   const t=useLang();
   const [ref,setRef]=useState(false);
@@ -2157,6 +2191,9 @@ function HomeScreen({onMatch,onGoToCal}){
 
       {/* ── COUNTDOWN when WC hasn't started ── */}
       {new Date()<new Date('2026-06-11')&&<Countdown/>}
+
+      {/* ── Marquesina de comentarios (siempre visible) ── */}
+      <CommentMarquee/>
 
       {/* ── LIVE matches (only when WC is active) ── */}
       {new Date()>=new Date('2026-06-11')&&(
