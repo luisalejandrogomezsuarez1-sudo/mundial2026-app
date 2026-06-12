@@ -5236,6 +5236,11 @@ function BetsScreen({bets,placeBet,credito,creditoLoading,onPagar,onReset,betsSa
                 <OBtn id={`m${mid}-1x2`} category="1X2" val="X" odds={o[1]} display="EMP"/>
                 <OBtn id={`m${mid}-1x2`} category="1X2" val="2" odds={o[2]} display={awayShort}/>
               </div>
+              {/* Fila 2: Ambos anotan */}
+              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:3}}>
+                <OBtn id={`m${mid}-btts`} category="BTTS" val="si" odds={1.75} display="✓ Anotan"/>
+                <OBtn id={`m${mid}-btts`} category="BTTS" val="no" odds={2.05} display="✗ No"/>
+              </div>
             </div>
           </div>
         );
