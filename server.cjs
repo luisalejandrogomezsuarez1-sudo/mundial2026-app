@@ -316,7 +316,7 @@ app.post('/api/groups', (req,res)=>{
 const notFoundCache = new Set();
 const NOT_FOUND_TTL = 5 * 60 * 1000; // 5 min
 
-// ── Grupos donde el usuario es miembro (fallback del cliente para uploadBets) ─
+// ── Grupos donde el usuario es miembro (fallback del cliente al guardar bets) ─
 // DEBE ir ANTES de /api/groups/:code o ":code" capturaría "user".
 app.get('/api/groups/user/:uid', async(req,res)=>{
   const uid = req.params.uid;

@@ -40,8 +40,6 @@ import('./firebase.js').then(fb => {
     try{ const u=JSON.parse(localStorage.getItem('wc2026_current_user')||'null'); if(u?.id) return u.id; }catch(_){}
     return null;
   };
-  // DEBUG: uid PURO de Firebase Auth (sin fallback) para el panel de diagnóstico
-  window._fbAuthUidRaw      = () => { try{ return fb.auth?.currentUser?.uid || null; }catch(_){ return null; } };
   console.log('🔥 Firebase conectado — mundial2026-15686');
 }).catch(e => console.warn('Firebase error:', e));
 
@@ -5796,8 +5794,6 @@ export default function App(){
   const [credito,setCredito]=useState(null);
   const [creditoLoading,setCreditoLoading]=useState(false);
   const [mpVerify,setMpVerify]=useState(null);
-  const [debugInfo,setDebugInfo]=useState({target:'-',snapPaquetes:'-'}); // DEBUG temporal
-  const [dbgTick,setDbgTick]=useState(0); // refresca el panel de debug en vivo
   // mpVerify: null | "verifying" | {ok:true,paymentId,coins} | {ok:false,paymentId,error}
   //         | {kind:'pending'} | {kind:'failure'}
   const [betsSaved,setBetsSaved]=useState(false); // predictions locked after saving
@@ -5807,12 +5803,6 @@ export default function App(){
   // Espejo del usuario activo para leerlo dentro de listeners sin stale closure
   const userRef=useRef(null);
   useEffect(()=>{userRef.current=user;},[user]);
-  // DEBUG temporal: refrescar el panel de diagnóstico en vivo (no admin)
-  useEffect(()=>{
-    if(user?.isAdmin) return;
-    const id=setInterval(()=>setDbgTick(t=>t+1),1500);
-    return()=>clearInterval(id);
-  },[user?.isAdmin]);
   // Migración de pronósticos bloqueados: correr al abrir la app (no solo en Grupos)
   // para que los usuarios afectados por el bug del stub se recuperen más rápido.
   useEffect(()=>{ if(user?.id) syncLockedBets(user); },[user?.id]);
@@ -5954,8 +5944,8 @@ export default function App(){
     try{
       // NO usar la cache local (wc2026_users_db) para el saldo inicial: puede estar
       // vieja (p. ej. un dispositivo con paquetes:0/1 desactualizado) y mostrar 0
-      // monedas. Mostrar "cargando" y leer SIEMPRE de Firestore. El gift-listener
-      // (onSnapshot) también entrega el saldo real al suscribirse.
+      // monedas. Mostrar "cargando" y leer SIEMPRE de Firestore. El listener del
+      // doc del usuario (onSnapshot) también entrega el saldo real al suscribirse.
       setCreditoLoading(true);
       const checkFirestoreCredit=async(attempts=0)=>{
         const getOneFn=window._fbGetUser;
@@ -6163,7 +6153,7 @@ export default function App(){
     const doSubscribe=async()=>{
       const subscribeFn=window._fbSubscribeUser;
       const findFn=window._fbFindUserByEmail;
-      if(!subscribeFn){console.warn('[gift-listener] _fbSubscribeUser aún no disponible');return;}
+      if(!subscribeFn) return;
       // El path REAL del doc en Firestore es users/{Firebase Auth uid}. El campo
       // 'id' del documento puede ser un id legacy (u_TIMESTAMP) que NO sirve como
       // path → usar el uid de Firebase Auth (window._fbCurrentUid).
@@ -6171,15 +6161,10 @@ export default function App(){
       let targetId=authUid||user.id;
       if(!authUid && !user.fromAuth && findFn){
         // Sin uid de Auth y usuario legado: resolver el doc real por email
-        try{ const fsUser=await findFn(user.email); if(fsUser?.id) targetId=fsUser.id; }
-        catch(e){ console.warn('[gift-listener] findUserByEmail error:',e); }
+        try{ const fsUser=await findFn(user.email); if(fsUser?.id) targetId=fsUser.id; }catch(e){}
       }
-      console.log('[gift-listener] suscrito a users/'+targetId+' (authUid='+authUid+', user.id='+user.id+')');
-      setDebugInfo(d=>({...d,target:targetId})); // DEBUG
       unsub=subscribeFn(targetId,fsUser=>{
         if(cancelled) return;
-        console.log('[gift-listener] snapshot:',JSON.stringify({id:targetId,gifted:fsUser?.gifted,giftedCoins:fsUser?.giftedCoins,paquetes:fsUser?.paquetes}));
-        setDebugInfo(d=>({...d,snapPaquetes:String(fsUser?.paquetes??'null')})); // DEBUG
         // Detectar eliminación
         if(fsUser?.forceDelete||fsUser?.deleted){
           dbLoad().then(allDB=>dbSave(allDB.filter(x=>x.id!==user.id))).catch(()=>{});
@@ -6192,12 +6177,9 @@ export default function App(){
         // Detectar regalo de monedas en tiempo real
         if(fsUser?.gifted){
           const gc=Number(fsUser.giftedCoins)||1000; // coerción: el admin puede enviar string
-          console.log('[gift-listener] ✓ REGALO detectado, monedas:',gc);
           setCredito(prev=>{
-            if(prev?.gifted){console.log('[gift-listener] credito ya era gifted, sin cambio');return prev;}
-            const nuevo={coins:gc+(fsUser.paquetes||0)*COINS_PER_PAGO,paquetes:fsUser.paquetes||1,paidAt:Date.now(),gifted:true,giftedCoins:gc};
-            console.log('[gift-listener] setCredito →',JSON.stringify(nuevo));
-            return nuevo;
+            if(prev?.gifted) return prev;
+            return {coins:gc+(fsUser.paquetes||0)*COINS_PER_PAGO,paquetes:fsUser.paquetes||1,paidAt:Date.now(),gifted:true,giftedCoins:gc};
           });
           dbLoad().then(localUsers=>{
             dbSave(localUsers.map(x=>x.email?.toLowerCase()===user.email?.toLowerCase()?{...x,gifted:true,giftedCoins:gc}:x));
@@ -6208,7 +6190,6 @@ export default function App(){
           // así que es la fuente de verdad, no la copia (posiblemente vieja) de localStorage.
           const paq=Number(fsUser?.paquetes)||0;
           if(paq>0){
-            console.log('[gift-listener] paquetes Firestore =',paq,'→ credito',paq*COINS_PER_PAGO);
             setCredito(prev=>{
               if(prev?.gifted||prev?.isAdmin) return prev; // no pisar regalo activo ni admin
               if(prev?.paquetes===paq && prev?.coins===paq*COINS_PER_PAGO) return prev; // sin cambio
@@ -6567,19 +6548,6 @@ export default function App(){
           )}
         </>}
       </div>
-      {/* DEBUG temporal — panel de diagnóstico de uid en móvil (no admin) */}
-      {user && !user.isAdmin && (()=>{
-        let lsId='-'; try{ lsId=JSON.parse(localStorage.getItem('wc2026_current_user')||'null')?.id||'null'; }catch(_){ lsId='err'; }
-        const authUid=(window._fbAuthUidRaw&&window._fbAuthUidRaw())||'null';
-        return(
-          <div style={{position:'fixed',left:0,right:0,bottom:0,zIndex:99999,
-            background:'#000',color:'#0f0',fontFamily:'monospace',fontSize:9,
-            lineHeight:1.45,padding:'4px 8px',borderTop:'1px solid #0a0',
-            whiteSpace:'pre-wrap',wordBreak:'break-all',opacity:.92}}>
-            {`AUTH uid: ${authUid}\nuser.id: ${user?.id}\nLS id: ${lsId}\nlistener target: ${debugInfo.target}\nsnapshot paquetes: ${debugInfo.snapPaquetes}\ncredito.coins: ${credito?.coins ?? '-'}  (tick ${dbgTick})`}
-          </div>
-        );
-      })()}
     </div>
     </LangCtx.Provider>
   );

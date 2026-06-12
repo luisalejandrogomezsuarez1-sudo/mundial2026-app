@@ -247,7 +247,6 @@ export async function findUserByEmail(email) {
 export async function giftCoinsInFirestore(userId, gifted, giftedCoins=1000) {
   if(!userId) return;
   try {
-    console.log('[GIFT] escritura DIRECTA → users/'+userId+' · gifted='+gifted+' · coins='+giftedCoins);
     await setDoc(doc(db,'users', userId), {
       gifted,
       giftedAt:    gifted ? new Date().toISOString() : null,
@@ -270,18 +269,13 @@ export async function giftCoinsByEmail(email, gifted, giftedCoins=1000) {
   };
   try {
     const snap = await getDocs(query(collection(db,'users'), where('email','==', normalizedEmail)));
-    console.log('[GIFT] email buscado:', normalizedEmail,
-      '· docs encontrados:', snap.docs.map(d=>({uid:d.id, email:d.data().email})));
     if (!snap.empty) {
       // Actualizar todos los docs reales con este email (cubre viejos + canónico)
       await Promise.all(snap.docs.map(d => setDoc(doc(db,'users', d.id), data, { merge: true })));
-      console.log('[GIFT] gifted='+gifted+' escrito por email en uids:', snap.docs.map(d=>d.id));
       return;
     }
     // Sin doc por email (usuario regalado antes de existir su doc): usar ID canónico
-    const canon = emailToDocId(normalizedEmail);
-    console.log('[GIFT] sin docs por email → escribiendo en canónico:', canon);
-    await setDoc(doc(db,'users', canon), data, { merge: true });
+    await setDoc(doc(db,'users', emailToDocId(normalizedEmail)), data, { merge: true });
   } catch(e) { console.warn('giftCoinsByEmail error:', e); }
 }
 
