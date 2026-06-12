@@ -3174,6 +3174,245 @@ function AdminDialog({dlg,onClose}){
   return null;
 }
 
+// ═══════════════════════════════════════════════════════════════
+// PANTALLA ADMIN — RESULTADOS (Tabla · Goles · Puntos)
+// Solo visible para admin. Mete marcadores y goleadores, y calcula puntos.
+// ═══════════════════════════════════════════════════════════════
+function AdminResultados({onClose}){
+  const [adminKey,setAdminKey]=useState(()=>{ try{return sessionStorage.getItem('wc2026_admin_key')||'';}catch{return '';} });
+  const [sec,setSec]=useState('tabla'); // tabla | goles | puntos
+  const [busy,setBusy]=useState(false);
+  const [msg,setMsg]=useState('');
+
+  // Partidos jugables (los que tienen equipos definidos), de NEXT_MATCHES
+  const playable=[...NEXT_MATCHES].filter(m=>m.home!=='Por definir'&&m.away!=='Por definir');
+  // Marcadores: { matchId: {gh, ga} }
+  const [scores,setScores]=useState(()=>{ try{return JSON.parse(localStorage.getItem('wc2026_admin_scores')||'{}');}catch{return {};} });
+  // Goleadores: lista editable [{n, team, g}]
+  const [scorers,setScorers]=useState(()=>{ try{return JSON.parse(localStorage.getItem('wc2026_admin_scorers')||'[]');}catch{return [];} });
+
+  const saveKey=k=>{ setAdminKey(k); try{sessionStorage.setItem('wc2026_admin_key',k);}catch{} };
+  const persistScores=s=>{ setScores(s); try{localStorage.setItem('wc2026_admin_scores',JSON.stringify(s));}catch{} };
+  const persistScorers=s=>{ setScorers(s); try{localStorage.setItem('wc2026_admin_scorers',JSON.stringify(s));}catch{} };
+
+  const grupoDe=m=>{ const mt=(m.phase||'').match(/Grupo ([A-L])/); return mt?('Grupo '+mt[1]):null; };
+
+  // groupsDef desde GROUPS: { "Grupo A":["México",...] }
+  const groupsDef=()=>{ const o={}; GROUPS.forEach(g=>{ o[g.name]=g.teams.map(t=>t.n); }); return o; };
+
+  const post=async(path,body)=>{
+    setBusy(true); setMsg('');
+    try{
+      const r=await fetch(path,{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({key:adminKey,...body})});
+      const d=await r.json();
+      if(!r.ok){ setMsg('❌ '+(d.error||'Error '+r.status)); return null; }
+      return d;
+    }catch(e){ setMsg('❌ '+e.message); return null; }
+    finally{ setBusy(false); }
+  };
+
+  // ── Acción: actualizar TABLA ──
+  const updateTabla=async()=>{
+    const matches=playable.map(m=>{
+      const s=scores[m.id];
+      return { match_id:m.id, group:grupoDe(m), home:m.home, away:m.away,
+               gh:s&&s.gh!==''?Number(s.gh):null, ga:s&&s.ga!==''?Number(s.ga):null };
+    });
+    const d=await post('/api/admin/tabla',{matches,groupsDef:groupsDef()});
+    if(d?.ok) setMsg('✅ Tabla actualizada');
+  };
+
+  // ── Acción: actualizar GOLES ──
+  const updateGoles=async()=>{
+    const clean=scorers.filter(s=>s.n&&s.n.trim());
+    const d=await post('/api/admin/goles',{scorers:clean});
+    if(d?.ok) setMsg(`✅ Goles actualizados (${d.count} jugadores)`);
+  };
+
+  // ── Acción: calcular PUNTOS ──
+  // Construye results { betId: seleccionGanadora } desde los marcadores.
+  const [ranking,setRanking]=useState(null);
+  const buildResults=()=>{
+    const res={};
+    playable.forEach(m=>{
+      const s=scores[m.id];
+      if(!s||s.gh===''||s.ga===''||s.gh==null||s.ga==null) return;
+      const gh=Number(s.gh), ga=Number(s.ga);
+      // 1X2: "1" local, "X" empate, "2" visitante
+      res[`m${m.id}-1x2`]= gh>ga?'1':(gh<ga?'2':'X');
+      // BTTS: "si" si ambos anotaron, "no" si no
+      res[`m${m.id}-btts`]= (gh>0&&ga>0)?'si':'no';
+    });
+    return res;
+  };
+  const calcPuntos=async(dryRun)=>{
+    const results=buildResults();
+    if(Object.keys(results).length===0){ setMsg('⚠️ No hay marcadores cargados'); return; }
+    const d=await post('/api/admin/puntos',{results,dryRun});
+    if(d?.ok){
+      setRanking(d.ranking||[]);
+      setMsg(dryRun
+        ? `🔍 Simulación: ${d.usuariosConBets} usuarios calculados (no guardado)`
+        : `✅ Puntos guardados · ${d.escritos} usuarios · ${d.gruposActualizados} grupos actualizados`);
+    }
+  };
+
+  const inp={background:'var(--surf2)',border:'1px solid var(--br)',color:'var(--txt)',
+    borderRadius:8,padding:'7px 9px',fontSize:13,width:'100%',boxSizing:'border-box',fontFamily:'var(--fb)'};
+  const btn=(bg,fg='#000')=>({background:bg,border:'none',color:fg,borderRadius:10,padding:'12px',
+    fontFamily:'var(--ff)',fontSize:14,letterSpacing:.5,fontWeight:800,cursor:'pointer',width:'100%'});
+
+  return(
+    <div style={{position:'fixed',inset:0,zIndex:9000,background:'var(--bg)',overflowY:'auto'}}>
+      {/* Header */}
+      <div style={{position:'sticky',top:0,zIndex:2,background:'var(--bg)',
+        borderBottom:'1px solid var(--br)',padding:'14px 16px',
+        display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+        <div style={{fontFamily:'var(--ff)',fontSize:18,letterSpacing:1,color:'var(--gold)'}}>
+          ⚙️ RESULTADOS
+        </div>
+        <button onClick={onClose} style={{background:'var(--surf2)',border:'1px solid var(--br)',
+          color:'var(--txt)',borderRadius:8,padding:'7px 14px',fontSize:13,fontWeight:700,cursor:'pointer'}}>
+          ✕ Cerrar
+        </button>
+      </div>
+
+      <div style={{padding:'14px 16px',maxWidth:560,margin:'0 auto'}}>
+        {/* Admin key */}
+        <div style={{marginBottom:14}}>
+          <div style={{fontSize:11,color:'var(--muted)',marginBottom:5,fontWeight:700}}>Clave de administrador</div>
+          <input type="password" value={adminKey} onChange={e=>saveKey(e.target.value)}
+            placeholder="ADMIN_KEY" style={inp}/>
+        </div>
+
+        {/* Tabs de sección */}
+        <div style={{display:'flex',gap:7,marginBottom:14}}>
+          {[['tabla','📊 Tabla'],['goles','⚽ Goles'],['puntos','🏆 Puntos']].map(([k,l])=>(
+            <button key={k} onClick={()=>{setSec(k);setMsg('');}}
+              style={{flex:1,background:sec===k?'var(--gold)':'var(--surf)',
+                color:sec===k?'#000':'var(--muted)',border:`1px solid ${sec===k?'var(--gold)':'var(--br)'}`,
+                borderRadius:9,padding:'9px 4px',fontSize:12,fontWeight:800,cursor:'pointer',fontFamily:'var(--fb)'}}>
+              {l}
+            </button>
+          ))}
+        </div>
+
+        {msg&&(
+          <div style={{background:'var(--surf)',border:'1px solid var(--br)',borderRadius:9,
+            padding:'10px 12px',fontSize:12,color:'var(--txt)',marginBottom:12,textAlign:'center'}}>
+            {msg}
+          </div>
+        )}
+
+        {/* ── SECCIÓN TABLA ── */}
+        {sec==='tabla'&&(
+          <div>
+            <div style={{fontSize:11,color:'var(--muted)',marginBottom:10,lineHeight:1.5}}>
+              Mete el marcador final de cada partido. Deja vacío los no jugados. Luego pulsa <strong>Actualizar Tabla</strong>.
+            </div>
+            <div style={{display:'flex',flexDirection:'column',gap:6,marginBottom:14}}>
+              {playable.map(m=>{
+                const s=scores[m.id]||{gh:'',ga:''};
+                return(
+                  <div key={m.id} style={{display:'flex',alignItems:'center',gap:6,
+                    background:'var(--surf)',borderRadius:9,padding:'7px 9px',border:'1px solid var(--br)'}}>
+                    <div style={{flex:1,minWidth:0,fontSize:11,color:'var(--txt)'}}>
+                      <div style={{fontSize:9,color:'var(--muted)'}}>{grupoDe(m)||'—'} · {m.date}</div>
+                      <div style={{whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{m.home} vs {m.away}</div>
+                    </div>
+                    <input type="number" inputMode="numeric" value={s.gh} placeholder="-"
+                      onChange={e=>persistScores({...scores,[m.id]:{...s,gh:e.target.value}})}
+                      style={{...inp,width:42,textAlign:'center',padding:'6px 2px'}}/>
+                    <span style={{color:'var(--muted)',fontSize:12}}>-</span>
+                    <input type="number" inputMode="numeric" value={s.ga} placeholder="-"
+                      onChange={e=>persistScores({...scores,[m.id]:{...s,ga:e.target.value}})}
+                      style={{...inp,width:42,textAlign:'center',padding:'6px 2px'}}/>
+                  </div>
+                );
+              })}
+            </div>
+            <button disabled={busy} onClick={updateTabla} style={btn(busy?'var(--surf2)':'linear-gradient(135deg,var(--gold),var(--gold2))')}>
+              {busy?'Procesando…':'📊 Actualizar Tabla'}
+            </button>
+          </div>
+        )}
+
+        {/* ── SECCIÓN GOLES ── */}
+        {sec==='goles'&&(
+          <div>
+            <div style={{fontSize:11,color:'var(--muted)',marginBottom:10,lineHeight:1.5}}>
+              Lista de goleadores con su <strong>total acumulado</strong> de goles. Agrega los que vayan anotando.
+            </div>
+            <div style={{display:'flex',flexDirection:'column',gap:6,marginBottom:10}}>
+              {scorers.map((s,i)=>(
+                <div key={i} style={{display:'flex',gap:6,alignItems:'center'}}>
+                  <input value={s.n} placeholder="Jugador"
+                    onChange={e=>{const c=[...scorers];c[i]={...c[i],n:e.target.value};persistScorers(c);}}
+                    style={{...inp,flex:2}}/>
+                  <input value={s.team} placeholder="Equipo"
+                    onChange={e=>{const c=[...scorers];c[i]={...c[i],team:e.target.value};persistScorers(c);}}
+                    style={{...inp,flex:1.3}}/>
+                  <input type="number" inputMode="numeric" value={s.g} placeholder="Goles"
+                    onChange={e=>{const c=[...scorers];c[i]={...c[i],g:e.target.value};persistScorers(c);}}
+                    style={{...inp,width:54,textAlign:'center'}}/>
+                  <button onClick={()=>persistScorers(scorers.filter((_,j)=>j!==i))}
+                    style={{background:'rgba(200,16,46,.12)',border:'none',color:'#FC8181',
+                      borderRadius:7,padding:'7px 9px',fontSize:13,cursor:'pointer'}}>✕</button>
+                </div>
+              ))}
+            </div>
+            <button onClick={()=>persistScorers([...scorers,{n:'',team:'',g:''}])}
+              style={{...btn('var(--surf)','var(--gold)'),marginBottom:8,border:'1px dashed var(--br)'}}>
+              ＋ Agregar jugador
+            </button>
+            <button disabled={busy} onClick={updateGoles} style={btn(busy?'var(--surf2)':'linear-gradient(135deg,var(--gold),var(--gold2))')}>
+              {busy?'Procesando…':'⚽ Actualizar Goles'}
+            </button>
+          </div>
+        )}
+
+        {/* ── SECCIÓN PUNTOS ── */}
+        {sec==='puntos'&&(
+          <div>
+            <div style={{fontSize:11,color:'var(--muted)',marginBottom:12,lineHeight:1.5}}>
+              Calcula los puntos de todos los usuarios con los marcadores cargados en la pestaña Tabla.
+              Primero <strong>Simular</strong> para revisar, luego <strong>Guardar</strong>.
+            </div>
+            <div style={{display:'flex',gap:8,marginBottom:14}}>
+              <button disabled={busy} onClick={()=>calcPuntos(true)}
+                style={{...btn('var(--surf)','var(--gold)'),border:'1px solid var(--br)'}}>
+                🔍 Simular
+              </button>
+              <button disabled={busy} onClick={()=>calcPuntos(false)}
+                style={btn(busy?'var(--surf2)':'linear-gradient(135deg,var(--gold),var(--gold2))')}>
+                💾 Guardar puntos
+              </button>
+            </div>
+            {ranking&&ranking.length>0&&(
+              <div style={{background:'var(--surf)',border:'1px solid var(--br)',borderRadius:10,overflow:'hidden'}}>
+                <div style={{padding:'8px 12px',fontSize:11,fontWeight:700,color:'var(--muted)',
+                  borderBottom:'1px solid var(--br)',letterSpacing:.5}}>RANKING (top 20)</div>
+                {ranking.slice(0,20).map((r,i)=>(
+                  <div key={r.uid} style={{display:'flex',alignItems:'center',gap:8,padding:'8px 12px',
+                    borderBottom:i<19?'1px solid rgba(255,255,255,.04)':'none'}}>
+                    <span style={{width:22,fontSize:12,color:'var(--muted)',fontWeight:700}}>{i+1}</span>
+                    <span style={{flex:1,fontSize:12,color:'var(--txt)',whiteSpace:'nowrap',
+                      overflow:'hidden',textOverflow:'ellipsis'}}>{r.name||r.uid}</span>
+                    <span style={{fontSize:10,color:'var(--muted)'}}>{r.hits} ac.</span>
+                    <span style={{fontFamily:'var(--ff)',fontSize:15,color:'var(--gold)',minWidth:44,textAlign:'right'}}>{r.pts}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+        <div style={{height:30}}/>
+      </div>
+    </div>
+  );
+}
+
 function PerfilScreen({user,onLogout,lang='es'}){
   const t = useLang(); // ← translations
   const ini=(user.name||user.email||'U')[0].toUpperCase();
@@ -3184,6 +3423,7 @@ function PerfilScreen({user,onLogout,lang='es'}){
   const [shareMsg,setShareMsg]=useState('');
   const [adminDlg,setAdminDlg]=useState(null);
   const [adminMsg,setAdminMsg]=useState('');
+  const [showResultados,setShowResultados]=useState(false);
 
   // Fuera del useEffect para que refreshAdminUsers y el botón 🔄 puedan usarlo
   const getDeletedIds=()=>{try{return JSON.parse(localStorage.getItem('wc2026_admin_deleted')||'[]');}catch{return[];}};
@@ -3328,6 +3568,16 @@ function PerfilScreen({user,onLogout,lang='es'}){
             <div style={{fontFamily:'var(--ff)',fontSize:20,letterSpacing:1,color:'var(--gold)',marginBottom:10}}>
               👑 PANEL DE ADMINISTRADOR
             </div>
+
+            {/* Acceso a pantalla de resultados (tabla · goles · puntos) */}
+            <button onClick={()=>setShowResultados(true)}
+              style={{width:'100%',background:'linear-gradient(135deg,var(--gold),var(--gold2))',
+                border:'none',color:'#000',borderRadius:12,padding:'13px',
+                fontFamily:'var(--ff)',fontSize:15,letterSpacing:.5,fontWeight:800,
+                cursor:'pointer',marginBottom:14,boxShadow:'0 3px 14px rgba(240,165,0,.3)'}}>
+              ⚙️ RESULTADOS · Tabla · Goles · Puntos
+            </button>
+            {showResultados&&<AdminResultados onClose={()=>setShowResultados(false)}/>}
 
             {/* ── 4 stat cards ── */}
             <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginBottom:12}}>

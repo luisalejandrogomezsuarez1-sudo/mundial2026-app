@@ -1071,6 +1071,150 @@ app.post('/api/admin/calcular-puntos', async (req,res)=>{
   }
 });
 
+// ═══════════════════════════════════════════════════════════════
+// PANEL ADMIN — RESULTADOS MANUALES (tabla · goles · puntos)
+// ═══════════════════════════════════════════════════════════════
+
+// ── 1) TABLA / STANDINGS ──────────────────────────────────
+// La app (que tiene NEXT_MATCHES y GROUPS) envía los marcadores ya resueltos.
+// Body: { key, matches:[{match_id, group, home, away, gh, ga}] }
+// Calcula PJ/G/E/P/GF/GC/DG/PTS por equipo y guarda live/standings.
+app.post('/api/admin/tabla', async (req,res)=>{
+  if(!ADMIN_KEY || req.body.key !== ADMIN_KEY)
+    return res.status(403).json({error:'Forbidden'});
+  const matches = Array.isArray(req.body.matches) ? req.body.matches : [];
+  const groupsDef = req.body.groupsDef || null; // { "Grupo A":["México","Corea del Sur",...], ... }
+  if(!groupsDef) return res.status(400).json({error:'Falta groupsDef (equipos por grupo)'});
+
+  try{
+    // Inicializar tabla con todos los equipos en 0
+    const groups = Object.entries(groupsDef).map(([name,teams])=>({
+      name,
+      teams: teams.map(n=>({n, pj:0,g:0,e:0,p:0,gf:0,gc:0,dg:0,pts:0})),
+    }));
+    const findTeam=(teamName)=>{
+      for(const grp of groups){
+        const tm=grp.teams.find(x=>x.n===teamName);
+        if(tm) return tm;
+      }
+      return null;
+    };
+    // Aplicar cada marcador FINALIZADO
+    for(const m of matches){
+      if(m.gh==null || m.ga==null) continue; // sin marcador → no jugado
+      const gh=Number(m.gh), ga=Number(m.ga);
+      const home=findTeam(m.home), away=findTeam(m.away);
+      if(!home || !away) continue;
+      home.pj++; away.pj++;
+      home.gf+=gh; home.gc+=ga;
+      away.gf+=ga; away.gc+=gh;
+      if(gh>ga){ home.g++; home.pts+=3; away.p++; }
+      else if(gh<ga){ away.g++; away.pts+=3; home.p++; }
+      else { home.e++; away.e++; home.pts++; away.pts++; }
+    }
+    groups.forEach(grp=>grp.teams.forEach(tm=>{ tm.dg=tm.gf-tm.gc; }));
+    // Ordenar cada grupo: pts, dg, gf
+    groups.forEach(grp=>grp.teams.sort((a,b)=>b.pts-a.pts||b.dg-a.dg||b.gf-a.gf));
+    await save('standings', { groups });
+    res.json({ ok:true, groups });
+  }catch(e){ console.warn('admin/tabla error:', e.message); res.status(500).json({error:e.message}); }
+});
+
+// ── 2) GOLES / SCORERS ────────────────────────────────────
+// Body: { key, scorers:[{n, team, g, a?}] }  (total acumulado por jugador)
+// Guarda live/scorers ordenado por goles.
+app.post('/api/admin/goles', async (req,res)=>{
+  if(!ADMIN_KEY || req.body.key !== ADMIN_KEY)
+    return res.status(403).json({error:'Forbidden'});
+  const scorers = Array.isArray(req.body.scorers) ? req.body.scorers : [];
+  try{
+    const list = scorers
+      .map(s=>({ n:String(s.n||'').trim(), team:String(s.team||'').trim(),
+                 g:Number(s.g)||0, a:Number(s.a)||0 }))
+      .filter(s=>s.n)
+      .sort((x,y)=>y.g-x.g || y.a-x.a);
+    await save('scorers', { list });
+    res.json({ ok:true, count:list.length, list });
+  }catch(e){ console.warn('admin/goles error:', e.message); res.status(500).json({error:e.message}); }
+});
+
+// ── 3) PUNTOS (con resultados de partidos) ────────────────
+// Calcula puntos de cada usuario y los escribe en users/{uid}.pts
+// Y en groups/{code}.members[].pts (para que el ranking del grupo los muestre).
+// Body: { key, results, dryRun }
+//   results = { "<betId>": "<seleccionGanadora>", ... }
+app.post('/api/admin/puntos', async (req,res)=>{
+  if(!ADMIN_KEY || req.body.key !== ADMIN_KEY)
+    return res.status(403).json({error:'Forbidden'});
+  if(!db) return res.status(503).json({error:'DB no disponible'});
+  const results = req.body.results || {};
+  const dryRun  = req.body.dryRun === true;
+  if(!results || typeof results!=='object' || Array.isArray(results))
+    return res.status(400).json({error:'results debe ser { betId: seleccionGanadora }'});
+
+  try{
+    const snap = await db.collection('users').get();
+    const ptsByUid = {};       // uid -> pts (para actualizar grupos)
+    const summary = [];
+    let batch = db.batch(), pending = 0, written = 0;
+
+    for(const docSnap of snap.docs){
+      const u = docSnap.data();
+      const bets = Array.isArray(u.bets) ? u.bets : [];
+      if(bets.length===0) continue;
+      let pts = 0, hits = 0;
+      for(const b of bets){
+        const winner = results[b.id];
+        if(winner==null) continue;
+        if(norm(b.selection)===norm(winner)){
+          pts += Math.round(basePointsFor(b.id)*(Number(b.odds)||0)*10)/10;
+          hits++;
+        }
+      }
+      pts = Math.round(pts*10)/10;
+      ptsByUid[docSnap.id] = pts;
+      summary.push({ uid: docSnap.id, name: u.name||'', bets: bets.length, hits, pts });
+      if(!dryRun){
+        batch.update(docSnap.ref, { pts, ptsUpdatedAt: new Date().toISOString() });
+        if(++pending >= 400){ await batch.commit(); written += pending; batch = db.batch(); pending = 0; }
+      }
+    }
+    if(!dryRun && pending>0){ await batch.commit(); written += pending; }
+
+    // Propagar los puntos a los miembros de cada grupo (ranking del grupo)
+    let gruposActualizados = 0;
+    if(!dryRun){
+      const gsnap = await db.collection('groups').get();
+      let gbatch = db.batch(), gpending = 0;
+      for(const gdoc of gsnap.docs){
+        const g = gdoc.data();
+        if(!Array.isArray(g.members)) continue;
+        let changed = false;
+        const members = g.members.map(m=>{
+          if(m && m.id!=null && ptsByUid[m.id]!=null && m.pts!==ptsByUid[m.id]){
+            changed = true;
+            return { ...m, pts: ptsByUid[m.id] };
+          }
+          return m;
+        });
+        if(changed){
+          gbatch.update(gdoc.ref, { members });
+          gruposActualizados++;
+          // refrescar memoria del servidor para que GET /api/groups lo sirva al instante
+          if(serverGroups[gdoc.id]) serverGroups[gdoc.id].members = members;
+          if(++gpending >= 400){ await gbatch.commit(); gbatch = db.batch(); gpending = 0; }
+        }
+      }
+      if(gpending>0) await gbatch.commit();
+      persistGroups();
+    }
+
+    summary.sort((a,b)=>b.pts-a.pts);
+    res.json({ ok:true, dryRun, usuariosConBets: summary.length,
+               escritos: dryRun?0:written, gruposActualizados, ranking: summary });
+  }catch(e){ console.warn('admin/puntos error:', e.message); res.status(500).json({error:e.message}); }
+});
+
 // ── Datos en vivo servidos desde el servidor ────────────
 // Evita que cada usuario lea Firestore: el servidor mantiene los datos en
 // memoria (vía save() durante el polling) y aquí los entrega por HTTP.
