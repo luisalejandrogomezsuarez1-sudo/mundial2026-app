@@ -26,6 +26,7 @@ import('./firebase.js').then(fb => {
   window._fbSubscribeUser   = fb.subscribeToUserDoc;
   window._fbFindUserByEmail = fb.findUserByEmail;
   window._fbGiftCoinsByEmail= fb.giftCoinsByEmail;
+  window._fbSaveUserBets    = fb.saveUserBetsToFirestore;
   // Auth nativo (Fase 2)
   window._fbAuthRegister    = fb.authRegister;
   window._fbAuthLogin       = fb.authLogin;
@@ -5122,6 +5123,12 @@ function BetsScreen({bets,placeBet,credito,creditoLoading,onPagar,onReset,betsSa
   const totalCoins=isAdminUser?999999:(credito?.coins||COINS_PER_PAGO);
   const coinsLeft=isAdminUser?999999:totalCoins-coinsUsed;
   const pctUsed=isAdminUser?0:Math.min(100,Math.round(coinsUsed/totalCoins*100));
+  // ── REGLA DE GUARDADO ──
+  // El usuario puede CERRAR su pronóstico al gastar al menos 1 bloque completo
+  // (1000 monedas). Las monedas sobrantes quedan disponibles para seguir
+  // apostando y volver a guardar. No se obliga a dejar el saldo en 0.
+  const SAVE_BLOCK=COINS_PER_PAGO; // 1000
+  const canSave=isAdminUser?bets.length>0:(coinsUsed>=SAVE_BLOCK);
 
   const getBet=id=>bets.find(b=>b.id===id);
   const isSel=(id,val)=>getBet(id)?.selection===val;
@@ -5614,41 +5621,40 @@ function BetsScreen({bets,placeBet,credito,creditoLoading,onPagar,onReset,betsSa
             /* Estado: PENDIENTE GUARDAR */
             <div>
               <div style={{fontFamily:'var(--ff)',fontSize:18,letterSpacing:1,marginBottom:8}}>
-                {coinsLeft<=0?'✅ '+t.predictions_ready:'⏳ '+t.predictions_incomplete}
+                {canSave?'✅ '+t.predictions_ready:'⏳ '+t.predictions_incomplete}
               </div>
               <div style={{fontSize:12,color:'var(--muted)',lineHeight:1.6,marginBottom:12}}>
-                {coinsLeft<=0
-                  ?'Has usado todas tus monedas. Una vez que guardes, los pronósticos no se podrán modificar.'
-                  :`Aún tienes ${coinsLeft}🪙 disponibles. Usa todas tus monedas antes de guardar.`
+                {canSave
+                  ?`Puedes guardar tu pronóstico. Te quedan ${coinsLeft}🪙 disponibles${coinsLeft>0?' que puedes seguir usando o guardar así.':'.'}`
+                  :`Debes usar al menos ${SAVE_BLOCK.toLocaleString()}🪙 para guardar. Llevas ${coinsUsed}🪙 usadas.`
                 }
               </div>
-              {coinsLeft>0&&(
+              {!canSave&&(
                 <div style={{background:'rgba(200,16,46,.06)',borderRadius:10,
                   border:'1px solid rgba(200,16,46,.2)',padding:'10px 12px',
                   marginBottom:12,fontSize:11,color:'#FC8181'}}>
-                  ⚠️ Te quedan <strong>{coinsLeft}</strong> monedas sin usar. Debes usar el saldo completo para guardar.
+                  ⚠️ Usa al menos <strong>{SAVE_BLOCK.toLocaleString()}</strong> monedas (1 bloque) para poder guardar. Llevas <strong>{coinsUsed}</strong>.
                 </div>
               )}
               <button
-                disabled={coinsLeft>0||bets.length===0}
+                disabled={!canSave||bets.length===0}
                 onClick={()=>{
-                  if(coinsLeft>0||bets.length===0) return;
+                  if(!canSave||bets.length===0) return;
                   onSave&&onSave();
                 }}
                 style={{width:'100%',
-                  background:coinsLeft<=0&&bets.length>0?'linear-gradient(135deg,var(--gold),var(--gold2))':'var(--surf2)',
-                  border:`1.5px solid ${coinsLeft<=0&&bets.length>0?'var(--gold)':'var(--br)'}`,
-                  color:coinsLeft<=0&&bets.length>0?'#000':'var(--muted)',
+                  background:canSave&&bets.length>0?'linear-gradient(135deg,var(--gold),var(--gold2))':'var(--surf2)',
+                  border:`1.5px solid ${canSave&&bets.length>0?'var(--gold)':'var(--br)'}`,
+                  color:canSave&&bets.length>0?'#000':'var(--muted)',
                   borderRadius:12,padding:'14px',fontSize:15,fontWeight:800,
-                  cursor:coinsLeft<=0&&bets.length>0?'pointer':'not-allowed',
+                  cursor:canSave&&bets.length>0?'pointer':'not-allowed',
                   fontFamily:'var(--ff)',letterSpacing:1,
-                  boxShadow:coinsLeft<=0&&bets.length>0?'0 4px 20px rgba(240,165,0,.4)':'none',
+                  boxShadow:canSave&&bets.length>0?'0 4px 20px rgba(240,165,0,.4)':'none',
                   transition:'all .3s',marginBottom:10}}>
                 💾 {t.save_prediction}
               </button>
               <div style={{fontSize:10,color:'var(--muted)',lineHeight:1.5}}>
-                🔒 Una vez guardado, los pronósticos <strong style={{color:'var(--txt)'}}>no se podrán modificar</strong>.<br/>
-                Para cambiar necesitarás comprar un nuevo paquete de <strong style={{color:'var(--gold)'}}>$30 MXN</strong>.
+                🔒 Tras guardar puedes <strong style={{color:'var(--txt)'}}>modificar</strong> tus pronósticos con las monedas que te queden, sin pagar de nuevo.
               </div>
             </div>
           )}
@@ -5809,6 +5815,29 @@ export default function App(){
   // Migración de pronósticos bloqueados: correr al abrir la app (no solo en Grupos)
   // para que los usuarios afectados por el bug del stub se recuperen más rápido.
   useEffect(()=>{ if(user?.id) syncLockedBets(user); },[user?.id]);
+
+  // ── LIMPIEZA ÚNICA de pronósticos viejos atascados ──
+  // Los pronósticos viejos se guardaban solo en localStorage del dispositivo y
+  // quedaron atascados (betsSaved bloqueado, saldo inconsistente). Esta migración
+  // los borra UNA sola vez por dispositivo para que cada usuario los rehaga limpio.
+  // Marca de versión: si ya corrió, no vuelve a borrar.
+  useEffect(()=>{
+    try{
+      const CLEAN_VER='betsreset_v1';
+      if(localStorage.getItem('wc2026_clean')===CLEAN_VER) return;
+      // Borrar bets y flags de guardado de TODAS las cuentas en este dispositivo
+      Object.keys(localStorage).forEach(k=>{
+        if(k.startsWith('wc2026_bets_')||k.startsWith('wc2026_saved_')||
+           k.startsWith('wc2026_locks_')||k.startsWith('wc2026_gift_seen_')||
+           k.startsWith('wc2026_synced_')){
+          localStorage.removeItem(k);
+        }
+      });
+      setUserBets([]);
+      setBetsSaved(false);
+      localStorage.setItem('wc2026_clean',CLEAN_VER);
+    }catch(e){}
+  },[]);
 
   // ── Push Notification helper ──────────────────────────
   const requestPush = async () => {
@@ -6180,9 +6209,13 @@ export default function App(){
         // Detectar regalo de monedas en tiempo real
         if(fsUser?.gifted){
           const gc=Number(fsUser.giftedCoins)||1000; // coerción: el admin puede enviar string
+          const paq=Number(fsUser.paquetes)||0;
+          const realCoins=gc+paq*COINS_PER_PAGO; // saldo real = regalo + paquetes pagados
           setCredito(prev=>{
-            if(prev?.gifted) return prev;
-            return {coins:gc+(fsUser.paquetes||0)*COINS_PER_PAGO,paquetes:fsUser.paquetes||1,paidAt:Date.now(),gifted:true,giftedCoins:gc};
+            if(prev?.isAdmin) return prev; // admin no se toca
+            // Reflejar SIEMPRE el saldo real (no congelar): si no cambió, no re-render.
+            if(prev?.gifted && prev?.coins===realCoins && prev?.paquetes===paq) return prev;
+            return {coins:realCoins,paquetes:paq,paidAt:Date.now(),gifted:true,giftedCoins:gc};
           });
           // Desbloquear edición SOLO ante un regalo NUEVO (giftedAt distinto al ya visto).
           // Persistente en localStorage → no se repite en cada snapshot ni recarga.
@@ -6473,14 +6506,27 @@ export default function App(){
                                   onSave={async()=>{
                                     setBetsSaved(true);
                                     if(user?.id)localStorage.setItem('wc2026_saved_'+user.id,'true');
-                                    // Flujo A → subir los pronósticos a TODOS los grupos del usuario
+                                    // 1) Guardar los bets en el doc del USUARIO (users/{uid}.bets)
+                                    //    para que el motor de puntos los calcule aunque NO esté en grupos.
+                                    const uid=(window._fbCurrentUid&&window._fbCurrentUid())||user?.uid||user?.id;
+                                    if(uid && window._fbSaveUserBets){
+                                      try{
+                                        await window._fbSaveUserBets(uid,userBets,{
+                                          name:user?.name||user?.displayName||'Usuario',
+                                          email:user?.email||'',
+                                        });
+                                      }catch(e){}
+                                    }
+                                    // 2) Flujo A → subir los pronósticos a TODOS los grupos del usuario
                                     const r=await uploadBetsToAllGroups(user,userBets);
                                     if(r.total>0){
                                       setGroupSyncMsg(r.fail===0
                                         ? `✓ Pronósticos guardados en ${r.ok} grupo${r.ok!==1?'s':''}`
-                                        : '⚠ Guardado local OK. Error al sincronizar con grupos.');
-                                      setTimeout(()=>setGroupSyncMsg(''),3500);
+                                        : '⚠ Guardado en tu cuenta OK. Error al sincronizar con grupos.');
+                                    }else{
+                                      setGroupSyncMsg('✓ Pronósticos guardados');
                                     }
+                                    setTimeout(()=>setGroupSyncMsg(''),3500);
                                   }}
                                   onEditPredictions={()=>{
                                     // Desbloquear edición sin pagar: conserva los bets actuales

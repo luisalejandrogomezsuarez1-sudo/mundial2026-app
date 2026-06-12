@@ -287,6 +287,31 @@ export async function giftCoinsByEmail(email, gifted, giftedCoins=1000) {
   } catch(e) { console.warn('giftCoinsByEmail error:', e); }
 }
 
+// ── PRONÓSTICOS POR USUARIO ──────────────────────────────────────
+// Guarda los bets del usuario en su propio doc users/{uid}.bets, para que el
+// motor de puntos (Paso 2) los calcule aunque el usuario NO esté en ningún grupo.
+// Se llama al pulsar GUARDAR. merge:true → no pisa otros campos del doc.
+export async function saveUserBetsToFirestore(userId, bets, meta={}) {
+  if(!userId) return { ok:false };
+  try {
+    const clean = (Array.isArray(bets)?bets:[]).map(b=>({
+      id: b.id,
+      category: b.category||b.cat||'',
+      selection: b.selection||b.sel||'',
+      odds: Number(b.odds)||0,
+      ts: b.ts||Date.now(),
+    }));
+    await setDoc(doc(db,'users', userId), {
+      bets: clean,
+      betsSaved: true,
+      betsLockedAt: new Date().toISOString(),
+      betsCount: clean.length,
+      ...meta,
+    }, { merge: true });
+    return { ok:true, count: clean.length };
+  } catch(e) { console.warn('saveUserBets error:', e); return { ok:false, error:e.message }; }
+}
+
 // ── GRUPOS — usa el CÓDIGO como ID del documento ─────────────────
 export async function saveGroupToFirestore(group, userId) {
   const data = {
