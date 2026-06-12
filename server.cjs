@@ -277,15 +277,14 @@ function persistGroups() {
 
 // Also save to Firestore as backup (if available)
 async function backupGroupToFirestore(g) {
-  if(!db || !g?.code){ console.warn('[DIAG backup] skip · db=',!!db,'· code=',g?.code); return false; }
+  if(!db || !g?.code) return false;   // sin code no se puede respaldar (evita .doc(undefined))
   try {
     // merge:true → NUNCA borra campos que no vengan en el payload (p. ej. members).
     await db.collection('groups').doc(g.code).set({
       ...g, createdAt: new Date().toISOString()
     }, { merge: true });
-    console.log(`[DIAG backup] OK groups/${g.code} · members=${(g.members||[]).length}`);
     return true;
-  } catch(e) { console.error(`[DIAG backup] ERROR groups/${g?.code}:`, e); return false; }
+  } catch(e) { console.warn('Group Firestore backup error:', e.message); return false; }
 }
 
 app.post('/api/groups', (req,res)=>{
@@ -411,14 +410,11 @@ app.post('/api/groups/:code/members', (req,res)=>{
 app.post('/api/groups/:code/lock', async (req,res)=>{
   const code = (req.params.code||'').toUpperCase().trim();
   const { id, name, ini, col, bets, lockedAt } = req.body || {};
-  console.log(`[DIAG lock] ▶ code=${code} · id=${id} · name=${name} · betsRecibidos=${Array.isArray(bets)?bets.length:'NO-ARRAY'}`);
-  if(!code || !id){ console.warn('[DIAG lock] ✗ 400 faltan datos · code=',code,'id=',id); return res.status(400).json({error:'Faltan datos'}); }
+  if(!code || !id) return res.status(400).json({error:'Faltan datos'});
   // Rehidratar el grupo real desde Firestore si no está en memoria o solo hay un
   // stub de chat (sin members). Evita 404 por /tmp efímero y evita escribir los
   // bets en un stub que luego no se puede respaldar.
-  let fuente='memoria';
   if(!serverGroups[code] || !Array.isArray(serverGroups[code].members)){
-    fuente = serverGroups[code] ? 'rehidratado(stub)' : 'rehidratado(ausente)';
     if(db){
       try{
         const snap = await db.collection('groups').doc(code).get();
@@ -426,26 +422,19 @@ app.post('/api/groups/:code/lock', async (req,res)=>{
           const g0 = snap.data();
           if(serverGroups[code]?._msgs) g0._msgs = serverGroups[code]._msgs;
           serverGroups[code] = g0;
-          console.log(`[DIAG lock] grupo ${code} rehidratado de Firestore · members=${(g0.members||[]).length}`);
-        } else {
-          console.warn(`[DIAG lock] grupo ${code} NO existe en Firestore`);
         }
-      }catch(e){ console.error(`[DIAG lock] error rehidratando ${code}:`, e); }
-    } else {
-      console.warn('[DIAG lock] sin db, no se puede rehidratar');
+      }catch(e){}
     }
   }
-  if(!serverGroups[code]){ console.warn(`[DIAG lock] ✗ 404 grupo ${code} no encontrado`); return res.status(404).json({error:'Grupo no encontrado'}); }
+  if(!serverGroups[code]) return res.status(404).json({error:'Grupo no encontrado'});
 
   const g = serverGroups[code];
-  const idsExistentes = (g.members||[]).map(m=>m.id);
-  const idx = (g.members||[]).findIndex(m=>m.id===id);
-  console.log(`[DIAG lock] fuente=${fuente} · membersAntes=${idsExistentes.length} · ids=${JSON.stringify(idsExistentes)} · idxUsuario=${idx} (${idx>=0?'ENCONTRADO':'NO encontrado → se agrega'})`);
   const lockData = {
     bets:     Array.isArray(bets) ? bets : [],
     locked:   true,
     lockedAt: lockedAt || Date.now(),
   };
+  const idx = (g.members||[]).findIndex(m=>m.id===id);
   if(idx>=0){
     g.members[idx] = { ...g.members[idx], ...lockData };
   } else {
@@ -455,11 +444,9 @@ app.post('/api/groups/:code/lock', async (req,res)=>{
       joined: Date.now(), pts: 0, ...lockData,
     }];
   }
-  const after = g.members.find(m=>m.id===id);
-  console.log(`[DIAG lock] membersDespues=${g.members.length} · usuario ${id} → bets=${(after?.bets||[]).length} locked=${after?.locked}`);
   persistGroups();
   const backupOk = await backupGroupToFirestore(g);
-  console.log(`[DIAG lock] ◀ backupFirestore=${backupOk?'OK':'FALLO'} · code=${code}`);
+  console.log(`🔒 ${id} bloqueó ${lockData.bets.length} pronósticos en ${code}`);
   res.json({ok:true, group:g, backup:backupOk});
 });
 

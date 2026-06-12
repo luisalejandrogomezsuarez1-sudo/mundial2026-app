@@ -111,7 +111,7 @@ async function uploadBetsToAllGroups(user, bets){
   // Tras la migración a Auth, el uid real es el de Auth, no el id del localStorage viejo.
   const uid = (typeof window!=='undefined' && window._fbCurrentUid && window._fbCurrentUid())
             || user?.uid || user?.id || null;
-  if(!uid){ console.warn('[uploadBets] sin uid (auth no listo)'); return {ok:0, fail:0, total:0}; }
+  if(!uid) return {ok:0, fail:0, total:0};
 
   const readLS=key=>{ try{ const g=JSON.parse(localStorage.getItem(key)||'[]'); return Array.isArray(g)?g:[]; }catch{ return []; } };
   // Grupos del usuario: localStorage (clave por uid; probar user.id si difiere)
@@ -125,7 +125,6 @@ async function uploadBetsToAllGroups(user, bets){
     }catch(e){}
   }
   const real=groups.filter(g=>g?.code && g.code!=='WC26-AMIGOS'); // excluir grupo demo
-  console.log('[uploadBets] uid=',uid,'· grupos=',real.map(g=>g.code));
   const lockedAt=Date.now();
   const payloadBets=(bets||[]).map(b=>({
     id:b.id, category:b.category||b.cat, selection:b.selection||b.sel,
@@ -4056,7 +4055,6 @@ function GruposScreen({user,userBets,credito,creditoLoading,onPagar,onRecheckAcc
     // Paso 1: persistir los pronósticos bloqueados en el servidor para que el resto
     // del grupo pueda verlos. Solo grupos reales (el demo WC26-AMIGOS es local).
     const code=selGroup?.code;
-    console.log('[DIAG lockBets] llamado · gid=',gid,'· selGroup.id=',selGroup?.id,'· selGroup.code=',code,'· user.id=',user?.id,'· user.name=',user?.name,'· #userBets=',userBets.length);
     if(code && code!=='WC26-AMIGOS' && user?.id){
       const bets=userBets.map(b=>({id:b.id,category:b.category,selection:b.selection,odds:b.odds,ts:b.ts}));
       const body=JSON.stringify({
@@ -4065,24 +4063,19 @@ function GruposScreen({user,userBets,credito,creditoLoading,onPagar,onRecheckAcc
         bets, lockedAt,
       });
       const url='/api/groups/'+encodeURIComponent(code)+'/lock';
-      console.log('[DIAG lockBets] POST',url,'· body=',body);
       // Reintentar hasta 3 veces si el servidor no responde OK (404 transitorio, red, etc.)
       const postLock=async(attempt=1)=>{
         try{
           const res=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body});
-          let txt=''; try{ txt=await res.text(); }catch(_){}
-          console.log('[DIAG lockBets] intento',attempt,'· res.ok=',res.ok,'· status=',res.status,'· respuesta=',txt);
           if(res.ok) return;
           if(attempt<3){ await new Promise(r=>setTimeout(r,1500)); return postLock(attempt+1); }
-          console.warn('[DIAG lockBets] FALLÓ tras 3 intentos · status=',res.status);
+          console.warn('lock persist: servidor respondió',res.status);
         }catch(e){
-          console.warn('[DIAG lockBets] intento',attempt,'· error de red:',e);
           if(attempt<3){ await new Promise(r=>setTimeout(r,1500)); return postLock(attempt+1); }
+          console.warn('lock persist error:',e);
         }
       };
       postLock();
-    } else {
-      console.warn('[DIAG lockBets] NO se hace POST · code=',code,'· user.id=',user?.id,'(grupo demo, o falta code/usuario)');
     }
   };
 
