@@ -100,6 +100,46 @@ async function syncLockedBets(user){
   }
 }
 
+// ── Subir los pronósticos actuales a TODOS los grupos del usuario ───────────
+// Lo usa el "Guardar" de la pestaña Pronóstico (Flujo A) para que los bets
+// lleguen al ranking de cada grupo, no solo a localStorage. Reusa /lock (no
+// crea endpoints nuevos). Devuelve {ok, fail, total}.
+async function uploadBetsToAllGroups(user, bets){
+  if(!user?.id) return {ok:0, fail:0, total:0};
+  let groups=[];
+  try{ const g=JSON.parse(localStorage.getItem('wc2026_groups_'+user.id)||'[]'); if(Array.isArray(g)) groups=g; }catch{}
+  const real=groups.filter(g=>g?.code && g.code!=='WC26-AMIGOS'); // excluir grupo demo
+  const lockedAt=Date.now();
+  const payloadBets=(bets||[]).map(b=>({
+    id:b.id, category:b.category||b.cat, selection:b.selection||b.sel,
+    odds:b.odds, ts:b.ts||Date.now(),
+  }));
+  // Reflejar el bloqueo en localStorage (locks por id de grupo) para que la UI de
+  // Grupos lo muestre como bloqueado y la migración quede consistente con el server.
+  try{
+    const locks=JSON.parse(localStorage.getItem('wc2026_locks_'+user.id)||'{}');
+    real.forEach(g=>{ if(g.id) locks[g.id]={bets:[...(bets||[])],lockedAt}; });
+    localStorage.setItem('wc2026_locks_'+user.id,JSON.stringify(locks));
+  }catch{}
+  let ok=0, fail=0;
+  for(const g of real){
+    try{
+      await fetch('/api/groups/'+encodeURIComponent(g.code)).catch(()=>{}); // rehidrata el grupo en el server
+      const res=await fetch('/api/groups/'+encodeURIComponent(g.code)+'/lock',{
+        method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({
+          id:user.id, name:user.name||user.displayName||'Usuario',
+          ini:user.ini||(user.name||'U').charAt(0).toUpperCase(), col:'#4F8EF7',
+          bets:payloadBets, lockedAt,
+        }),
+      });
+      if(res.ok){ ok++; try{localStorage.setItem('wc2026_synced_'+user.id+'_'+g.id,'1');}catch{} }
+      else fail++;
+    }catch(e){ fail++; }
+  }
+  return {ok, fail, total:real.length};
+}
+
 // Cache de allUsers: evita múltiples llamadas getAllUsers en el mismo login
 let _allUsersCache = null, _allUsersCacheTs = 0;
 const getAllUsersCached = async (getFn, maxAge=5*60e3) => {
@@ -5737,6 +5777,7 @@ export default function App(){
   // mpVerify: null | "verifying" | {ok:true,paymentId,coins} | {ok:false,paymentId,error}
   //         | {kind:'pending'} | {kind:'failure'}
   const [betsSaved,setBetsSaved]=useState(false); // predictions locked after saving
+  const [groupSyncMsg,setGroupSyncMsg]=useState(''); // feedback de subida a grupos (Flujo A)
   const [logoutMsg,setLogoutMsg]=useState('');
   // credito = {coins:1000, paquetes:N, paidAt:timestamp} | null
   // Espejo del usuario activo para leerlo dentro de listeners sin stale closure
@@ -6377,7 +6418,18 @@ export default function App(){
           {tab==='pronostico' &&<BetsScreen bets={userBets} placeBet={placeBet}
                                   credito={credito} creditoLoading={creditoLoading} onPagar={onPagar} onReset={onReset}
                                   betsSaved={betsSaved}
-                                  onSave={()=>{setBetsSaved(true);if(user?.id)localStorage.setItem('wc2026_saved_'+user.id,'true');}}
+                                  onSave={async()=>{
+                                    setBetsSaved(true);
+                                    if(user?.id)localStorage.setItem('wc2026_saved_'+user.id,'true');
+                                    // Flujo A → subir los pronósticos a TODOS los grupos del usuario
+                                    const r=await uploadBetsToAllGroups(user,userBets);
+                                    if(r.total>0){
+                                      setGroupSyncMsg(r.fail===0
+                                        ? `✓ Pronósticos guardados en ${r.ok} grupo${r.ok!==1?'s':''}`
+                                        : '⚠ Guardado local OK. Error al sincronizar con grupos.');
+                                      setTimeout(()=>setGroupSyncMsg(''),3500);
+                                    }
+                                  }}
                                   currentUser={user} onRecheckAccess={recheckAccess} onRecover={handleMpRecover}/>}
           {tab==='grupos'     &&<GruposScreen user={user} userBets={userBets} credito={credito} creditoLoading={creditoLoading} onPagar={onPagar} onRecheckAccess={recheckAccess}/>}
           {tab==='perfil'     &&<PerfilScreen user={user} onLogout={logout} lang={lang}/>}
@@ -6447,6 +6499,16 @@ export default function App(){
               );
             })}
           </div>
+          {groupSyncMsg&&(
+            <div style={{position:'absolute',left:'50%',transform:'translateX(-50%)',
+              bottom:96,zIndex:80,maxWidth:'90%',
+              background:'var(--surf2)',color:'var(--txt)',
+              border:'1px solid var(--br)',borderRadius:12,
+              padding:'10px 16px',fontSize:13,fontWeight:700,
+              boxShadow:'0 6px 20px rgba(0,0,0,.4)',textAlign:'center'}}>
+              {groupSyncMsg}
+            </div>
+          )}
         </>}
       </div>
     </div>
