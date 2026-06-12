@@ -270,8 +270,16 @@ export async function giftCoinsByEmail(email, gifted, giftedCoins=1000) {
   try {
     const snap = await getDocs(query(collection(db,'users'), where('email','==', normalizedEmail)));
     if (!snap.empty) {
-      // Actualizar todos los docs reales con este email (cubre viejos + canónico)
-      await Promise.all(snap.docs.map(d => setDoc(doc(db,'users', d.id), data, { merge: true })));
+      // Escribir en TODOS los docs con este email (incluidos migrated:true) Y, si un
+      // doc viejo apunta a un doc de Auth (migratedTo), también en users/{migratedTo}:
+      // ahí es donde el receptor migrado realmente escucha (gift-listener).
+      const targets = new Set();
+      snap.docs.forEach(d => {
+        targets.add(d.id);                         // el doc hallado por email
+        const mt = d.data().migratedTo;
+        if (mt) targets.add(mt);                    // su doc de Auth real
+      });
+      await Promise.all([...targets].map(id => setDoc(doc(db,'users', id), data, { merge: true })));
       return;
     }
     // Sin doc por email (usuario regalado antes de existir su doc): usar ID canónico
