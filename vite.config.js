@@ -18,7 +18,12 @@ export default defineConfig({
         // ...PERO nunca para /api/: esas peticiones deben ir SIEMPRE a la red
         // (Express), no ser respondidas con el index.html por el SW.
         navigateFallbackDenylist: [/^\/api\//],
-        cleanupOutdatedCaches: true
+        cleanupOutdatedCaches: true,
+        // CLAVE: el SW nuevo toma control de inmediato sin esperar a que
+        // se cierren todas las pestañas. Combinado con el reload de main.jsx,
+        // el usuario obtiene el JS nuevo sin desinstalar ni reiniciar a mano.
+        skipWaiting: true,
+        clientsClaim: true
       },
       devOptions: {
         enabled: false

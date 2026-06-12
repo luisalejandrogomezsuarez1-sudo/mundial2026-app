@@ -4,59 +4,44 @@ import { registerSW } from 'virtual:pwa-register'
 import './index.css'
 import App from './App.jsx'
 
-// ── Service worker con actualización sin reinstalar ──
-// Cuando subes un deploy nuevo a Railway, el SW lo detecta y muestra
-// un banner "Actualizar". El usuario NO tiene que desinstalar la app.
+// ── Service worker: actualización forzada sin reinstalar ──
+// El problema clásico de PWA: el SW nuevo se queda "esperando" y el
+// usuario sigue con el JS viejo aunque cierre la app. Aquí forzamos
+// que el SW nuevo tome control y recargue UNA vez automáticamente.
+
+let refreshing = false
+
+// Cuando el SW nuevo toma control, recargamos la página (una sola vez).
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (refreshing) return
+    refreshing = true
+    window.location.reload()
+  })
+}
+
 const updateSW = registerSW({
   immediate: true,
   onNeedRefresh() {
-    showUpdateBanner()
+    // Hay versión nueva: activarla de inmediato (skipWaiting) y recargar.
+    // El controllerchange de arriba dispara el reload automático.
+    updateSW(true)
   },
   onRegisteredSW(swUrl, registration) {
     if (registration) {
-      // En móvil la PWA no se cierra del todo, solo se minimiza:
-      // forzamos a buscar versión nueva cada 60s y al volver a foco.
+      // En móvil la PWA no se cierra del todo: revisamos versión nueva
+      // periódicamente y cada vez que el usuario vuelve a la app.
       setInterval(() => {
         registration.update()
-      }, 60 * 1000)
+      }, 30 * 1000) // cada 30s
       document.addEventListener('visibilitychange', () => {
         if (document.visibilityState === 'visible') registration.update()
       })
+      // Chequeo inmediato al arrancar
+      registration.update()
     }
   },
 })
-
-// Banner "Actualizar" — aparece solo cuando hay una versión nueva.
-function showUpdateBanner() {
-  if (document.getElementById('sw-update-banner')) return
-  const bar = document.createElement('div')
-  bar.id = 'sw-update-banner'
-  bar.style.cssText =
-    'position:fixed;left:0;right:0;bottom:0;z-index:99999;' +
-    'background:linear-gradient(135deg,#F0A500,#C8102E);color:#fff;' +
-    'padding:14px 16px;display:flex;align-items:center;justify-content:space-between;' +
-    'gap:12px;font-family:system-ui,sans-serif;font-size:14px;' +
-    'box-shadow:0 -4px 16px rgba(0,0,0,.4)'
-
-  const msg = document.createElement('span')
-  msg.style.cssText = 'font-weight:600'
-  msg.textContent = '✨ Hay una nueva versión disponible'
-
-  const btn = document.createElement('button')
-  btn.textContent = 'Actualizar'
-  btn.style.cssText =
-    'background:#fff;color:#C8102E;border:none;border-radius:8px;' +
-    'padding:9px 18px;font-weight:700;font-size:14px;cursor:pointer;white-space:nowrap'
-  btn.onclick = () => {
-    btn.textContent = 'Actualizando…'
-    btn.disabled = true
-    updateSW(true) // activa el SW nuevo y recarga con el JS nuevo
-  }
-
-  bar.appendChild(msg)
-  bar.appendChild(btn)
-  document.body.appendChild(bar)
-}
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
