@@ -5568,6 +5568,26 @@ function BetsScreen({bets,placeBet,credito,creditoLoading,onPagar,onReset,betsSa
           </div>
         )}
       </div>
+      {/* ── BOTÓN MODIFICAR (ARRIBA, siempre visible si ya guardó) ── */}
+      {!isAdminUser&&betsSaved&&(
+        <div style={{margin:'4px 16px 0',display:'flex',gap:8,alignItems:'center'}}>
+          <div style={{flex:1,display:'flex',alignItems:'center',gap:7,
+            background:'rgba(46,204,113,.08)',border:'1px solid rgba(46,204,113,.25)',
+            borderRadius:10,padding:'8px 10px'}}>
+            <span style={{fontSize:14}}>🔒</span>
+            <span style={{fontSize:11,color:'var(--grn)',fontWeight:700,letterSpacing:.3}}>
+              Pronóstico guardado
+            </span>
+          </div>
+          <button onClick={()=>onEditPredictions&&onEditPredictions()}
+            style={{background:'linear-gradient(135deg,var(--gold),var(--gold2))',
+              border:'none',color:'#000',borderRadius:10,padding:'10px 16px',
+              fontFamily:'var(--ff)',fontSize:13,letterSpacing:.5,fontWeight:800,
+              cursor:'pointer',whiteSpace:'nowrap',boxShadow:'0 3px 12px rgba(240,165,0,.3)'}}>
+            ✏️ Modificar
+          </button>
+        </div>
+      )}
       {/* Tabs */}
       <div style={{display:'flex',gap:8,padding:'8px 16px',overflowX:'auto',borderBottom:'1px solid rgba(255,255,255,.04)'}}>
         {[['largo','🏅 '+t('long_term')],['partido','⚽ '+t('per_match')],['especiales','🎯 '+t('specials')],['stats','📈 '+t('stats')]].map(([k,l])=>(
