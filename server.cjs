@@ -753,10 +753,17 @@ app.post('/api/admin/cleanup-user-email', async (req, res) => {
 });
 
 // ── Limpiar TODOS los duplicados en la colección users ───────────────────────
+// Readiness: confirma que esta versión (auth-aware + dryRun) está desplegada,
+// para llamar al cleanup con seguridad (la versión vieja ignoraba dryRun).
+app.get('/api/admin/cleanup-duplicates-ready', (req,res)=>{
+  res.json({ ready:true, version:'auth-aware-dryrun-v1' });
+});
+
 app.post('/api/admin/cleanup-all-duplicates', async (req, res) => {
   if (!ADMIN_KEY || req.body.key !== ADMIN_KEY)
     return res.status(403).json({ error: 'Forbidden' });
   if (!db) return res.status(503).json({ error: 'DB no disponible' });
+  const dryRun = req.body.dryRun === true;
   try {
     const snap = await db.collection('users').get();
     const all = snap.docs.map(d => ({ _id: d.id, _ref: d.ref, ...d.data() }));
@@ -766,49 +773,67 @@ app.post('/api/admin/cleanup-all-duplicates', async (req, res) => {
     for (const u of all) {
       const key = (u.email || '').toLowerCase().trim();
       if (!key) continue;
-      if (!byEmail[key]) byEmail[key] = [];
-      byEmail[key].push(u);
+      (byEmail[key] = byEmail[key] || []).push(u);
     }
 
-    // Para cada email con más de 1 doc, elegir el mejor y borrar el resto
+    // Doc de Auth = id NO empieza con "u_" (uid de Firebase). Legacy = empieza con "u_".
+    const isAuth = d => !String(d._id).startsWith('u_');
+    const scoreDoc = d => (Number(d.paquetes)>0 ? 1000 : 0)
+                        + (d.gifted ? 100 : 0)
+                        + (Number(d.giftedCoins)>0 ? 50 : 0)
+                        + (d.updatedAt ? Math.min(10, (new Date(d.updatedAt) - new Date('2024-01-01')) / 1e10) : 0);
+
     const summary = [];
     const batch = db.batch();
     let totalDeleted = 0;
+    let totalConsolidated = 0;
 
     for (const [email, docs] of Object.entries(byEmail)) {
       if (docs.length <= 1) continue;
 
-      // Criterio de selección del mejor doc:
-      // 1. Tiene paquetes > 0
-      // 2. Tiene gifted:true
-      // 3. updatedAt más reciente
-      const scored = docs.map(d => ({
-        doc: d,
-        score: (d.paquetes > 0 ? 1000 : 0)
-             + (d.gifted ? 100 : 0)
-             + (d.giftedCoins > 0 ? 50 : 0)
-             // updatedAt más reciente suma hasta 10 puntos
-             + (d.updatedAt ? Math.min(10, (new Date(d.updatedAt) - new Date('2024-01-01')) / 1e10) : 0)
-      }));
-      scored.sort((a, b) => b.score - a.score);
+      // 1. Si existe doc de Auth → conservarlo SIEMPRE (si hay varios, el de mejor score).
+      //    Si no hay → criterio actual (paquetes > regalo > reciente).
+      const authDocs = docs.filter(isAuth);
+      const pool = authDocs.length ? authDocs : docs;
+      const keep = pool.slice().sort((a,b)=>scoreDoc(b)-scoreDoc(a))[0];
+      const toDelete = docs.filter(d => d._id !== keep._id);
 
-      const keep = scored[0].doc;
-      const toDelete = scored.slice(1).map(s => s.doc);
-      toDelete.forEach(d => { batch.delete(d._ref); totalDeleted++; });
+      // 2. Consolidar al conservado ANTES de borrar: paquetes = MAX; gifted/giftedCoins
+      //    si algún doc los tiene y el conservado no.
+      const maxPaquetes    = Math.max(0, ...docs.map(d => Number(d.paquetes)||0));
+      const giftedAny      = docs.some(d => d.gifted);
+      const giftedCoinsMax = Math.max(0, ...docs.map(d => Number(d.giftedCoins)||0));
+      const consolidate = {};
+      if (maxPaquetes > (Number(keep.paquetes)||0)) consolidate.paquetes = maxPaquetes;
+      if (giftedAny && !keep.gifted) {
+        consolidate.gifted = true;
+        if (giftedCoinsMax > 0 && !(Number(keep.giftedCoins)>0)) consolidate.giftedCoins = giftedCoinsMax;
+      }
+      const willConsolidate = Object.keys(consolidate).length > 0;
+
+      if (!dryRun) {
+        if (willConsolidate) { batch.set(keep._ref, consolidate, { merge: true }); totalConsolidated++; }
+        toDelete.forEach(d => batch.delete(d._ref));
+      } else if (willConsolidate) {
+        totalConsolidated++;
+      }
+      totalDeleted += toDelete.length;
 
       summary.push({
         email,
         total: docs.length,
         kept: keep._id,
-        kept_paquetes: keep.paquetes || 0,
-        deleted: toDelete.map(d => d._id)
+        kept_is_auth: isAuth(keep),
+        kept_paquetes_before: Number(keep.paquetes)||0,
+        consolidate: willConsolidate ? consolidate : null,
+        deleted: toDelete.map(d => ({ id: d._id, is_auth: isAuth(d), paquetes: Number(d.paquetes)||0, gifted: !!d.gifted }))
       });
     }
 
-    if (totalDeleted > 0) await batch.commit();
+    if (!dryRun && totalDeleted + totalConsolidated > 0) await batch.commit();
 
-    console.log(`[cleanup-all-duplicates] ${summary.length} emails con duplicados, ${totalDeleted} docs eliminados`);
-    res.json({ ok: true, duplicateEmails: summary.length, totalDeleted, summary });
+    console.log(`[cleanup-all-duplicates]${dryRun?' DRYRUN':''} ${summary.length} emails dup · ${totalDeleted} a borrar · ${totalConsolidated} consolidados`);
+    res.json({ ok: true, dryRun, version:'auth-aware-dryrun-v1', duplicateEmails: summary.length, totalDeleted, totalConsolidated, summary });
   } catch(e) {
     console.error('[cleanup-all-duplicates] error:', e.message);
     res.status(500).json({ error: e.message });
