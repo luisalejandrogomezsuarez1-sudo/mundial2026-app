@@ -33,8 +33,13 @@ import('./firebase.js').then(fb => {
   window._fbAuthOnChange    = fb.authOnChange;
   window._fbSaveAuthUser    = fb.saveAuthUserToFirestore;
   window._fbMigrateUser     = fb.migrateUserDataToUid;
-  // uid autoritativo de Firebase Auth (la fuente real tras la migración a Auth)
-  window._fbCurrentUid      = () => { try{ return fb.auth?.currentUser?.uid || null; }catch(_){ return null; } };
+  // uid autoritativo: Firebase Auth currentUser, con fallback al usuario guardado
+  // en localStorage (la sesión de Auth puede no estar activa tras restaurar de LS).
+  window._fbCurrentUid      = () => {
+    try{ if(fb.auth?.currentUser?.uid) return fb.auth.currentUser.uid; }catch(_){}
+    try{ const u=JSON.parse(localStorage.getItem('wc2026_current_user')||'null'); if(u?.id) return u.id; }catch(_){}
+    return null;
+  };
   console.log('🔥 Firebase conectado — mundial2026-15686');
 }).catch(e => console.warn('Firebase error:', e));
 
@@ -3493,9 +3498,11 @@ function PerfilScreen({user,onLogout,lang='es'}){
                               setAdminDlg(null);
                               const ok=await dbRevokeGift(u.email);
                               if(ok){
-                                // Usar email para encontrar el doc correcto en Firestore
+                                // Por email (cubre docs viejos/canónico)
                                 const giftFn=fbGiftCoinsByEmail||window._fbGiftCoinsByEmail;
                                 if(giftFn) try{await giftFn(u.email,false);}catch(e){console.warn('fbGiftCoinsByEmail error:',e);}
+                                // Y DIRECTO al doc exacto que escucha el receptor: users/{uid}
+                                if(fbGiftCoins&&u.id) try{await fbGiftCoins(u.id,false);}catch(e){console.warn('giftCoins(uid) error:',e);}
                                 const updated=await dbLoad();setDbUsers(updated);
                                 refreshAdminUsers();
                               }
@@ -3509,9 +3516,12 @@ function PerfilScreen({user,onLogout,lang='es'}){
                             onOk:async amount=>{
                               const ok=await dbGiftCoins(u.email,amount);
                               if(ok){
-                                // Usar email para encontrar el doc correcto en Firestore
+                                const amt=Number(amount)||1000;
+                                // Por email (cubre docs viejos/canónico)
                                 const giftFn=fbGiftCoinsByEmail||window._fbGiftCoinsByEmail;
-                                if(giftFn) try{await giftFn(u.email,true,amount);}catch(e){console.warn('fbGiftCoinsByEmail error:',e);}
+                                if(giftFn) try{await giftFn(u.email,true,amt);}catch(e){console.warn('fbGiftCoinsByEmail error:',e);}
+                                // Y DIRECTO al doc exacto que escucha el receptor: users/{uid}
+                                if(fbGiftCoins&&u.id) try{await fbGiftCoins(u.id,true,amt);}catch(e){console.warn('giftCoins(uid) error:',e);}
                                 setAdminDlg(null);
                                 setAdminMsg(`✅ ${amount} monedas regaladas a ${u.name||u.email}`);
                                 setTimeout(()=>setAdminMsg(''),4000);
