@@ -46,6 +46,60 @@ const getCachedLive = id => {
 };
 const setCachedLive = (id,data) => { _liveCache[id]={data,ts:Date.now()}; };
 
+// ── Migración de pronósticos bloqueados al servidor ─────────────
+// Sube los locks de localStorage a /api/groups/:code/lock para que el resto del
+// grupo los vea. v2: re-sync forzado ÚNICO que ignora las banderas
+// wc2026_synced_* viejas (algunas quedaron puestas por el bug del stub aunque los
+// bets nunca llegaron a Firestore). Tras v2, vuelve a la lógica por-grupo normal.
+// Corre al abrir la app y al entrar a Grupos. Reentrante-seguro con un guard.
+const LOCK_MIGRATION_VERSION = 'v2';
+let _lockSyncRunning = false;
+async function syncLockedBets(user){
+  if(!user?.id || _lockSyncRunning) return;
+  _lockSyncRunning = true;
+  try{
+    let savedLocks={};
+    try{ savedLocks=JSON.parse(localStorage.getItem('wc2026_locks_'+user.id)||'{}'); }catch{ return; }
+    let groups=[];
+    try{ const g=JSON.parse(localStorage.getItem('wc2026_groups_'+user.id)||'[]'); if(Array.isArray(g)) groups=g; }catch{}
+    // locks se indexa por id de grupo; el endpoint usa code → mapear id→code
+    const codeByGid={};
+    groups.forEach(g=>{ if(g?.id) codeByGid[g.id]=g.code; if(g?.code) codeByGid[g.code]=g.code; });
+
+    const forced = localStorage.getItem('wc2026_migration_version')!==LOCK_MIGRATION_VERSION;
+    let allAttemptsOk=true;
+
+    for(const [gid,lockData] of Object.entries(savedLocks)){
+      const bets=lockData?.bets;
+      if(!Array.isArray(bets)||bets.length===0) continue;
+      const code=codeByGid[gid];
+      if(!code||code==='WC26-AMIGOS') continue; // sin code conocido o grupo demo → omitir
+      const syncedKey='wc2026_synced_'+user.id+'_'+gid;
+      // Modo normal: saltar los ya sincronizados. Modo forzado (v2): ignorar la bandera.
+      if(!forced && localStorage.getItem(syncedKey)) continue;
+      try{
+        await fetch('/api/groups/'+encodeURIComponent(code)).catch(()=>{}); // rehidrata el grupo en el server
+        const res=await fetch('/api/groups/'+encodeURIComponent(code)+'/lock',{
+          method:'POST',headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({
+            id:user.id, name:user.name||'Usuario',
+            ini:(user.name||'U')[0].toUpperCase(), col:'#4F8EF7',
+            bets:bets.map(b=>({id:b.id,category:b.category||b.cat,selection:b.selection||b.sel,odds:b.odds,ts:b.ts})),
+            lockedAt:lockData.lockedAt||Date.now(),
+          }),
+        });
+        if(res.ok) localStorage.setItem(syncedKey,'1');
+        else allAttemptsOk=false;
+      }catch(e){ allAttemptsOk=false; }
+    }
+    // Marcar v2 solo si no falló ninguna subida intentada (los omitidos por falta de
+    // code no cuentan: reintentar no los arreglaría). Evita repetir el re-sync forzado.
+    if(forced && allAttemptsOk) localStorage.setItem('wc2026_migration_version',LOCK_MIGRATION_VERSION);
+  } finally {
+    _lockSyncRunning=false;
+  }
+}
+
 // Cache de allUsers: evita múltiples llamadas getAllUsers en el mismo login
 let _allUsersCache = null, _allUsersCacheTs = 0;
 const getAllUsersCached = async (getFn, maxAge=5*60e3) => {
@@ -3656,53 +3710,9 @@ function GruposScreen({user,userBets,credito,creditoLoading,onPagar,onRecheckAcc
     catch(e){console.warn('Groups save error:',e);}
   },[groups]);
 
-  // Migración silenciosa (una sola vez por usuario+grupo): sube al servidor los
-  // pronósticos que se bloquearon ANTES del Paso 1 y solo viven en localStorage.
-  // Sin botón ni interacción. Reusa POST /api/groups/:code/lock.
-  useEffect(()=>{
-    if(!user?.id) return;
-    let cancelled=false;
-    const syncOldLocks=async()=>{
-      let savedLocks={};
-      try{ savedLocks=JSON.parse(localStorage.getItem('wc2026_locks_'+user.id)||'{}'); }
-      catch{ return; }
-      // locks se indexa por id de grupo; el endpoint usa code → mapear id→code
-      const codeByGid={};
-      groups.forEach(g=>{ if(g?.id) codeByGid[g.id]=g.code; if(g?.code) codeByGid[g.code]=g.code; });
-      for(const [gid,lockData] of Object.entries(savedLocks)){
-        if(cancelled) return;
-        const bets=lockData?.bets;
-        if(!Array.isArray(bets)||bets.length===0) continue;
-        const code=codeByGid[gid];
-        if(!code||code==='WC26-AMIGOS') continue;   // sin code conocido o grupo demo → omitir
-        const syncedKey='wc2026_synced_'+user.id+'_'+gid;
-        if(localStorage.getItem(syncedKey)) continue;
-        try{
-          // Asegurar que el servidor tenga el grupo en memoria (rehidrata de Firestore)
-          await fetch('/api/groups/'+encodeURIComponent(code)).catch(()=>{});
-          if(cancelled) return;
-          const res=await fetch('/api/groups/'+encodeURIComponent(code)+'/lock',{
-            method:'POST',
-            headers:{'Content-Type':'application/json'},
-            body:JSON.stringify({
-              id:user.id,
-              name:user.name||'Usuario',
-              ini:(user.name||'U')[0].toUpperCase(),
-              col:'#4F8EF7',
-              bets:bets.map(b=>({
-                id:b.id, category:b.category||b.cat,
-                selection:b.selection||b.sel, odds:b.odds, ts:b.ts,
-              })),
-              lockedAt:lockData.lockedAt||Date.now(),
-            }),
-          });
-          if(res.ok) localStorage.setItem(syncedKey,'1');
-        }catch(e){}
-      }
-    };
-    syncOldLocks();
-    return()=>{ cancelled=true; };
-  },[user?.id,groups]);
+  // Migración de pronósticos bloqueados al servidor (también corre al abrir la app).
+  // groups en deps: al cargarse permite resolver más códigos id→code.
+  useEffect(()=>{ if(user?.id) syncLockedBets(user); },[user?.id,groups]);
 
   const [selGroup,setSelGroup]=useState(null);
   const [dtab,setDtab]=useState('ranking');
@@ -5722,6 +5732,9 @@ export default function App(){
   // Espejo del usuario activo para leerlo dentro de listeners sin stale closure
   const userRef=useRef(null);
   useEffect(()=>{userRef.current=user;},[user]);
+  // Migración de pronósticos bloqueados: correr al abrir la app (no solo en Grupos)
+  // para que los usuarios afectados por el bug del stub se recuperen más rápido.
+  useEffect(()=>{ if(user?.id) syncLockedBets(user); },[user?.id]);
 
   // ── Push Notification helper ──────────────────────────
   const requestPush = async () => {
