@@ -5826,6 +5826,12 @@ export default function App(){
 
   const login=async u=>{
     setLogoutMsg('');
+    // Para usuarios de Auth, el id correcto es SIEMPRE el uid de Firebase Auth
+    // (no un id legacy que pueda venir en el objeto). Forzarlo antes de persistir.
+    try{
+      const authUid=window._fbCurrentUid&&window._fbCurrentUid();
+      if(u?.fromAuth && authUid && u.id!==authUid) u={...u, id:authUid};
+    }catch(_){}
     setUser(u);
     setScreen('app');
     // Restore saved bets from localStorage (survive logout)
@@ -5999,8 +6005,14 @@ export default function App(){
       if(!authOnChange) return false;
       unsub=authOnChange(async fbUser=>{
         if(cancelled) return;
-        // Sin usuario de Firebase, o ya hay sesión activa (manual/localStorage/admin): no hacer nada
-        if(!fbUser||userRef.current) return;
+        if(!fbUser) return;
+        // Si ya hay sesión restaurada PERO con un id distinto al uid real de Auth
+        // (id legacy contaminado por el campo 'id' del doc), continuar para
+        // re-loguear con el uid correcto. Si ya coincide o es admin, no tocar.
+        if(userRef.current){
+          if(userRef.current.id===fbUser.uid) return;
+          if(userRef.current.isAdmin) return;
+        }
         const uid=fbUser.uid;
         const email=(fbUser.email||'').toLowerCase().trim();
         // Cargar el perfil (migra datos legados la primera vez), igual que enterWithUid del login
@@ -6011,8 +6023,9 @@ export default function App(){
           const getFn=window._fbGetUser;
           if(getFn){ try{ profile=await getFn(uid); }catch(_){} }
         }
-        // Mientras tanto pudo entrar otra sesión o desmontarse el efecto
-        if(cancelled||userRef.current) return;
+        // Mientras tanto pudo entrar otra sesión CORRECTA o desmontarse el efecto
+        if(cancelled) return;
+        if(userRef.current && (userRef.current.id===uid || userRef.current.isAdmin)) return;
         if(profile?.deleted||profile?.forceDelete) return; // cuenta desactivada por el admin
         const u={email,fromAuth:true,...(profile||{}),id:uid,isAdmin:false};
         login(u);

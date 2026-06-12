@@ -97,16 +97,17 @@ export async function migrateUserDataToUid(uid, email) {
   try {
     // Si el doc nuevo ya fue migrado antes, no repetir
     const newSnap = await getDoc(doc(db, 'users', uid));
-    if (newSnap.exists() && newSnap.data().migratedFrom) return { id: uid, ...newSnap.data() };
+    if (newSnap.exists() && newSnap.data().migratedFrom) return { ...newSnap.data(), id: uid };
 
     // Buscar docs viejos con este email (excluye el propio uid)
     const snap = await getDocs(query(collection(db,'users'), where('email','==', normalizedEmail)));
-    const olds = snap.docs.filter(d => d.id !== uid).map(d => ({ id:d.id, ...d.data() }));
-    if (!olds.length) return newSnap.exists() ? { id: uid, ...newSnap.data() } : null;
+    const olds = snap.docs.filter(d => d.id !== uid).map(d => ({ ...d.data(), id:d.id }));
+    if (!olds.length) return newSnap.exists() ? { ...newSnap.data(), id: uid } : null;
 
     // Mejor doc viejo: el que tenga regalo o paquetes
     const best = olds.find(d => d.gifted || d.paquetes > 0) || olds[0];
-    const { forceDelete:_1, deleted:_2, deletedAt:_3, sessionId:_4, ...safe } = best;
+    // Excluir 'id' para NO escribir el id legacy dentro del doc users/{uid} (contaminaba)
+    const { forceDelete:_1, deleted:_2, deletedAt:_3, sessionId:_4, id:_5, ...safe } = best;
 
     await setDoc(doc(db,'users', uid), {
       ...safe,
@@ -124,7 +125,7 @@ export async function migrateUserDataToUid(uid, email) {
     ));
 
     const merged = await getDoc(doc(db,'users', uid));
-    return { id: uid, ...merged.data() };
+    return { ...merged.data(), id: uid };
   } catch(e) { console.warn('migrateUserData error:', e); return null; }
 }
 
@@ -189,7 +190,7 @@ export async function getAllUsersFromFirestore() {
     // usuarios reales y aparecían como filas "Quitar" sin nombre en el panel.
     // Ocultar también los docs viejos ya migrados a un uid de Auth (migrated:true):
     // sus datos viven ahora en users/{uid}, mostrarlos duplicaría al usuario.
-    const docs = snap.docs.map(d => ({ id: d.id, ...d.data() })).filter(d => d.email && !d.migrated);
+    const docs = snap.docs.map(d => ({ ...d.data(), id: d.id })).filter(d => d.email && !d.migrated); // id del doc gana
 
     // Deduplicar por email: cuando existen el doc viejo (u_TIMESTAMP) y el canónico
     // (u_luis_at_gmail_com) para el mismo email, el canónico siempre gana.
@@ -214,7 +215,7 @@ export async function getAllUsersFromFirestore() {
 export async function getUserFromFirestore(userId) {
   try {
     const snap = await getDoc(doc(db, 'users', userId));
-    if (snap.exists()) return { id: snap.id, ...snap.data() };
+    if (snap.exists()) return { ...snap.data(), id: snap.id }; // id del doc gana sobre campo id legacy
     return null;
   } catch(e) { console.warn('getUser error:', e); return null; }
 }
@@ -234,11 +235,11 @@ export async function findUserByEmail(email) {
     if (live.length) {
       // Si hubiera varios docs con el mismo email, preferir el que tiene regalo/pago
       const best = live.find(d => d.data().gifted || d.data().paquetes > 0) || live[0];
-      return { id: best.id, ...best.data() };
+      return { ...best.data(), id: best.id }; // id del doc gana sobre campo id legacy
     }
     // Fallback: doc canónico (usuarios creados directamente con ID canónico)
     const snap = await getDoc(doc(db, 'users', emailToDocId(normalizedEmail)));
-    if (snap.exists()) return { id: snap.id, ...snap.data() };
+    if (snap.exists()) return { ...snap.data(), id: snap.id };
     return null;
   } catch(e) { console.warn('findUserByEmail error:', e); return null; }
 }
@@ -356,7 +357,7 @@ export function subscribeToChatMessages(groupCode, callback) {
 export function subscribeToUserDoc(userId, callback) {
   return onSnapshot(
     doc(db, 'users', userId),
-    snap => callback(snap.exists() ? { id: snap.id, ...snap.data() } : null),
+    snap => callback(snap.exists() ? { ...snap.data(), id: snap.id } : null), // id del doc gana
     err => console.warn('userDoc snapshot error:', err)
   );
 }
