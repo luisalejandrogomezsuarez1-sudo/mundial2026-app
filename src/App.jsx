@@ -5094,7 +5094,7 @@ function PagoScreen({onExito,onCancelar,esReset=false,onRecheckAccess,user,onRec
 }
 
 // ── Bets Screen ───────────────────────────────────
-function BetsScreen({bets,placeBet,credito,creditoLoading,onPagar,onReset,betsSaved=false,onSave,currentUser,onRecheckAccess,onRecover}){
+function BetsScreen({bets,placeBet,credito,creditoLoading,onPagar,onReset,betsSaved=false,onSave,onEditPredictions,currentUser,onRecheckAccess,onRecover}){
   const t=useLang();
   const [tab,setTab]=useState('largo');
   const [exact,setExact]=useState({});
@@ -5587,16 +5587,19 @@ function BetsScreen({bets,placeBet,credito,creditoLoading,onPagar,onReset,betsSa
                 PRONÓSTICO GUARDADO
               </div>
               <div style={{fontSize:12,color:'var(--muted)',lineHeight:1.6,marginBottom:12}}>
-                Tus pronósticos están asegurados y son de solo consulta.<br/>
-                Para hacer cambios necesitas comprar un nuevo paquete.
+                Tus pronósticos están guardados. Puedes <strong style={{color:'var(--gold)'}}>modificarlos</strong> con tus monedas disponibles y volver a guardar, sin pagar de nuevo.
               </div>
-              <div style={{background:'rgba(240,165,0,.08)',borderRadius:12,
-                border:'1px solid rgba(240,165,0,.2)',padding:'12px',marginBottom:12}}>
-                <div style={{fontSize:13,color:'var(--gold)',fontWeight:700,marginBottom:4}}>
-                  ¿Quieres cambiar tus pronósticos?
-                </div>
-                <div style={{fontSize:11,color:'var(--dim)'}}>
-                  Compra otro paquete de <strong style={{color:'var(--gold)'}}>$30 MXN</strong> y recibirás 1,000🪙 nuevas para volver a apostar.
+              <button onClick={()=>onEditPredictions&&onEditPredictions()}
+                style={{width:'100%',background:'linear-gradient(135deg,var(--gold),var(--gold2))',
+                  border:'none',color:'#000',borderRadius:12,padding:'14px',
+                  fontFamily:'var(--ff)',fontSize:16,letterSpacing:1,fontWeight:800,
+                  cursor:'pointer',marginBottom:12,boxShadow:'0 4px 16px rgba(240,165,0,.35)'}}>
+                ✏️ Modificar pronósticos
+              </button>
+              <div style={{background:'rgba(240,165,0,.06)',borderRadius:12,
+                border:'1px solid rgba(240,165,0,.18)',padding:'10px 12px',marginBottom:12}}>
+                <div style={{fontSize:11,color:'var(--dim)',lineHeight:1.5}}>
+                  ¿Quieres más monedas? Compra otro paquete de <strong style={{color:'var(--gold)'}}>$30 MXN</strong> y recibirás 1,000🪙 nuevas.
                 </div>
               </div>
               <button onClick={()=>setConfirmReset(true)}
@@ -6182,18 +6185,15 @@ export default function App(){
             return {coins:gc+(fsUser.paquetes||0)*COINS_PER_PAGO,paquetes:fsUser.paquetes||1,paidAt:Date.now(),gifted:true,giftedCoins:gc};
           });
           // Desbloquear edición SOLO ante un regalo NUEVO (giftedAt distinto al ya visto).
-          // Persistente en localStorage → no repetir el borrado en cada snapshot ni recarga.
+          // Persistente en localStorage → no se repite en cada snapshot ni recarga.
+          // NO borra los bets: el usuario los MODIFICA, no los pierde.
           try{
             const giftKey='wc2026_gift_seen_'+(user?.id||'');
             const stamp=String(fsUser.giftedAt||gc);
             if(localStorage.getItem(giftKey)!==stamp){
               localStorage.setItem(giftKey,stamp);
-              setBetsSaved(false); // reactivar botones de apuesta
-              setUserBets([]);     // rehacer pronósticos con el saldo completo (paquete + regalo)
-              if(user?.id){
-                localStorage.removeItem('wc2026_bets_'+user.id);
-                localStorage.removeItem('wc2026_saved_'+user.id);
-              }
+              setBetsSaved(false); // reactivar botones de apuesta (sin borrar selecciones)
+              if(user?.id) localStorage.removeItem('wc2026_saved_'+user.id);
             }
           }catch(e){}
           dbLoad().then(localUsers=>{
@@ -6481,6 +6481,11 @@ export default function App(){
                                         : '⚠ Guardado local OK. Error al sincronizar con grupos.');
                                       setTimeout(()=>setGroupSyncMsg(''),3500);
                                     }
+                                  }}
+                                  onEditPredictions={()=>{
+                                    // Desbloquear edición sin pagar: conserva los bets actuales
+                                    setBetsSaved(false);
+                                    if(user?.id)localStorage.removeItem('wc2026_saved_'+user.id);
                                   }}
                                   currentUser={user} onRecheckAccess={recheckAccess} onRecover={handleMpRecover}/>}
           {tab==='grupos'     &&<GruposScreen user={user} userBets={userBets} credito={credito} creditoLoading={creditoLoading} onPagar={onPagar} onRecheckAccess={recheckAccess}/>}
