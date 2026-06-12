@@ -40,6 +40,8 @@ import('./firebase.js').then(fb => {
     try{ const u=JSON.parse(localStorage.getItem('wc2026_current_user')||'null'); if(u?.id) return u.id; }catch(_){}
     return null;
   };
+  // DEBUG: uid PURO de Firebase Auth (sin fallback) para el panel de diagnóstico
+  window._fbAuthUidRaw      = () => { try{ return fb.auth?.currentUser?.uid || null; }catch(_){ return null; } };
   console.log('🔥 Firebase conectado — mundial2026-15686');
 }).catch(e => console.warn('Firebase error:', e));
 
@@ -5794,6 +5796,8 @@ export default function App(){
   const [credito,setCredito]=useState(null);
   const [creditoLoading,setCreditoLoading]=useState(false);
   const [mpVerify,setMpVerify]=useState(null);
+  const [debugInfo,setDebugInfo]=useState({target:'-',snapPaquetes:'-'}); // DEBUG temporal
+  const [dbgTick,setDbgTick]=useState(0); // refresca el panel de debug en vivo
   // mpVerify: null | "verifying" | {ok:true,paymentId,coins} | {ok:false,paymentId,error}
   //         | {kind:'pending'} | {kind:'failure'}
   const [betsSaved,setBetsSaved]=useState(false); // predictions locked after saving
@@ -5803,6 +5807,12 @@ export default function App(){
   // Espejo del usuario activo para leerlo dentro de listeners sin stale closure
   const userRef=useRef(null);
   useEffect(()=>{userRef.current=user;},[user]);
+  // DEBUG temporal: refrescar el panel de diagnóstico en vivo (no admin)
+  useEffect(()=>{
+    if(user?.isAdmin) return;
+    const id=setInterval(()=>setDbgTick(t=>t+1),1500);
+    return()=>clearInterval(id);
+  },[user?.isAdmin]);
   // Migración de pronósticos bloqueados: correr al abrir la app (no solo en Grupos)
   // para que los usuarios afectados por el bug del stub se recuperen más rápido.
   useEffect(()=>{ if(user?.id) syncLockedBets(user); },[user?.id]);
@@ -6165,9 +6175,11 @@ export default function App(){
         catch(e){ console.warn('[gift-listener] findUserByEmail error:',e); }
       }
       console.log('[gift-listener] suscrito a users/'+targetId+' (authUid='+authUid+', user.id='+user.id+')');
+      setDebugInfo(d=>({...d,target:targetId})); // DEBUG
       unsub=subscribeFn(targetId,fsUser=>{
         if(cancelled) return;
         console.log('[gift-listener] snapshot:',JSON.stringify({id:targetId,gifted:fsUser?.gifted,giftedCoins:fsUser?.giftedCoins,paquetes:fsUser?.paquetes}));
+        setDebugInfo(d=>({...d,snapPaquetes:String(fsUser?.paquetes??'null')})); // DEBUG
         // Detectar eliminación
         if(fsUser?.forceDelete||fsUser?.deleted){
           dbLoad().then(allDB=>dbSave(allDB.filter(x=>x.id!==user.id))).catch(()=>{});
@@ -6555,6 +6567,19 @@ export default function App(){
           )}
         </>}
       </div>
+      {/* DEBUG temporal — panel de diagnóstico de uid en móvil (no admin) */}
+      {user && !user.isAdmin && (()=>{
+        let lsId='-'; try{ lsId=JSON.parse(localStorage.getItem('wc2026_current_user')||'null')?.id||'null'; }catch(_){ lsId='err'; }
+        const authUid=(window._fbAuthUidRaw&&window._fbAuthUidRaw())||'null';
+        return(
+          <div style={{position:'fixed',left:0,right:0,bottom:0,zIndex:99999,
+            background:'#000',color:'#0f0',fontFamily:'monospace',fontSize:9,
+            lineHeight:1.45,padding:'4px 8px',borderTop:'1px solid #0a0',
+            whiteSpace:'pre-wrap',wordBreak:'break-all',opacity:.92}}>
+            {`AUTH uid: ${authUid}\nuser.id: ${user?.id}\nLS id: ${lsId}\nlistener target: ${debugInfo.target}\nsnapshot paquetes: ${debugInfo.snapPaquetes}\ncredito.coins: ${credito?.coins ?? '-'}  (tick ${dbgTick})`}
+          </div>
+        );
+      })()}
     </div>
     </LangCtx.Provider>
   );
