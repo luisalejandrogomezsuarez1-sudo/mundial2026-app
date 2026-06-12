@@ -317,6 +317,32 @@ app.post('/api/groups', (req,res)=>{
 const notFoundCache = new Set();
 const NOT_FOUND_TTL = 5 * 60 * 1000; // 5 min
 
+// ── Grupos donde el usuario es miembro (fallback del cliente para uploadBets) ─
+// DEBE ir ANTES de /api/groups/:code o ":code" capturaría "user".
+app.get('/api/groups/user/:uid', async(req,res)=>{
+  const uid = req.params.uid;
+  if(!uid) return res.status(400).json({error:'Falta uid'});
+  const found = {};
+  // 1. En memoria
+  for(const code of Object.keys(serverGroups)){
+    const g = serverGroups[code];
+    if(g?.code && Array.isArray(g.members) && g.members.some(m=>m.id===uid)) found[g.code]=g;
+  }
+  // 2. Firestore (cubre grupos no cargados en memoria)
+  if(db){
+    try{
+      const snap = await db.collection('groups').get();
+      snap.docs.forEach(d=>{
+        const g = d.data();
+        if(g?.code && !found[g.code] && Array.isArray(g.members) && g.members.some(m=>m.id===uid))
+          found[g.code] = g;
+      });
+    }catch(e){ console.warn('groups/user error:', e.message); }
+  }
+  const groups = Object.values(found).map(g=>({ id:g.id, code:g.code, name:g.name }));
+  res.json({ ok:true, groups });
+});
+
 app.get('/api/groups/:code', async(req,res)=>{
   const code = (req.params.code||'').toUpperCase().trim();
   if(!code) return res.status(400).json({error:'Falta code'});

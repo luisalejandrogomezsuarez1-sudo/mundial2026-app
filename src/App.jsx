@@ -33,6 +33,8 @@ import('./firebase.js').then(fb => {
   window._fbAuthOnChange    = fb.authOnChange;
   window._fbSaveAuthUser    = fb.saveAuthUserToFirestore;
   window._fbMigrateUser     = fb.migrateUserDataToUid;
+  // uid autoritativo de Firebase Auth (la fuente real tras la migración a Auth)
+  window._fbCurrentUid      = () => { try{ return fb.auth?.currentUser?.uid || null; }catch(_){ return null; } };
   console.log('🔥 Firebase conectado — mundial2026-15686');
 }).catch(e => console.warn('Firebase error:', e));
 
@@ -105,10 +107,25 @@ async function syncLockedBets(user){
 // lleguen al ranking de cada grupo, no solo a localStorage. Reusa /lock (no
 // crea endpoints nuevos). Devuelve {ok, fail, total}.
 async function uploadBetsToAllGroups(user, bets){
-  if(!user?.id) return {ok:0, fail:0, total:0};
-  let groups=[];
-  try{ const g=JSON.parse(localStorage.getItem('wc2026_groups_'+user.id)||'[]'); if(Array.isArray(g)) groups=g; }catch{}
+  // uid AUTORITATIVO: Firebase Auth currentUser → user.uid → user.id (legacy).
+  // Tras la migración a Auth, el uid real es el de Auth, no el id del localStorage viejo.
+  const uid = (typeof window!=='undefined' && window._fbCurrentUid && window._fbCurrentUid())
+            || user?.uid || user?.id || null;
+  if(!uid){ console.warn('[uploadBets] sin uid (auth no listo)'); return {ok:0, fail:0, total:0}; }
+
+  const readLS=key=>{ try{ const g=JSON.parse(localStorage.getItem(key)||'[]'); return Array.isArray(g)?g:[]; }catch{ return []; } };
+  // Grupos del usuario: localStorage (clave por uid; probar user.id si difiere)
+  let groups=readLS('wc2026_groups_'+uid);
+  if(groups.length===0 && user?.id && user.id!==uid) groups=readLS('wc2026_groups_'+user.id);
+  // Fallback al servidor si localStorage no los tiene (GruposScreen no montado, otro dispositivo)
+  if(groups.length===0){
+    try{
+      const r=await fetch('/api/groups/user/'+encodeURIComponent(uid));
+      if(r.ok){ const d=await r.json(); if(Array.isArray(d.groups)) groups=d.groups; }
+    }catch(e){}
+  }
   const real=groups.filter(g=>g?.code && g.code!=='WC26-AMIGOS'); // excluir grupo demo
+  console.log('[uploadBets] uid=',uid,'· grupos=',real.map(g=>g.code));
   const lockedAt=Date.now();
   const payloadBets=(bets||[]).map(b=>({
     id:b.id, category:b.category||b.cat, selection:b.selection||b.sel,
@@ -117,9 +134,9 @@ async function uploadBetsToAllGroups(user, bets){
   // Reflejar el bloqueo en localStorage (locks por id de grupo) para que la UI de
   // Grupos lo muestre como bloqueado y la migración quede consistente con el server.
   try{
-    const locks=JSON.parse(localStorage.getItem('wc2026_locks_'+user.id)||'{}');
+    const locks=JSON.parse(localStorage.getItem('wc2026_locks_'+uid)||'{}');
     real.forEach(g=>{ if(g.id) locks[g.id]={bets:[...(bets||[])],lockedAt}; });
-    localStorage.setItem('wc2026_locks_'+user.id,JSON.stringify(locks));
+    localStorage.setItem('wc2026_locks_'+uid,JSON.stringify(locks));
   }catch{}
   let ok=0, fail=0;
   for(const g of real){
@@ -128,12 +145,12 @@ async function uploadBetsToAllGroups(user, bets){
       const res=await fetch('/api/groups/'+encodeURIComponent(g.code)+'/lock',{
         method:'POST',headers:{'Content-Type':'application/json'},
         body:JSON.stringify({
-          id:user.id, name:user.name||user.displayName||'Usuario',
-          ini:user.ini||(user.name||'U').charAt(0).toUpperCase(), col:'#4F8EF7',
+          id:uid, name:user?.name||user?.displayName||'Usuario',
+          ini:user?.ini||(user?.name||'U').charAt(0).toUpperCase(), col:'#4F8EF7',
           bets:payloadBets, lockedAt,
         }),
       });
-      if(res.ok){ ok++; try{localStorage.setItem('wc2026_synced_'+user.id+'_'+g.id,'1');}catch{} }
+      if(res.ok){ ok++; try{localStorage.setItem('wc2026_synced_'+uid+'_'+g.id,'1');}catch{} }
       else fail++;
     }catch(e){ fail++; }
   }
