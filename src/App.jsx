@@ -6180,8 +6180,25 @@ export default function App(){
           dbLoad().then(localUsers=>{
             dbSave(localUsers.map(x=>x.email?.toLowerCase()===user.email?.toLowerCase()?{...x,gifted:true,giftedCoins:gc}:x));
           });
-        } else if(fsUser&&fsUser.gifted===false){
-          console.log('[gift-listener] regalo revocado (gifted:false) — el saldo de regalo se actualizará al recargar');
+        } else {
+          // Sin regalo: reflejar SIEMPRE los paquetes pagados desde Firestore.
+          // El listener entrega el doc REAL users/{AuthUid} (que tiene paquetes:N),
+          // así que es la fuente de verdad, no la copia (posiblemente vieja) de localStorage.
+          const paq=Number(fsUser?.paquetes)||0;
+          if(paq>0){
+            console.log('[gift-listener] paquetes Firestore =',paq,'→ credito',paq*COINS_PER_PAGO);
+            setCredito(prev=>{
+              if(prev?.gifted||prev?.isAdmin) return prev; // no pisar regalo activo ni admin
+              if(prev?.paquetes===paq && prev?.coins===paq*COINS_PER_PAGO) return prev; // sin cambio
+              return {coins:paq*COINS_PER_PAGO,paquetes:paq,paidAt:Date.now()};
+            });
+            // Sincronizar localStorage con los paquetes frescos de Firestore
+            try{
+              const cur=JSON.parse(localStorage.getItem('wc2026_current_user')||'null');
+              if(cur && cur.paquetes!==paq){ cur.paquetes=paq; localStorage.setItem('wc2026_current_user',JSON.stringify(cur)); }
+            }catch(_){}
+            dbLoad().then(localUsers=>dbSave(localUsers.map(x=>x.email?.toLowerCase()===user.email?.toLowerCase()?{...x,paquetes:paq}:x))).catch(()=>{});
+          }
         }
       });
     };
