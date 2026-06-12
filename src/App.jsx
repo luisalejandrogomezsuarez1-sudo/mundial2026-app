@@ -5119,7 +5119,7 @@ function BetsScreen({bets,placeBet,credito,creditoLoading,onPagar,onReset,betsSa
   // Coins
   const isAdminUser=credito?.isAdmin||false;
   const coinsUsed=isAdminUser?0:bets.reduce((s,b)=>s+getBetCost(b.id),0);
-  const totalCoins=COINS_PER_PAGO;
+  const totalCoins=isAdminUser?999999:(credito?.coins||COINS_PER_PAGO);
   const coinsLeft=isAdminUser?999999:totalCoins-coinsUsed;
   const pctUsed=isAdminUser?0:Math.min(100,Math.round(coinsUsed/totalCoins*100));
 
@@ -6181,6 +6181,21 @@ export default function App(){
             if(prev?.gifted) return prev;
             return {coins:gc+(fsUser.paquetes||0)*COINS_PER_PAGO,paquetes:fsUser.paquetes||1,paidAt:Date.now(),gifted:true,giftedCoins:gc};
           });
+          // Desbloquear edición SOLO ante un regalo NUEVO (giftedAt distinto al ya visto).
+          // Persistente en localStorage → no repetir el borrado en cada snapshot ni recarga.
+          try{
+            const giftKey='wc2026_gift_seen_'+(user?.id||'');
+            const stamp=String(fsUser.giftedAt||gc);
+            if(localStorage.getItem(giftKey)!==stamp){
+              localStorage.setItem(giftKey,stamp);
+              setBetsSaved(false); // reactivar botones de apuesta
+              setUserBets([]);     // rehacer pronósticos con el saldo completo (paquete + regalo)
+              if(user?.id){
+                localStorage.removeItem('wc2026_bets_'+user.id);
+                localStorage.removeItem('wc2026_saved_'+user.id);
+              }
+            }
+          }catch(e){}
           dbLoad().then(localUsers=>{
             dbSave(localUsers.map(x=>x.email?.toLowerCase()===user.email?.toLowerCase()?{...x,gifted:true,giftedCoins:gc}:x));
           });
