@@ -6144,21 +6144,17 @@ export default function App(){
       const subscribeFn=window._fbSubscribeUser;
       const findFn=window._fbFindUserByEmail;
       if(!subscribeFn){console.warn('[gift-listener] _fbSubscribeUser aún no disponible');return;}
-      // Encontrar el ID correcto en Firestore por email (puede diferir del local)
-      let targetId=user.id;
-      if(user.fromAuth){
-        // Usuario de Firebase Auth: su doc definitivo es users/{uid}. El regalo
-        // (giftCoinsByEmail) se escribe ahí porque el doc tiene el campo email.
-        // Suscribir directo al uid evita engancharse a un doc legado por email.
-        console.log('[gift-listener] fromAuth → doc Firestore: users/'+targetId);
-      } else if(findFn){
-        try{
-          const fsUser=await findFn(user.email);
-          if(fsUser?.id) targetId=fsUser.id;
-          console.log('[gift-listener] email',user.email,'→ doc Firestore:',targetId,'(id local:',user.id+')','| gifted actual:',fsUser?.gifted);
-        }catch(e){console.warn('[gift-listener] findUserByEmail error:',e);}
+      // El path REAL del doc en Firestore es users/{Firebase Auth uid}. El campo
+      // 'id' del documento puede ser un id legacy (u_TIMESTAMP) que NO sirve como
+      // path → usar el uid de Firebase Auth (window._fbCurrentUid).
+      const authUid=(window._fbCurrentUid&&window._fbCurrentUid())||null;
+      let targetId=authUid||user.id;
+      if(!authUid && !user.fromAuth && findFn){
+        // Sin uid de Auth y usuario legado: resolver el doc real por email
+        try{ const fsUser=await findFn(user.email); if(fsUser?.id) targetId=fsUser.id; }
+        catch(e){ console.warn('[gift-listener] findUserByEmail error:',e); }
       }
-      console.log('[gift-listener] suscrito a users/'+targetId);
+      console.log('[gift-listener] suscrito a users/'+targetId+' (authUid='+authUid+', user.id='+user.id+')');
       unsub=subscribeFn(targetId,fsUser=>{
         if(cancelled) return;
         console.log('[gift-listener] snapshot:',JSON.stringify({id:targetId,gifted:fsUser?.gifted,giftedCoins:fsUser?.giftedCoins,paquetes:fsUser?.paquetes}));
@@ -6208,10 +6204,11 @@ export default function App(){
       try{
         const localSession=localStorage.getItem('wc2026_session_'+user.id);
         if(!localSession) return;
-        // 1 lectura (doc del usuario) en vez de leer toda la colección
+        // 1 lectura del doc REAL: users/{Firebase Auth uid}, no el id legacy
         const getFn=window._fbGetUser;
         if(!getFn) return;
-        const fsUser=await getFn(user.id);
+        const uid=(window._fbCurrentUid&&window._fbCurrentUid())||user.id;
+        const fsUser=await getFn(uid);
         if(fsUser?.sessionId && fsUser.sessionId!==localSession){
           logout('Tu cuenta fue abierta en otro dispositivo. Se cerró esta sesión.');
         }
