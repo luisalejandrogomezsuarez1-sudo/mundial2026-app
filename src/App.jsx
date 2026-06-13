@@ -2703,6 +2703,7 @@ function TablaScreen(){
   const [gi,setGi]=useState(0);
   const [groups,setGroups]=useState(GROUPS);
   const [apiLoaded,setApiLoaded]=useState(false);
+  const [showName,setShowName]=useState(null); // bandera clicada → muestra nombre del equipo
 
   // ── Initial bracket — all TBD until tournament plays ──
   const mkSlot=(label,date,venue='')=>({label,date,venue,home:null,away:null,winner:null});
@@ -2792,30 +2793,33 @@ function TablaScreen(){
       </div>
       <div style={{margin:'0 16px'}}>
         <div style={{background:'var(--surf)',borderRadius:'14px 14px 0 0',border:'1px solid var(--br)',borderBottom:'none'}}>
-          <div style={{display:'flex',padding:'9px 14px',fontSize:10,fontWeight:700,
-            color:'var(--muted)',letterSpacing:.8,textTransform:'uppercase'}}>
-            <div style={{flex:1}}>{t.team_col}</div>
-            {hdrs.map(h=><div key={h} style={{width:26,textAlign:'center'}}>{h}</div>)}
+          <div style={{display:'grid',gridTemplateColumns:'24px 30px repeat(8,1fr)',gap:0,padding:'9px 12px',
+            fontSize:10,fontWeight:700,color:'var(--muted)',letterSpacing:.5,textTransform:'uppercase',alignItems:'center'}}>
+            <div></div>
+            <div style={{textAlign:'center'}}>🏳️</div>
+            {hdrs.map(h=><div key={h} style={{textAlign:'center'}}>{h}</div>)}
           </div>
           {sorted.map((t,i)=>{
             const vals=[t.pj,t.g,t.e,t.p,t.gf,t.gc,t.gf-t.gc,t.pts];
             return(
-              <div key={t.n} style={{display:'flex',padding:'9px 14px',alignItems:'center',
+              <div key={t.n} style={{display:'grid',gridTemplateColumns:'24px 30px repeat(8,1fr)',gap:0,
+                padding:'10px 12px',alignItems:'center',
                 borderTop:'1px solid rgba(255,255,255,.05)',
                 background:i===0?'rgba(240,165,0,.04)':i===1?'rgba(30,198,108,.03)':'transparent',
                 transition:'background .15s'}}>
-                <div style={{flex:1,display:'flex',alignItems:'center',gap:7}}>
-                  <div style={{width:20,height:20,borderRadius:'50%',flexShrink:0,
-                    background:i===0?'var(--gold)':i===1?'rgba(240,165,0,.22)':'rgba(255,255,255,.08)',
-                    display:'flex',alignItems:'center',justifyContent:'center',
-                    fontSize:10,fontWeight:800,color:i===0?'#000':'#fff'}}>{i+1}</div>
-                  <span style={{fontSize:17}}>{FLAGS[t.n]||'🏳️'}</span>
-                  <span style={{fontSize:12,fontWeight:600}}>{t.n}</span>
-                  {i<2&&<span style={{fontSize:9,background:'rgba(30,198,108,.15)',color:'var(--grn)',
-                    padding:'1px 5px',borderRadius:4,fontWeight:700,flexShrink:0}}>{t.advancing}</span>}
+                {/* Posición */}
+                <div style={{width:20,height:20,borderRadius:'50%',
+                  background:i===0?'var(--gold)':i===1?'rgba(240,165,0,.22)':'rgba(255,255,255,.08)',
+                  display:'flex',alignItems:'center',justifyContent:'center',
+                  fontSize:10,fontWeight:800,color:i===0?'#000':'#fff'}}>{i+1}</div>
+                {/* Solo bandera — clic muestra el nombre */}
+                <div style={{textAlign:'center',cursor:'pointer'}}
+                  onClick={()=>setShowName(showName===t.n?null:t.n)}>
+                  <span style={{fontSize:18}}>{FLAGS[t.n]||'🏳️'}</span>
                 </div>
+                {/* Columnas de datos — todas alineadas */}
                 {vals.map((v,vi)=>(
-                  <div key={vi} style={{width:26,textAlign:'center',fontSize:12,
+                  <div key={vi} style={{textAlign:'center',fontSize:12,
                     fontWeight:vi===7?800:400,
                     color:vi===7?'var(--gold)':vi===6&&v>0?'var(--grn)':vi===6&&v<0?'var(--red)':'var(--txt)'}}>
                     {vi===6&&v>0?'+'+v:v}
@@ -2824,6 +2828,15 @@ function TablaScreen(){
               </div>
             );
           })}
+          {/* Nombre del equipo al hacer clic en su bandera */}
+          {showName&&(
+            <div style={{padding:'8px 14px',borderTop:'1px solid rgba(255,255,255,.05)',
+              background:'rgba(240,165,0,.06)',fontSize:12,color:'var(--gold)',fontWeight:600,
+              display:'flex',alignItems:'center',gap:8}}>
+              <span style={{fontSize:18}}>{FLAGS[showName]||'🏳️'}</span>
+              <span>{showName}</span>
+            </div>
+          )}
         </div>
         <div style={{background:'var(--surf)',borderRadius:'0 0 14px 14px',border:'1px solid var(--br)',
           borderTop:'none',padding:'9px 14px'}}>
@@ -5614,27 +5627,28 @@ function BetsScreen({bets,placeBet,credito,creditoLoading,onPagar,onReset,betsSa
         const awayShort=m.away.substring(0,8);
         return(
           <div key={mid} style={{display:'flex',alignItems:'center',gap:8,
-            padding:'6px 10px',marginBottom:5,
+            padding:'7px 10px',marginBottom:5,
             background:'var(--surf)',borderRadius:10,border:'1px solid var(--br)'}}>
-            {/* Izquierda: nombres + fecha */}
-            <div style={{flex:1,minWidth:0}}>
+            {/* Izquierda: nombres + fecha — ANCHO FIJO para alinear todo */}
+            <div style={{width:104,flexShrink:0,minWidth:0}}>
               <div style={{display:'flex',alignItems:'center',gap:5,marginBottom:2}}>
-                <span style={{fontSize:14,lineHeight:1}}>{FLAGS[m.home]||'🏴'}</span>
+                <span style={{fontSize:14,lineHeight:1,flexShrink:0}}>{FLAGS[m.home]||'🏴'}</span>
                 <span style={{fontSize:11,fontWeight:700,color:'var(--txt)',
                   overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{m.home}</span>
-                {isLive&&<span className="live" style={{fontSize:8}}><span className="ldot"/>{m.min}'</span>}
+                {isLive&&<span className="live" style={{fontSize:8,flexShrink:0}}><span className="ldot"/>{m.min}'</span>}
               </div>
               <div style={{display:'flex',alignItems:'center',gap:5,marginBottom:3}}>
-                <span style={{fontSize:14,lineHeight:1}}>{FLAGS[m.away]||'🏴'}</span>
+                <span style={{fontSize:14,lineHeight:1,flexShrink:0}}>{FLAGS[m.away]||'🏴'}</span>
                 <span style={{fontSize:11,fontWeight:700,color:'var(--txt)',
                   overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{m.away}</span>
               </div>
-              <div style={{fontSize:9,color:'var(--muted)'}}>
+              <div style={{fontSize:9,color:'var(--muted)',overflow:'hidden',
+                textOverflow:'ellipsis',whiteSpace:'nowrap'}}>
                 {m.date||''}{m.time?' · '+m.time:''}
               </div>
             </div>
-            {/* Derecha: botones apuestas */}
-            <div style={{flexShrink:0}}>
+            {/* Derecha: botones apuestas — ocupa el resto, mismo ancho en todas las filas */}
+            <div style={{flex:1,minWidth:0}}>
               {/* Fila 1: 1X2 */}
               <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:3,marginBottom:3}}>
                 <OBtn id={`m${mid}-1x2`} category="1X2" val="1" odds={o[0]} display={homeShort}/>
