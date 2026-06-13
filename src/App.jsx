@@ -1903,14 +1903,17 @@ function MatchCard({m,onClick}){
 }
 
 // ── Next Match Card ──────────────────────────────
-function NextCard({m}){
+function NextCard({m,score}){
+  const finished = score && score.gh!=null && score.ga!=null;
   return(
-    <div style={{margin:'0 16px 11px',background:'var(--surf)',borderRadius:'var(--r)',border:'1px solid var(--br)',overflow:'hidden'}}>
+    <div style={{margin:'0 16px 11px',background:'var(--surf)',borderRadius:'var(--r)',border:`1px solid ${finished?'rgba(46,204,113,.3)':'var(--br)'}`,overflow:'hidden'}}>
       <div style={{padding:'8px 14px 3px',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
         <span style={{fontSize:11,color:'var(--muted)',fontWeight:600}}>{m.phase} · {m.date}</span>
         <div style={{display:'flex',gap:6,alignItems:'center'}}>
           <span style={{fontSize:11,color:'var(--muted)'}}>🕐 {m.time}</span>
-          <span style={{fontSize:10,background:'rgba(79,142,247,.15)',color:'var(--acc)',padding:'2px 8px',borderRadius:20,fontWeight:700,letterSpacing:.5}}>PRÓXIMO</span>
+          {finished
+            ? <span style={{fontSize:10,background:'rgba(46,204,113,.18)',color:'var(--grn)',padding:'2px 8px',borderRadius:20,fontWeight:700,letterSpacing:.5}}>✓ FINALIZADO</span>
+            : <span style={{fontSize:10,background:'rgba(79,142,247,.15)',color:'var(--acc)',padding:'2px 8px',borderRadius:20,fontWeight:700,letterSpacing:.5}}>PRÓXIMO</span>}
         </div>
       </div>
       <div style={{padding:'6px 14px 10px',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
@@ -1919,7 +1922,9 @@ function NextCard({m}){
           <span style={{fontWeight:700,fontSize:14}}>{m.home}</span>
         </div>
         <div style={{textAlign:'center',minWidth:82}}>
-          <div style={{fontFamily:'var(--ff)',fontSize:22,color:'var(--muted)',letterSpacing:2}}>VS</div>
+          {finished
+            ? <div style={{fontFamily:'var(--ff)',fontSize:26,color:'var(--txt)',letterSpacing:1}}>{score.gh} <span style={{color:'var(--muted)'}}>-</span> {score.ga}</div>
+            : <div style={{fontFamily:'var(--ff)',fontSize:22,color:'var(--muted)',letterSpacing:2}}>VS</div>}
           <div style={{fontSize:10,color:'var(--muted)',marginTop:3}}>📍 {m.city}</div>
           <div style={{fontSize:10,color:'var(--muted)'}}>🏟 {m.venue}</div>
         </div>
@@ -2414,6 +2419,22 @@ function CalScreen(){
   const t=useLang();
   const [fil,setFil]=useState('todos');
   const [matches,setMatches]=useState(NEXT_MATCHES);
+  const [scores,setScores]=useState({}); // { matchId: {gh, ga} } desde live/scores
+
+  // Marcadores manuales (admin) → mostrar FINALIZADO + resultado
+  useEffect(()=>{
+    let unsub, mounted=true;
+    const cached=getCachedLive('scores');
+    if(cached?.scores) setScores(cached.scores);
+    const trySub=()=>{
+      if(!mounted) return;
+      const fn=window._fbSubscribeLive;
+      if(!fn){ setTimeout(trySub,800); return; }
+      try{ unsub=fn('scores',data=>{ setCachedLive('scores',data); if(data?.scores) setScores(data.scores); }); }catch(e){}
+    };
+    trySub();
+    return()=>{ mounted=false; if(typeof unsub==='function') unsub(); };
+  },[]);
 
   // Firestore: fixtures (con cache 30min — horarios no cambian frecuentemente)
   useEffect(()=>{
@@ -2552,7 +2573,7 @@ function CalScreen(){
             color:'var(--muted)',letterSpacing:.8}}>
             {dateLabel(date)} · {fmt(date).toUpperCase()}
           </div>
-          {byDate[date].map(m=><NextCard key={m.id} m={m}/>)}
+          {byDate[date].map(m=><NextCard key={m.id} m={m} score={scores[m.id]}/>)}
         </div>
       ))}
 

@@ -50,7 +50,7 @@ function afFetch(endpoint){
 // ── Datos en vivo: whitelist de documentos y copia en memoria ────
 // liveCache guarda la última versión de cada doc para servirla por HTTP
 // (GET /api/live/:docId) sin que cada usuario abra un onSnapshot a Firestore.
-const LIVE_DOCS    = ['matches','standings','scorers','fixtures','bracket','banner','livemanual'];
+const LIVE_DOCS    = ['matches','standings','scorers','fixtures','bracket','banner','livemanual','scores'];
 const ALWAYS_FRESH = ['banner','livemanual'];   // se leen de Firestore en cada request (editables a mano, sin polling)
 const liveCache  = {};
 
@@ -1116,6 +1116,14 @@ app.post('/api/admin/tabla', async (req,res)=>{
     // Ordenar cada grupo: pts, dg, gf
     groups.forEach(grp=>grp.teams.sort((a,b)=>b.pts-a.pts||b.dg-a.dg||b.gf-a.gf));
     await save('standings', { groups });
+    // Guardar también los marcadores por partido para que el Calendario
+    // muestre "FINALIZADO" + marcador en cada partido jugado.
+    const scores = {};
+    for(const m of matches){
+      if(m.gh==null || m.ga==null) continue;
+      if(m.match_id!=null) scores[m.match_id] = { gh:Number(m.gh), ga:Number(m.ga) };
+    }
+    await save('scores', { scores });
     res.json({ ok:true, groups });
   }catch(e){ console.warn('admin/tabla error:', e.message); res.status(500).json({error:e.message}); }
 });
@@ -1155,6 +1163,7 @@ app.post('/api/admin/puntos', async (req,res)=>{
   try{
     const snap = await db.collection('users').get();
     const ptsByUid = {};       // uid -> pts (para actualizar grupos)
+    const ptsByAlias = {};     // alias (migratedFrom/email/nombre) -> pts (match robusto)
     const summary = [];
     let batch = db.batch(), pending = 0, written = 0;
 
@@ -1173,6 +1182,11 @@ app.post('/api/admin/puntos', async (req,res)=>{
       }
       pts = Math.round(pts*10)/10;
       ptsByUid[docSnap.id] = pts;
+      // Alias para encontrar al member del grupo aunque se haya registrado con
+      // un id distinto (legacy u_TIMESTAMP) al uid de Auth del doc actual.
+      if(u.migratedFrom) ptsByAlias['id:'+u.migratedFrom] = pts;
+      if(u.email) ptsByAlias['email:'+String(u.email).toLowerCase().trim()] = pts;
+      if(u.name)  ptsByAlias['name:'+String(u.name).toLowerCase().trim()]   = pts;
       summary.push({ uid: docSnap.id, name: u.name||'', bets: bets.length, hits, pts });
       if(!dryRun){
         batch.update(docSnap.ref, { pts, ptsUpdatedAt: new Date().toISOString() });
@@ -1182,8 +1196,20 @@ app.post('/api/admin/puntos', async (req,res)=>{
     if(!dryRun && pending>0){ await batch.commit(); written += pending; }
 
     // Propagar los puntos a los miembros de cada grupo (ranking del grupo)
-    let gruposActualizados = 0;
+    let gruposActualizados = 0, miembrosActualizados = 0;
     if(!dryRun){
+      // Resuelve los puntos de un member probando: uid directo, luego alias
+      // (id legacy, email, nombre). Devuelve null si no hay match.
+      const ptsForMember=(m)=>{
+        if(m==null) return null;
+        if(m.id!=null && ptsByUid[m.id]!=null) return ptsByUid[m.id];
+        if(m.id!=null && ptsByAlias['id:'+m.id]!=null) return ptsByAlias['id:'+m.id];
+        if(m.email && ptsByAlias['email:'+String(m.email).toLowerCase().trim()]!=null)
+          return ptsByAlias['email:'+String(m.email).toLowerCase().trim()];
+        if(m.name && ptsByAlias['name:'+String(m.name).toLowerCase().trim()]!=null)
+          return ptsByAlias['name:'+String(m.name).toLowerCase().trim()];
+        return null;
+      };
       const gsnap = await db.collection('groups').get();
       let gbatch = db.batch(), gpending = 0;
       for(const gdoc of gsnap.docs){
@@ -1191,10 +1217,8 @@ app.post('/api/admin/puntos', async (req,res)=>{
         if(!Array.isArray(g.members)) continue;
         let changed = false;
         const members = g.members.map(m=>{
-          if(m && m.id!=null && ptsByUid[m.id]!=null && m.pts!==ptsByUid[m.id]){
-            changed = true;
-            return { ...m, pts: ptsByUid[m.id] };
-          }
+          const np = ptsForMember(m);
+          if(np!=null && m.pts!==np){ changed = true; miembrosActualizados++; return { ...m, pts: np }; }
           return m;
         });
         if(changed){
@@ -1211,7 +1235,7 @@ app.post('/api/admin/puntos', async (req,res)=>{
 
     summary.sort((a,b)=>b.pts-a.pts);
     res.json({ ok:true, dryRun, usuariosConBets: summary.length,
-               escritos: dryRun?0:written, gruposActualizados, ranking: summary });
+               escritos: dryRun?0:written, gruposActualizados, miembrosActualizados, ranking: summary });
   }catch(e){ console.warn('admin/puntos error:', e.message); res.status(500).json({error:e.message}); }
 });
 
