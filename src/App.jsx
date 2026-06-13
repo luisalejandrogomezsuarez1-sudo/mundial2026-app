@@ -3200,7 +3200,9 @@ function AdminDialog({dlg,onClose}){
 // Solo visible para admin. Mete marcadores y goleadores, y calcula puntos.
 // ═══════════════════════════════════════════════════════════════
 function AdminResultados({onClose}){
-  const [adminKey,setAdminKey]=useState(()=>{ try{return sessionStorage.getItem('wc2026_admin_key')||'';}catch{return '';} });
+  const [adminKey,setAdminKey]=useState(()=>{ try{return localStorage.getItem('wc2026_admin_key')||'';}catch{return '';} });
+  const [keyGuardada,setKeyGuardada]=useState(()=>{ try{return !!localStorage.getItem('wc2026_admin_key');}catch{return false;} });
+  const [keyMsg,setKeyMsg]=useState('');
   const [sec,setSec]=useState('tabla'); // tabla | goles | puntos
   const [busy,setBusy]=useState(false);
   const [msg,setMsg]=useState('');
@@ -3212,7 +3214,22 @@ function AdminResultados({onClose}){
   // Goleadores: lista editable [{n, team, g}]
   const [scorers,setScorers]=useState(()=>{ try{return JSON.parse(localStorage.getItem('wc2026_admin_scorers')||'[]');}catch{return [];} });
 
-  const saveKey=k=>{ setAdminKey(k); try{sessionStorage.setItem('wc2026_admin_key',k);}catch{} };
+  // Al escribir solo actualiza el estado (no guarda todavía)
+  const saveKey=k=>{ setAdminKey(k); setKeyGuardada(false); };
+  // Botón "Guardar clave": persiste en localStorage (sobrevive cierres de app)
+  const guardarKey=()=>{
+    try{
+      localStorage.setItem('wc2026_admin_key',adminKey||'');
+      setKeyGuardada(true);
+      setKeyMsg('✅ Clave guardada');
+      setTimeout(()=>setKeyMsg(''),2500);
+    }catch{ setKeyMsg('❌ No se pudo guardar'); }
+  };
+  // Botón "Cambiar": borra la clave guardada para escribir otra
+  const cambiarKey=()=>{
+    try{ localStorage.removeItem('wc2026_admin_key'); }catch{}
+    setAdminKey(''); setKeyGuardada(false); setKeyMsg('');
+  };
   const persistScores=s=>{ setScores(s); try{localStorage.setItem('wc2026_admin_scores',JSON.stringify(s));}catch{} };
   const persistScorers=s=>{ setScorers(s); try{localStorage.setItem('wc2026_admin_scorers',JSON.stringify(s));}catch{} };
 
@@ -3300,11 +3317,40 @@ function AdminResultados({onClose}){
       </div>
 
       <div style={{padding:'14px 16px',maxWidth:560,margin:'0 auto'}}>
-        {/* Admin key */}
+        {/* Admin key — se guarda una sola vez de forma persistente */}
         <div style={{marginBottom:14}}>
-          <div style={{fontSize:11,color:'var(--muted)',marginBottom:5,fontWeight:700}}>Clave de administrador</div>
-          <input type="password" value={adminKey} onChange={e=>saveKey(e.target.value)}
-            placeholder="ADMIN_KEY" style={inp}/>
+          <div style={{fontSize:11,color:'var(--muted)',marginBottom:5,fontWeight:700,display:'flex',alignItems:'center',gap:6}}>
+            Clave de administrador
+            {keyGuardada&&<span style={{color:'var(--grn)',fontWeight:700}}>· 🔒 Guardada</span>}
+          </div>
+          {keyGuardada ? (
+            /* Ya guardada: mostrar estado + botón Cambiar (no hay que reescribirla) */
+            <div style={{display:'flex',alignItems:'center',gap:8,
+              background:'rgba(46,204,113,.08)',border:'1px solid rgba(46,204,113,.25)',
+              borderRadius:8,padding:'10px 12px'}}>
+              <span style={{flex:1,fontSize:13,color:'var(--grn)',fontWeight:600}}>
+                ✅ Clave activa · no hace falta volver a escribirla
+              </span>
+              <button onClick={cambiarKey}
+                style={{background:'var(--surf2)',border:'1px solid var(--br)',color:'var(--muted)',
+                  borderRadius:8,padding:'7px 12px',fontSize:12,fontWeight:700,cursor:'pointer'}}>
+                Cambiar
+              </button>
+            </div>
+          ) : (
+            /* Sin guardar: campo + botón Guardar clave */
+            <div style={{display:'flex',gap:8}}>
+              <input type="password" value={adminKey} onChange={e=>saveKey(e.target.value)}
+                placeholder="ADMIN_KEY" style={{...inp,flex:1}}/>
+              <button onClick={guardarKey} disabled={!adminKey}
+                style={{background:adminKey?'linear-gradient(135deg,var(--gold),var(--gold2))':'var(--surf2)',
+                  border:'none',color:adminKey?'#000':'var(--muted)',borderRadius:8,padding:'0 16px',
+                  fontSize:13,fontWeight:800,cursor:adminKey?'pointer':'not-allowed',whiteSpace:'nowrap',fontFamily:'var(--fb)'}}>
+                💾 Guardar
+              </button>
+            </div>
+          )}
+          {keyMsg&&<div style={{fontSize:11,color:'var(--muted)',marginTop:6}}>{keyMsg}</div>}
         </div>
 
         {/* Tabs de sección */}
