@@ -4363,27 +4363,43 @@ function GruposScreen({user,userBets,credito,creditoLoading,onPagar,onRecheckAcc
 
   const isLocked=gid=>!!locks[gid];
 
-  const getUserEntry=gid=>{
+  const getUserEntry=(gid,g)=>{
     const l=locks[gid];
     const uid=user?.id||'anon';
-    // Siempre incluir al usuario actual (con o sin bets bloqueados)
+    // Buscar MI member real en el grupo del servidor (trae pts y locked reales).
+    // Match por id (uid Auth o legacy), email o nombre — robusto a migraciones.
+    const myEmail=(user?.email||'').toLowerCase().trim();
+    const myName =(user?.name||'').toLowerCase().trim();
+    const mine=(g?.members||[]).find(m=>
+      m.id===uid ||
+      (m.email&&m.email.toLowerCase().trim()===myEmail&&myEmail) ||
+      (m.name&&m.name.toLowerCase().trim()===myName&&myName)
+    );
     return{
       id:'user',
       name:user?.name||'Tú',
       ini:(user?.name||'U')[0].toUpperCase(),
       col:'var(--gold)',
-      locked:!!l,
-      lockedAt:l?.lockedAt||null,
-      pts:0,
+      // pts y locked vienen del servidor (member real); si no existe, de locks local
+      pts: mine?.pts!=null ? mine.pts : 0,
+      locked: mine?.locked!=null ? !!mine.locked : !!l,
+      lockedAt: mine?.lockedAt || l?.lockedAt || null,
       bets:l?(l.bets||[]).map(b=>({id:b.id,cat:b.category,sel:b.selection,odds:b.odds})):[],
     };
   };
 
   const getAllMembers=(g,gid)=>{
-    const ue=getUserEntry(gid);
+    const ue=getUserEntry(gid,g);
     const uid=user?.id||'anon';
-    // Combinar: miembros del grupo (filtrando al usuario actual para no duplicar) + entrada del usuario
-    const others=(g.members||[]).filter(m=>m.id!==uid&&m.id!=='user');
+    const myEmail=(user?.email||'').toLowerCase().trim();
+    const myName =(user?.name||'').toLowerCase().trim();
+    // Excluir mi member real (por id/email/nombre) para no duplicarme, y añadir mi entrada
+    const others=(g.members||[]).filter(m=>{
+      if(m.id===uid||m.id==='user') return false;
+      if(myEmail&&m.email&&m.email.toLowerCase().trim()===myEmail) return false;
+      if(myName&&m.name&&m.name.toLowerCase().trim()===myName) return false;
+      return true;
+    });
     return [...others,ue].sort((a,b)=>(b.pts||0)-(a.pts||0));
   };
 
@@ -4661,7 +4677,7 @@ function GruposScreen({user,userBets,credito,creditoLoading,onPagar,onRecheckAcc
     const locked=isLocked(gid);
     const lock=locks[gid];
     const allM=getAllMembers(selGroup,gid);
-    const userEntry=getUserEntry(gid);
+    const userEntry=getUserEntry(gid,selGroup);
     const allCats=[...new Set(allM.flatMap(m=>(m.bets||[]).map(b=>b.cat)))];
 
     const POINTS_INFO=[
