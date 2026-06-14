@@ -5916,7 +5916,7 @@ function BetsScreen({bets,placeBet,credito,creditoLoading,onPagar,onReset,betsSa
         )}
       </div>
       {/* ── BOTÓN MODIFICAR (ARRIBA, siempre visible si ya guardó) ── */}
-      {!isAdminUser&&betsSaved&&(
+      {betsSaved&&(
         <div style={{margin:'4px 16px 0',display:'flex',gap:8,alignItems:'center'}}>
           <div style={{flex:1,display:'flex',alignItems:'center',gap:7,
             background:'rgba(46,204,113,.08)',border:'1px solid rgba(46,204,113,.25)',
@@ -5947,8 +5947,8 @@ function BetsScreen({bets,placeBet,credito,creditoLoading,onPagar,onReset,betsSa
       {tab==='especiales'&&Especiales()}
       {tab==='stats'&&<StatsScreen bets={bets} noWrapper={true}/>}
 
-      {/* ── BOTÓN GUARDAR PRONÓSTICO ── */}
-      {!isAdminUser&&(
+      {/* ── BOTÓN GUARDAR PRONÓSTICO ── (también visible para admin) */}
+      {(
         <div style={{margin:'8px 16px 24px',padding:'16px',background:'var(--surf)',
           borderRadius:16,border:`2px solid ${betsSaved?'var(--grn)':coinsLeft<=0?'rgba(240,165,0,.5)':'var(--br)'}`,
           textAlign:'center'}}>
@@ -5991,12 +5991,14 @@ function BetsScreen({bets,placeBet,credito,creditoLoading,onPagar,onReset,betsSa
                 {canSave?'✅ '+t.predictions_ready:'⏳ '+t.predictions_incomplete}
               </div>
               <div style={{fontSize:12,color:'var(--muted)',lineHeight:1.6,marginBottom:12}}>
-                {canSave
-                  ?`Puedes guardar tu pronóstico. Te quedan ${coinsLeft}🪙 disponibles${coinsLeft>0?' que puedes seguir usando o guardar así.':'.'}`
-                  :`Debes usar al menos ${SAVE_BLOCK.toLocaleString()}🪙 para guardar. Llevas ${coinsUsed}🪙 usadas.`
+                {isAdminUser
+                  ?'Como administrador puedes guardar tu pronóstico sin límite de monedas.'
+                  :canSave
+                    ?`Puedes guardar tu pronóstico. Te quedan ${coinsLeft}🪙 disponibles${coinsLeft>0?' que puedes seguir usando o guardar así.':'.'}`
+                    :`Debes usar al menos ${SAVE_BLOCK.toLocaleString()}🪙 para guardar. Llevas ${coinsUsed}🪙 usadas.`
                 }
               </div>
-              {!canSave&&(
+              {!canSave&&!isAdminUser&&(
                 <div style={{background:'rgba(200,16,46,.06)',borderRadius:10,
                   border:'1px solid rgba(200,16,46,.2)',padding:'10px 12px',
                   marginBottom:12,fontSize:11,color:'#FC8181'}}>
