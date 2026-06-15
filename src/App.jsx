@@ -185,7 +185,7 @@ const TRANSLATIONS={
     birthdate:'Fecha de nacimiento',nationality:'Nacionalidad',gender:'Género',
     have_account:'¿Ya tienes cuenta?',no_account:'¿No tienes cuenta?',
     language:'Idioma',
-    login_subtitle:'Inicia sesión para vivir el Mundial',
+    login_subtitle:'Inicia sesión para vivir el torneo',
     register_subtitle:'Crea tu cuenta · Es gratis',
     select_gender:'Selecciona tu género',
     gender_male:'Masculino',gender_female:'Femenino',gender_other:'Otro',gender_prefer_not:'Prefiero no decir',
@@ -195,10 +195,10 @@ const TRANSLATIONS={
     live_matches:'Partidos en Vivo',next_matches:'Próximos Partidos',
     see_all:'Ver todos →',countdown_title:'Cuenta Regresiva',
     days:'días',hours:'horas',minutes:'minutos',seconds:'segundos',
-    wc_starts:'El Mundial comienza',live_soon:'Los marcadores en vivo aparecerán aquí',
+    wc_starts:'El torneo comienza',live_soon:'Los marcadores en vivo aparecerán aquí',
     live_now:'EN VIVO',updated_at:'Actualizado:',auto_refresh:'Auto-refresh 30s',
     live_info:'Los goles, tarjetas y estadísticas se actualizarán en tiempo real.',
-    wc_date:'El Mundial 2026 comienza el 11 de junio de 2026',
+    wc_date:'El torneo comienza el 11 de junio de 2026',
     wc_opening:'📍 Apertura: Estadio Azteca · Ciudad de México',
     // Matches
     matches_title:'PARTIDOS',all:'Todos',today:'Hoy',tomorrow:'Mañana',
@@ -215,10 +215,10 @@ const TRANSLATIONS={
     team_col:'Equipo',advancing:'ADV',top_2_qualify:'Top 2 clasifican a octavos',
     round_32:'RONDA DE 32',round_16:'OCTAVOS',quarterfinals:'CUARTOS',semifinals:'SEMIFINALES',
     // Goals
-    goals_title:'GOLEADORES',golden_boot:'Candidatos a la Bota de Oro del Mundial 2026',
+    goals_title:'GOLEADORES',golden_boot:'Candidatos a la Bota de Oro del torneo 2026',
     fourth_onwards:'4° EN ADELANTE',
     // Bets
-    bets_title:'MIS PRONÓSTICOS',long_term:'Partidos Mundial',
+    bets_title:'MIS PRONÓSTICOS',long_term:'Partidos del Torneo',
     per_match:'Por Partido',specials:'Especiales',stats:'Estadísticas',
     world_champion:'Campeón del Mundo',golden_ball:'Balón de Oro',
     buy_package:'Comprar Paquete de Pronósticos',price:'$30 MXN',
@@ -227,7 +227,7 @@ const TRANSLATIONS={
     coins_added:'monedas añadidas a tu cuenta',
     world_champion_q:'¿Qué selección levantará la Copa?',
     top_scorer_q:'Máximo goleador del torneo',
-    best_player_q:'Mejor jugador del Mundial',
+    best_player_q:'Mejor jugador del torneo',
     group_winners:'GANADORES DE GRUPO',
     draw:'Empate',goals_label:'GOLES',over:'Más +2.5',under:'Menos -2.5',
     btts:'BTTS',both_score:'✓ Ambos anotan',not_both_score:'✗ No ambos',
@@ -238,7 +238,7 @@ const TRANSLATIONS={
     insufficient_balance:'Saldo insuficiente · Compra otro paquete',
     cancel:'Cancelar',change:'Cambiar',
     predictions_ready:'PRONÓSTICO LISTO PARA GUARDAR',predictions_incomplete:'COMPLETA TUS PRONÓSTICOS',
-    best_scorers:'MEJORES GOLEADORES DEL MUNDIAL',
+    best_scorers:'MEJORES GOLEADORES DEL TORNEO',
     // Groups
     groups_title:'MIS GRUPOS',create_group:'Crear Grupo',join_group:'Unirse',
     join_code:'Código del grupo',group_name:'Nombre del grupo',
@@ -268,7 +268,7 @@ const TRANSLATIONS={
     birthdate:'Date of birth',nationality:'Nationality',gender:'Gender',
     have_account:'Already have an account?',no_account:"Don't have an account?",
     language:'Language',
-    login_subtitle:'Sign in to experience the World Cup',
+    login_subtitle:'Sign in to experience the tournament',
     register_subtitle:'Create your account · It\'s free',
     select_gender:'Select gender',
     gender_male:'Male',gender_female:'Female',gender_other:'Other',gender_prefer_not:'Prefer not to say',
@@ -277,10 +277,10 @@ const TRANSLATIONS={
     live_matches:'Live Matches',next_matches:'Upcoming Matches',
     see_all:'See all →',countdown_title:'Countdown',
     days:'days',hours:'hours',minutes:'minutes',seconds:'seconds',
-    wc_starts:'The World Cup starts',live_soon:'Live scores will appear here',
+    wc_starts:'The tournament starts',live_soon:'Live scores will appear here',
     live_now:'LIVE',updated_at:'Updated:',auto_refresh:'Auto-refresh 30s',
     live_info:'Goals, cards and stats will update in real time.',
-    wc_date:'World Cup 2026 begins June 11, 2026',
+    wc_date:'The tournament begins June 11, 2026',
     wc_opening:'📍 Opening: Estadio Azteca · Mexico City',
     matches_title:'MATCHES',all:'All',today:'Today',tomorrow:'Tomorrow',
     venues:'Official Venues',
@@ -296,7 +296,7 @@ const TRANSLATIONS={
     round_32:'ROUND OF 32',round_16:'ROUND OF 16',quarterfinals:'QUARTERFINALS',semifinals:'SEMIFINALS',
     goals_title:'SCORERS',golden_boot:'Golden Boot Candidates',
     fourth_onwards:'4th ONWARDS',
-    bets_title:'MY PREDICTIONS',long_term:'World Cup Matches',
+    bets_title:'MY PREDICTIONS',long_term:'Tournament Matches',
     per_match:'Per Match',specials:'Specials',stats:'Statistics',
     world_champion:'World Champion',golden_ball:'Golden Ball',
     buy_package:'Buy Predictions Package',price:'$30 MXN',
@@ -305,7 +305,7 @@ const TRANSLATIONS={
     coins_added:'coins added to your account',
     world_champion_q:'Which team will lift the Cup?',
     top_scorer_q:'Top scorer of the tournament',
-    best_player_q:'Best player of the World Cup',
+    best_player_q:'Best player of the tournament',
     group_winners:'GROUP WINNERS',
     draw:'Draw',goals_label:'GOALS',over:'Over +2.5',under:'Under -2.5',
     btts:'BTTS',both_score:'✓ Both score',not_both_score:'✗ Not both',
@@ -316,7 +316,7 @@ const TRANSLATIONS={
     insufficient_balance:'Insufficient balance · Buy another package',
     cancel:'Cancel',change:'Change',
     predictions_ready:'PREDICTION READY TO SAVE',predictions_incomplete:'COMPLETE YOUR PREDICTIONS',
-    best_scorers:'BEST WORLD CUP SCORERS',
+    best_scorers:'BEST TOURNAMENT SCORERS',
     groups_title:'MY GROUPS',create_group:'Create Group',join_group:'Join',
     join_code:'Group code',group_name:'Group name',
     ranking:'Ranking',predictions:'Predictions',members:'Members',
@@ -365,14 +365,14 @@ const TRANSLATIONS={
     table_title:'CLASSIFICAÇÃO',group_stage:'Fase de grupos',
     top_goals:'Mais gols',best_defense:'Melhor defesa',leader:'Líder',
     bracket_title:'CHAVES ELIMINATÓRIAS',auto_flags:'As bandeiras aparecem conforme o torneio avança',
-    champion:'CAMPEÃO MUNDIAL',
+    champion:'CAMPEÃO',
     team_col:'Equipe',advancing:'CLF',top_2_qualify:'Top 2 classificam para oitavas',
     round_32:'RODADA DE 32',round_16:'OITAVAS',quarterfinals:'QUARTAS',semifinals:'SEMIFINAIS',
     goals_title:'ARTILHEIROS',golden_boot:'Candidatos à Chuteira de Ouro da Copa 2026',
     fourth_onwards:'4° EM DIANTE',
     bets_title:'MEUS PALPITES',long_term:'Jogos da Copa',
     per_match:'Por Jogo',specials:'Especiais',stats:'Estatísticas',
-    world_champion:'Campeão Mundial',golden_ball:'Bola de Ouro',
+    world_champion:'Campeão',golden_ball:'Bola de Ouro',
     buy_package:'Comprar Pacote de Palpites',price:'$30 MXN',
     pay_card:'Cartão',pay_oxxo:'OXXO',pay_transfer:'Transferência',
     pay_btn:'Pagar $30 MXN',payment_success:'PAGAMENTO REALIZADO!',
@@ -659,7 +659,7 @@ const LangCtx=createContext((k)=>TRANSLATIONS.es[k]||k);
 const useLang=()=>useContext(LangCtx);
 
 // API-Football: peticiones proxeadas por el backend (clave solo en servidor)
-const WC_ID     = 1;   // FIFA World Cup league ID
+const WC_ID     = 1;   // tournament league ID
 const WC_SEASON = 2026;
 
 // ── API fetch helper — usa proxy del servidor ─────────
@@ -857,7 +857,7 @@ const COLS={
 
 const LIVE_MATCHES=[];
 // Live match data will be populated by sports API (SportRadar / API-Football)
-// when the World Cup begins on June 11, 2026.
+// when the tournament begins on June 11, 2026.
 const NEXT_MATCHES=[
   // ══ JORNADA 1 ══════════════════════════════════════════════════
   // Jue 11 Jun
@@ -999,7 +999,7 @@ const NEXT_MATCHES=[
   {id:104,home:'Por definir',away:'Por definir',isoDate:'2026-07-19',date:'Jul 19',time:'13:00',phase:'FINAL',       venue:'New York New Jersey Stadium',    city:'East Rutherford, NJ',  wx:{ic:'☀️',desc:'',t:'--'},odds:[2.0,3.2,3.0]},
 ];
 const GROUPS=[
-  // Grupos confirmados — Copa Mundial FIFA 2026
+  // Grupos confirmados — Torneo 2026
   {name:'Grupo A',teams:[{n:'México',pj:0,g:0,e:0,p:0,gf:0,gc:0,pts:0},{n:'Corea del Sur',pj:0,g:0,e:0,p:0,gf:0,gc:0,pts:0},{n:'Sudáfrica',pj:0,g:0,e:0,p:0,gf:0,gc:0,pts:0},{n:'República Checa',pj:0,g:0,e:0,p:0,gf:0,gc:0,pts:0}]},
   {name:'Grupo B',teams:[{n:'Canadá',pj:0,g:0,e:0,p:0,gf:0,gc:0,pts:0},{n:'Suiza',pj:0,g:0,e:0,p:0,gf:0,gc:0,pts:0},{n:'Qatar',pj:0,g:0,e:0,p:0,gf:0,gc:0,pts:0},{n:'Bosnia y Herzegovina',pj:0,g:0,e:0,p:0,gf:0,gc:0,pts:0}]},
   {name:'Grupo C',teams:[{n:'Brasil',pj:0,g:0,e:0,p:0,gf:0,gc:0,pts:0},{n:'Marruecos',pj:0,g:0,e:0,p:0,gf:0,gc:0,pts:0},{n:'Haití',pj:0,g:0,e:0,p:0,gf:0,gc:0,pts:0},{n:'Escocia',pj:0,g:0,e:0,p:0,gf:0,gc:0,pts:0}]},
@@ -1014,14 +1014,14 @@ const GROUPS=[
   {name:'Grupo L',teams:[{n:'Inglaterra',pj:0,g:0,e:0,p:0,gf:0,gc:0,pts:0},{n:'Croacia',pj:0,g:0,e:0,p:0,gf:0,gc:0,pts:0},{n:'Ghana',pj:0,g:0,e:0,p:0,gf:0,gc:0,pts:0},{n:'Panamá',pj:0,g:0,e:0,p:0,gf:0,gc:0,pts:0}]},
 ];
 const SCORERS=[
-  // Candidatos al Trofeo de Bota de Oro FIFA World Cup 2026
+  // Candidatos al Trofeo de Bota de Oro 2026
   {n:'Kylian Mbappé',   team:'Francia',   g:0,a:0,debut:'AS Monaco · 2015',  ori:'Bondy, Francia',            bio:'Máximo favorito a la Bota de Oro. 8 goles en Qatar 2022. Capitán de Francia, crack del Real Madrid. Mejor jugador del mundo.',       wiki:'Kylian_Mbappé'},
   {n:'Harry Kane',      team:'Inglaterra',g:0,a:0,debut:'Tottenham · 2011',   ori:'Walthamstow, Inglaterra',   bio:'78 goles con la selección inglesa — récord histórico. Ganador de la Bota de Oro de la Bundesliga. Máximo favorito de Inglaterra.',  wiki:'Harry_Kane'},
-  {n:'Erling Haaland',  team:'Noruega',   g:0,a:0,debut:'Bryne FK · 2016',   ori:'Leeds, Inglaterra',          bio:'Máquina goleadora del Man. City. 50+ goles por temporada en Premier League. Primer Mundial de Noruega desde 1998. Récords mundiales.', wiki:'Erling_Haaland'},
+  {n:'Erling Haaland',  team:'Noruega',   g:0,a:0,debut:'Bryne FK · 2016',   ori:'Leeds, Inglaterra',          bio:'Máquina goleadora del Man. City. 50+ goles por temporada en Premier League. Primer gran torneo de Noruega desde 1998. Récords mundiales.', wiki:'Erling_Haaland'},
   {n:'Lamine Yamal',    team:'España',    g:0,a:0,debut:'FC Barcelona · 2023',ori:'Mataró, España',            bio:'El más joven en anotar en una Eurocopa. Campeón de la Euro 2024. La gran joya del fútbol mundial con solo 18 años.',               wiki:'Lamine_Yamal'},
-  {n:'Lionel Messi',    team:'Argentina', g:0,a:0,debut:'FC Barcelona · 2004',ori:'Rosario, Argentina',        bio:'El GOAT. 8 Balones de Oro. Campeón del mundo Qatar 2022 con 7 goles. Su posible último Mundial con 38 años en Inter Miami.',       wiki:'Lionel_Messi'},
+  {n:'Lionel Messi',    team:'Argentina', g:0,a:0,debut:'FC Barcelona · 2004',ori:'Rosario, Argentina',        bio:'El GOAT. 8 Balones de Oro. Campeón en Qatar 2022 con 7 goles. Su posible último gran torneo con 38 años en Inter Miami.',       wiki:'Lionel_Messi'},
   {n:'Vinicius Jr.',    team:'Brasil',    g:0,a:0,debut:'Flamengo · 2017',   ori:'São Gonçalo, Brasil',        bio:'Balón de Oro 2024. Extremo del Real Madrid, imparable en velocidad y regate. Lidera el ataque de una Brasil renovada.',            wiki:'Vinícius_Júnior'},
-  {n:'Cristiano Ronaldo',team:'Portugal',g:0,a:0,debut:'Sporting CP · 2002', ori:'Madeira, Portugal',          bio:'CR7 con 41 años, posiblemente su última Copa del Mundo. 134 goles internacionales — récord mundial. Aún peligroso en el área.',    wiki:'Cristiano_Ronaldo'},
+  {n:'Cristiano Ronaldo',team:'Portugal',g:0,a:0,debut:'Sporting CP · 2002', ori:'Madeira, Portugal',          bio:'CR7 con 41 años, posiblemente su último gran torneo. 134 goles internacionales — récord mundial. Aún peligroso en el área.',    wiki:'Cristiano_Ronaldo'},
   {n:'Lautaro Martínez',team:'Argentina',g:0,a:0,debut:'Racing Club · 2015', ori:'Bahía Blanca, Argentina',   bio:'Goleador del Inter de Milán. Campeón Copa América 2024. Compañero de Messi, letal en el área pequeña.',                            wiki:'Lautaro_Martínez'},
   {n:'Ousmane Dembélé', team:'Francia',  g:0,a:0,debut:'Rennes · 2015',     ori:'Vernon, Francia',            bio:'Ganador del Balón de Oro 2025 con el PSG. Rapidísimo por banda derecha. Peligroso compañero de Mbappé en Francia.',               wiki:'Ousmane_Dembélé'},
   {n:'Bukayo Saka',     team:'Inglaterra',g:0,a:0,debut:'Arsenal · 2019',    ori:'Ealing, Inglaterra',         bio:'Figura del Arsenal campeón Premier League. Extremo con gol y asistencia fácil. Clave en el ataque inglés junto a Kane.',            wiki:'Bukayo_Saka'},
@@ -1030,7 +1030,7 @@ const SCORERS=[
 ];
 
 // Wikipedia article titles for photos
-// Official World Cup squad numbers
+// Official squad numbers
 const PLAYER_NUMBERS={
   'Kylian Mbappé':'10','Harry Kane':'9','Erling Haaland':'9',
   'Lamine Yamal':'19','Lionel Messi':'10','Vinicius Jr.':'7',
@@ -1078,7 +1078,7 @@ const VENUE_WIKI={
 };
 
 const VENUES=[
-  // 16 sedes oficiales FIFA World Cup 2026 — datos del documento oficial FIFA
+  // 16 sedes oficiales del torneo 2026
   // USA — 11 sedes
   {n:'New York New Jersey Stadium',c:'East Rutherford, NJ',   cap:'82,500',f:'🇺🇸',phase:'Final',       wk:'MetLife_Stadium'},
   {n:'Dallas Stadium',            c:'Arlington, Texas',      cap:'94,000',f:'🇺🇸',phase:'Semifinal',   wk:'AT&T_Stadium'},
@@ -1091,7 +1091,7 @@ const VENUES=[
   {n:'Boston Stadium',            c:'Foxborough, MA',        cap:'65,000',f:'🇺🇸',phase:'Cuartos',     wk:'Gillette_Stadium'},
   {n:'Seattle Stadium',           c:'Seattle, Washington',   cap:'69,000',f:'🇺🇸',phase:'Octavos',     wk:'Lumen_Field'},
   {n:'San Francisco Bay Area Stadium',c:'Santa Clara, California',cap:'71,000',f:'🇺🇸',phase:'Octavos',wk:"Levi_Stadium"},
-  // México — 3 sedes (datos oficiales FIFA)
+  // México — 3 sedes
   {n:'Estadio Azteca',            c:'Tlalpan, CDMX',         cap:'83,000',f:'🇲🇽',phase:'Inauguración',wk:'Estadio_Azteca'},
   {n:'Estadio Monterrey',         c:'Guadalupe, Monterrey',  cap:'53,500',f:'🇲🇽',phase:'Octavos',     wk:'BBVA_Stadium_(Monterrey)'},
   {n:'Estadio Guadalajara',       c:'Zapopan, Guadalajara',  cap:'48,000',f:'🇲🇽',phase:'Grupos',      wk:'Estadio_Akron'},
@@ -1291,7 +1291,7 @@ function WikiPhoto({wiki, sz=52, style={}, fallback=null, radius='50%'}){
     const wikiTitle=wiki.replace(/ /g,'_');
     const url=`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(wikiTitle)}`;
     fetch(url,{signal:controller.signal,
-      headers:{'Accept':'application/json','Api-User-Agent':'Mundial2026App/1.0'}})
+      headers:{'Accept':'application/json','Api-User-Agent':'Futbol2026App/1.0'}})
       .then(r=>r.ok?r.json():Promise.reject(new Error('not ok')))
       .then(d=>{
         const s=d?.thumbnail?.source||d?.originalimage?.source;
@@ -1589,7 +1589,7 @@ function Splash({done}){
     <div style={{display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',
       height:'100%',gap:16,
       background:'radial-gradient(ellipse at 50% 38%,rgba(240,165,0,.09) 0%,transparent 62%)'}}>
-      <img src="/icon-512.png" alt="Mundial 2026"
+      <img src="/icon-512.png" alt="Pronósticos Futbol 2026"
         style={{width:200,height:200,borderRadius:36,
           boxShadow:'0 0 40px rgba(240,165,0,.45), 0 8px 32px rgba(0,0,0,.6)',
           objectFit:'cover',border:'3px solid rgba(240,165,0,.3)'}}/>
@@ -1746,11 +1746,11 @@ function Auth({onLogin,onLangChange=()=>{},logoutMsg='',onClearMsg=()=>{}}){
   return(
     <div style={{height:'100%',overflowY:'auto',background:'linear-gradient(160deg,#0D1A2E 0%,#040C1E 100%)'}}>
       <div style={{padding:'40px 24px 18px',textAlign:'center'}}>
-        <img src="/icon-512.png" alt="Mundial 2026"
+        <img src="/icon-512.png" alt="Pronósticos Futbol 2026"
           style={{width:90,height:90,borderRadius:20,objectFit:'cover',
             boxShadow:'0 0 24px rgba(240,165,0,.35)',
             border:'2px solid rgba(240,165,0,.3)'}}/>
-        <div style={{fontFamily:'var(--ff)',fontSize:32,letterSpacing:2,color:'var(--gold)',marginTop:10,lineHeight:1}}>MUNDIAL 2026</div>
+        <div style={{fontFamily:'var(--ff)',fontSize:32,letterSpacing:2,color:'var(--gold)',marginTop:10,lineHeight:1}}>PRONÓSTICOS FUTBOL 2026</div>
         <div style={{fontSize:13,color:'var(--muted)',marginTop:6}}>
           {mode==='login'?t.login_subtitle:t.register_subtitle}
         </div>
@@ -2244,7 +2244,7 @@ function CommentMarquee(){
   },[texto]);
 
   // Texto por defecto si Firestore aún no tiene nada
-  const display = texto || '📢 ¡Bienvenido a Mundial 2026! Haz tus pronósticos y compite con tus amigos · ⚽ El torneo comienza el 11 de Junio';
+  const display = texto || '📢 ¡Bienvenido a Pronósticos Futbol 2026! Haz tus pronósticos y compite con tus amigos · ⚽ El torneo comienza el 11 de Junio';
 
   return(
     <div className="marquee-wrap" style={{margin:'0 0 14px'}}>
@@ -2323,7 +2323,7 @@ function HomeScreen({onMatch,onGoToCal}){
         padding:'16px 16px 0',borderBottom:'1px solid rgba(255,255,255,.04)'}}>
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',paddingBottom:10}}>
           <div>
-            <div style={{fontFamily:'var(--ff)',fontSize:28,letterSpacing:2,color:'var(--gold)',lineHeight:1}}>MUNDIAL 2026</div>
+            <div style={{fontFamily:'var(--ff)',fontSize:28,letterSpacing:2,color:'var(--gold)',lineHeight:1}}>PRONÓSTICOS FUTBOL 2026</div>
             <div style={{fontSize:11,color:'var(--muted)',marginTop:2}}>
               🕐 Actualizado: {upd.toLocaleTimeString('es',{hour:'2-digit',minute:'2-digit'})}
             </div>
@@ -2503,7 +2503,7 @@ function CalScreen(){
       <div style={{padding:'18px 16px 6px'}}>
         <div style={{fontFamily:'var(--ff)',fontSize:28,letterSpacing:2}}>{t.calendar_title}</div>
         <div style={{fontSize:12,color:'var(--muted)'}}>
-          Mundial 2026 · {matches.length} {t.matches_title.toLowerCase()}
+          Pronósticos Futbol 2026 · {matches.length} {t.matches_title.toLowerCase()}
         </div>
       </div>
 
@@ -2784,7 +2784,7 @@ function TablaScreen(){
     <div className="scr fin">
       <div style={{padding:'18px 16px 6px'}}>
         <div style={{fontFamily:'var(--ff)',fontSize:28,letterSpacing:2}}>{t.table_title}</div>
-        <div style={{fontSize:12,color:'var(--muted)'}}>{t.group_stage} · Mundial 2026</div>
+        <div style={{fontSize:12,color:'var(--muted)'}}>{t.group_stage} · Pronósticos Futbol 2026</div>
       </div>
       <div style={{display:'flex',gap:8,padding:'4px 16px 10px',overflowX:'auto'}}>
         {GROUPS.map((g,i)=>(
@@ -2884,7 +2884,7 @@ function TablaScreen(){
       <div style={{padding:'16px 16px 6px'}}>
         <div style={{fontFamily:'var(--ff)',fontSize:24,letterSpacing:2}}>LLAVE ELIMINATORIA</div>
         <div style={{fontSize:11,color:'var(--muted)',marginBottom:12}}>
-          Copa Mundial 2026 · Las banderas aparecen automáticamente conforme avanza el torneo
+          Pronósticos Futbol 2026 · Las banderas aparecen automáticamente conforme avanza el torneo
         </div>
       </div>
       <BracketView bracket={bracket}/>
@@ -3043,7 +3043,7 @@ function GolesScreen(){
       <div style={{padding:'18px 16px 10px'}}>
         <div style={{fontFamily:'var(--ff)',fontSize:28,letterSpacing:2}}>{t.goals_title||'GOLEADORES'}</div>
         <div style={{fontSize:12,color:'var(--muted)'}}>
-          {t.golden_boot||'Candidatos a la Bota de Oro del Mundial 2026'}
+          {t.golden_boot||'Candidatos a la Bota de Oro del torneo 2026'}
         </div>
       </div>
 
@@ -3592,8 +3592,8 @@ function PerfilScreen({user,onLogout,lang='es'}){
   // ── Share the app ────────────────────────────────
   const shareApp=async()=>{
     const shareData={
-      title:'⚽ Mundial 2026',
-      text:'¡Únete a mis pronósticos del Mundial! La app más completa para seguir cada partido.',
+      title:'⚽ Pronósticos Futbol 2026',
+      text:'¡Únete a mis pronósticos de futbol! La app más completa para seguir cada partido.',
       url:window.location.href,
     };
     if(navigator.share){
@@ -3609,7 +3609,7 @@ function PerfilScreen({user,onLogout,lang='es'}){
   };
 
   const shareWhatsApp=()=>{
-    const txt=encodeURIComponent('⚽ ¡Únete a mis pronósticos del Mundial 2026! '+window.location.href);
+    const txt=encodeURIComponent('⚽ ¡Únete a mis pronósticos de futbol 2026! '+window.location.href);
     window.open(`https://wa.me/?text=${txt}`,'_blank');
   };
 
@@ -3891,7 +3891,7 @@ function PerfilScreen({user,onLogout,lang='es'}){
               const conv=dbUsers.length?Math.round(conPaq/dbUsers.length*100):0;
 
               const lines=[
-                '=== MUNDIAL 2026 APP · REPORTE DE USUARIOS ===',
+                '=== PRONÓSTICOS FUTBOL 2026 · REPORTE DE USUARIOS ===',
                 `Generado:,${new Date().toLocaleString('es')}`,
                 '',
                 '--- RESUMEN ---',
@@ -3923,7 +3923,7 @@ function PerfilScreen({user,onLogout,lang='es'}){
               const a=document.createElement('a');
               a.href=url;
               const fecha=new Date().toISOString().slice(0,10);
-              a.download=`reporte_mundial2026_${fecha}.csv`;
+              a.download=`reporte_futbol2026_${fecha}.csv`;
               document.body.appendChild(a);
               a.click();
               document.body.removeChild(a);
@@ -4216,7 +4216,7 @@ function GruposScreen({user,userBets,credito,creditoLoading,onPagar,onRecheckAcc
         💳 PAGAR Y ACCEDER
       </button>
       <div style={{fontSize:11,color:'var(--muted)',marginTop:12}}>
-        Pago único · Acceso toda la Copa del Mundo 2026
+        Pago único · Acceso a todo el torneo 2026
       </div>
     </div>
   );
@@ -4318,7 +4318,7 @@ function GruposScreen({user,userBets,credito,creditoLoading,onPagar,onRecheckAcc
   // ── Grupo demo con 15 miembros simulados ──
   const DEMO_GROUP={
     id:'demo-wc26-amigos',code:'WC26-AMIGOS',
-    name:'Los Compadres del Mundial 🌟',
+    name:'Los Compadres del Futbol 🌟',
     desc:'Grupo de ejemplo con simulación real de puntos',
     created:Date.now()-86400000*15,
     ownerId:'dm1',
@@ -4669,7 +4669,7 @@ function GruposScreen({user,userBets,credito,creditoLoading,onPagar,onRecheckAcc
       <div style={{padding:'4px 20px 24px',display:'flex',flexDirection:'column',gap:12}}>
         <div>
           <div style={{fontSize:11,color:'var(--muted)',marginBottom:5,fontWeight:700}}>NOMBRE *</div>
-          <input className="inp" placeholder="Ej. Los Compadres del Mundial"
+          <input className="inp" placeholder="Ej. Los Compadres del Futbol"
             value={newName} onChange={e=>setNewName(e.target.value)}/>
         </div>
         <div>
@@ -5524,7 +5524,7 @@ function BetsScreen({bets,placeBet,credito,creditoLoading,onPagar,onReset,betsSa
     );
   };
 
-  // Botón compacto para Partidos del Mundial — varios por fila
+  // Botón compacto para Partidos del Torneo — varios por fila
   const SmBtn=({id,category,val,odds,display})=>{
     const sel=isSel(id,val);
     return(
@@ -5545,7 +5545,7 @@ function BetsScreen({bets,placeBet,credito,creditoLoading,onPagar,onReset,betsSa
   };
 
 
-  // ── Tab: Partidos Mundial ──
+  // ── Tab: Partidos del Torneo ──
   const LargoPlazo=()=>(
     <div>
       {/* Campeón */}
@@ -5670,7 +5670,7 @@ function BetsScreen({bets,placeBet,credito,creditoLoading,onPagar,onReset,betsSa
   // ── Tab: Especiales ──
   const Especiales=()=>(
     <div>
-      {/* ── MEJORES GOLEADORES DEL MUNDIAL — 3 × 8 = 24 monedas ── */}
+      {/* ── MEJORES GOLEADORES DEL TORNEO — 3 × 8 = 24 monedas ── */}
       <div style={{margin:'0 16px 16px',background:'var(--surf)',borderRadius:14,
         border:'2px solid rgba(240,165,0,.3)',overflow:'hidden'}}>
         <div style={{padding:'11px 14px',background:'rgba(240,165,0,.06)',
@@ -5681,7 +5681,7 @@ function BetsScreen({bets,placeBet,credito,creditoLoading,onPagar,onReset,betsSa
               {t.best_scorers}
             </div>
             <div style={{fontSize:10,color:'var(--muted)'}}>
-              Selecciona al 1°, 2° y 3° goleador del Mundial
+              Selecciona al 1°, 2° y 3° goleador del torneo
             </div>
           </div>
         </div>
@@ -6067,7 +6067,7 @@ function StatsScreen({bets,noWrapper=false}){
     <div className={noWrapper?'fin':'scr fin'}>
       <div style={{padding:'18px 16px 8px'}}>
         <div style={{fontFamily:'var(--ff)',fontSize:28,letterSpacing:2}}>MIS ESTADÍSTICAS</div>
-        <div style={{fontSize:12,color:'var(--muted)'}}>Historial de predicciones · Mundial 2026</div>
+        <div style={{fontSize:12,color:'var(--muted)'}}>Historial de predicciones · Pronósticos Futbol 2026</div>
       </div>
 
       {/* Stat grid */}
@@ -6125,7 +6125,7 @@ function StatsScreen({bets,noWrapper=false}){
           ?<div style={{textAlign:'center',padding:'36px 24px',color:'var(--muted)'}}>
             <div style={{fontSize:44,marginBottom:12}}>🎰</div>
             <div style={{fontSize:14,fontWeight:600,marginBottom:6}}>Sin predicciones todavía</div>
-            <div style={{fontSize:12,lineHeight:1.55}}>Ve a la pantalla <span style={{color:'var(--gold)',fontWeight:700}}>Apuestas</span> y realiza tus predicciones del Mundial 2026</div>
+            <div style={{fontSize:12,lineHeight:1.55}}>Ve a la pantalla <span style={{color:'var(--gold)',fontWeight:700}}>Apuestas</span> y realiza tus predicciones del torneo 2026</div>
           </div>
           :[...bets].reverse().map((b,i)=>(
             <div key={b.id+i} style={{display:'flex',gap:10,padding:'10px 14px',
@@ -6216,7 +6216,7 @@ export default function App(){
       if(perm === 'granted') {
         console.log('Push notifications activadas ✓');
         // Notificación de bienvenida
-        new Notification('⚽ Mundial 2026', {
+        new Notification('⚽ Pronósticos Futbol 2026', {
           body: 'Notificaciones activadas. Te avisaremos cuando empiece cada partido.',
           icon: '/icon-192.png',
           badge: '/icon-192.png',
@@ -6746,7 +6746,7 @@ export default function App(){
     <div>
       <style>{css}</style>
       <div className="app">
-        {/* Abstract background shapes — Mundial 2026 */}
+        {/* Abstract background shapes */}
         <svg style={{position:'absolute',top:0,left:0,width:'100%',height:'100%',pointerEvents:'none',zIndex:-1}} viewBox="0 0 430 900" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
           {/* Canada red — organic blob top-left */}
           <path d="M 0 0 C 55,-18 190,12 232,82 C 268,138 252,208 194,230 C 138,252 56,222 12,164 C -28,112 -18,48 0,0 Z" fill="#C8102E" opacity="0.18"/>
