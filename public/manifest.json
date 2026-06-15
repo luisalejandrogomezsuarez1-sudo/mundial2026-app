@@ -1,7 +1,7 @@
 {
-  "name": "Mundial 2026",
-  "short_name": "Mundial 26",
-  "description": "Pronósticos, partidos en vivo y grupos - Copa Mundial 2026",
+  "name": "Pronósticos Futbol 2026",
+  "short_name": "Pronósticos",
+  "description": "Pronósticos, partidos en vivo y grupos - Torneo de Futbol 2026",
   "start_url": "/",
   "display": "standalone",
   "orientation": "portrait-primary",
