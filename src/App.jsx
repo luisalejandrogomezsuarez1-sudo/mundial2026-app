@@ -3538,7 +3538,7 @@ function PerfilScreen({user,onLogout,lang='es'}){
         setFbStatus('ready');
         try{
           const local=await dbLoad();
-          const fs=await fn();
+          const fs=await getAllUsersCached(fn); // cache 5min: no relee toda la colección al reabrir Perfil
           setDbUsers(mergeUsers(local,fs));
           setDbLoaded(true);
         }catch(e){
@@ -6299,13 +6299,15 @@ export default function App(){
     if(!u.isAdmin && !u.fromAuth) saveToFirestore();
     // Admin: verificar flags + TAMBIÉN detectar regalo (gifted) desde Firestore
     const checkAdminFlags=async(attempts=0)=>{
-      const getFn=fbGetAllUsers||window._fbGetAllUsers;
-      if(getFn){
+      // EFICIENTE: leer SOLO el doc del usuario (1 lectura) en vez de toda la
+      // colección (N lecturas). Fallback por email solo si el doc por ID no existe.
+      const getOne=window._fbGetUser;          // getUserFromFirestore(id) → 1 lectura
+      const findByEmail=window._fbFindUserByEmail; // findUserByEmail → 1 query indexado
+      if(getOne){
         try{
-          const allUsers=await getAllUsersCached(getFn);
-          // Buscar por ID primero; si no hay match, buscar por email (cubre registro multi-dispositivo)
-          const fsUser=allUsers.find(x=>x.id===u.id)||
-                       allUsers.find(x=>x.email?.toLowerCase()===u.email?.toLowerCase());
+          let fsUser=await getOne(u.id);
+          // Fallback por email solo si no se encontró por ID (multi-dispositivo / migración)
+          if(!fsUser && findByEmail && u.email){ fsUser=await findByEmail(u.email); }
           // ── Regalo: otorgar acceso si Firestore dice gifted:true ──
           if(fsUser?.gifted&&!u.isAdmin){
             const gc=fsUser.giftedCoins||1000;
@@ -6357,11 +6359,10 @@ export default function App(){
             let fsUser=await getOneFn(authUid);
             // Si no tiene gifted/paquetes, buscar por email (cubre id legacy / doc distinto)
             if(!fsUser?.gifted&&!(fsUser?.paquetes>0)){
-              const getAllFn=fbGetAllUsers||window._fbGetAllUsers;
-              if(getAllFn){
-                const all=await getAllUsersCached(getAllFn,0); // lectura fresca
-                const byEmail=all.find(x=>x.email?.toLowerCase()===u.email?.toLowerCase()&&(x.gifted||(x.paquetes>0)));
-                if(byEmail) fsUser=byEmail;
+              const findByEmail=window._fbFindUserByEmail;
+              if(findByEmail&&u.email){
+                const byEmail=await findByEmail(u.email); // 1 query indexado (no toda la colección)
+                if(byEmail&&(byEmail.gifted||(byEmail.paquetes>0))) fsUser=byEmail;
               }
             }
             if(fsUser?.gifted){
@@ -6449,16 +6450,15 @@ export default function App(){
     setCreditoLoading(true);
     try{
       const getFn=window._fbGetUser;
-      const getAllFn=fbGetAllUsers||window._fbGetAllUsers;
+      const findByEmail=window._fbFindUserByEmail;
       let fsUser=null;
-      // Intentar por ID
+      // Intentar por ID (1 lectura)
       if(getFn) try{ fsUser=await getFn(user.id); }catch(e){}
-      // Si no tiene gifted/paquetes, buscar por email (fallback multi-dispositivo)
-      if(!fsUser?.gifted&&!(fsUser?.paquetes>0)&&getAllFn){
+      // Si no tiene gifted/paquetes, buscar por email (1 query indexado, no toda la colección)
+      if(!fsUser?.gifted&&!(fsUser?.paquetes>0)&&findByEmail&&user.email){
         try{
-          const all=await getAllUsersCached(getAllFn,0); // lectura fresca
-          const byEmail=all.find(x=>x.email?.toLowerCase()===user.email?.toLowerCase()&&(x.gifted||(x.paquetes>0)));
-          if(byEmail) fsUser=byEmail;
+          const byEmail=await findByEmail(user.email);
+          if(byEmail&&(byEmail.gifted||(byEmail.paquetes>0))) fsUser=byEmail;
         }catch(e){}
       }
       if(fsUser?.gifted){
