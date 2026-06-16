@@ -992,6 +992,85 @@ app.post('/api/mp/webhook', async (req, res) => {
   }
 });
 
+// ── Google Play Billing: verificación de compras ─────────────────────────────
+// Verifica un purchaseToken contra la Play Developer API, acredita 1 paquete
+// (1000 monedas) reusando la MISMA lógica e idempotencia que MercadoPago
+// (colección 'payments'), y reconoce la compra para que Google no la reembolse.
+const { GoogleAuth } = require('google-auth-library');
+const PLAY_PACKAGE = 'com.mundial2026.mx';
+let playAuth = null;
+try {
+  const playKey = JSON.parse(process.env.GOOGLE_PLAY_KEY || '{}');
+  if (playKey.client_email) {
+    playAuth = new GoogleAuth({
+      credentials: playKey,
+      scopes: ['https://www.googleapis.com/auth/androidpublisher'],
+    });
+    console.log('✅ Google Play Billing OK — cuenta:', playKey.client_email);
+  } else {
+    console.warn('⚠️ GOOGLE_PLAY_KEY ausente/inválida — Play Billing deshabilitado');
+  }
+} catch (e) { console.warn('Google Play init error:', e.message); }
+
+app.post('/api/play/verify-purchase', async (req, res) => {
+  const { purchaseToken, userId, productId } = req.body || {};
+  if (!db) return res.status(503).json({ error: 'DB no disponible' });
+  if (!playAuth) return res.status(503).json({ error: 'Play Billing no configurado' });
+  if (!purchaseToken || !userId || !productId) {
+    return res.status(400).json({ error: 'Faltan datos' });
+  }
+  const pkg = encodeURIComponent(PLAY_PACKAGE);
+  const pid = encodeURIComponent(productId);
+  const tok = encodeURIComponent(purchaseToken);
+  try {
+    // 1. Idempotencia (misma colección 'payments' que MercadoPago)
+    const payRef = db.collection('payments').doc(String(purchaseToken));
+    if ((await payRef.get()).exists) {
+      console.log('[Play verify] ya acreditado:', purchaseToken);
+      return res.json({ ok: true, alreadyCredited: true });
+    }
+    const client = await playAuth.getClient();
+    // 2. Verificar la compra contra Google
+    const getRes = await client.request({
+      url: `https://androidpublisher.googleapis.com/androidpublisher/v3/applications/${pkg}/purchases/products/${pid}/tokens/${tok}`,
+    });
+    const data = getRes.data || {};
+    // purchaseState: 0 = comprado, 1 = cancelado, 2 = pendiente
+    if (data.purchaseState !== 0) {
+      console.warn(`[Play verify] ❌ no comprado: purchaseState=${data.purchaseState}`);
+      return res.json({ ok: false, purchaseState: data.purchaseState });
+    }
+    // 3. Acreditar (MISMA lógica que MercadoPago: paquetes += 1)
+    const admin = require('firebase-admin');
+    await db.collection('users').doc(userId).set(
+      { paquetes: admin.firestore.FieldValue.increment(1) },
+      { merge: true }
+    );
+    await payRef.set({
+      userId, productId, source: 'play',
+      orderId: data.orderId || null,
+      creditedAt: new Date().toISOString(),
+    });
+    console.log(`[Play verify] ✅ acreditado: userId=${userId} token=${purchaseToken}`);
+    // 4. Reconocer la compra (si no lo está) para que Google NO la reembolse
+    if (data.acknowledgementState === 0) {
+      try {
+        await client.request({
+          url: `https://androidpublisher.googleapis.com/androidpublisher/v3/applications/${pkg}/purchases/products/${pid}/tokens/${tok}:acknowledge`,
+          method: 'POST', data: {},
+        });
+        console.log('[Play verify] compra reconocida');
+      } catch (ackErr) {
+        console.warn('[Play verify] no se pudo reconocer:', ackErr.message);
+      }
+    }
+    res.json({ ok: true });
+  } catch (e) {
+    console.error('[Play verify] error:', e.response?.data || e.message);
+    res.status(500).json({ error: e.message });
+  }
+});
+
 // ── MOTOR DE PUNTOS (Paso 2) ─────────────────────────────
 // El admin sube los RESULTADOS reales y este endpoint recalcula los puntos
 // de TODOS los usuarios. Fórmula: puntosBase[categoria] × cuota(odds del bet),

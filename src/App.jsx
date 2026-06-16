@@ -5219,6 +5219,18 @@ function GruposScreen({user,userBets,credito,creditoLoading,onPagar,onRecheckAcc
   return null;
 }
 
+// ── Detección de TWA (app empaquetada para Play Store con Google Play Billing) ──
+// Aún NO conectada a nada — solo disponible para el flujo de pago.
+async function isTWA() {
+  if (!window.getDigitalGoodsService) return false;
+  try {
+    const service = await window.getDigitalGoodsService('https://play.google.com/billing');
+    return !!service;
+  } catch {
+    return false;
+  }
+}
+
 // ── Pago Screen ───────────────────────────────────
 function PagoScreen({onExito,onCancelar,esReset=false,onRecheckAccess,user,onRecover}){
   const t=useLang();
@@ -5228,6 +5240,55 @@ function PagoScreen({onExito,onCancelar,esReset=false,onRecheckAccess,user,onRec
 
   const handlePagar=async()=>{
     setLoading(true);
+
+    // ── Rama TWA: Google Play Billing (la web sigue con MercadoPago) ──
+    if(await isTWA()){
+      try{
+        const service=await window.getDigitalGoodsService('https://play.google.com/billing');
+        const PRODUCT_ID='monedas_1000';
+        const details=await service.getDetails([PRODUCT_ID]);
+        if(!details || !details.length){
+          alert('Producto no disponible. Intenta más tarde.');
+          setLoading(false); return;
+        }
+        const item=details[0];
+        const request=new PaymentRequest(
+          [{ supportedMethods:'https://play.google.com/billing', data:{ sku:PRODUCT_ID } }],
+          { total:{ label:item.title||'1000 monedas',
+                    amount:{ currency:item.price?.currency||'MXN', value:item.price?.value||'30' } } }
+        );
+        const response=await request.show();
+        const purchaseToken=response.details && response.details.purchaseToken;
+        if(!purchaseToken){
+          await response.complete('fail');
+          alert('No se recibió el comprobante de compra.');
+          setLoading(false); return;
+        }
+        // Verificar y acreditar en el servidor
+        const vr=await fetch('/api/play/verify-purchase',{
+          method:'POST', headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({ purchaseToken, userId:user?.id, productId:PRODUCT_ID })
+        });
+        const vj=await vr.json();
+        if(vr.ok && vj.ok){
+          await response.complete('success');
+          // Consumir para poder recomprar (no fatal si falla)
+          try{ await service.consume(purchaseToken); }catch(_){}
+          setExito(true);
+          setTimeout(()=>{ if(onExito) onExito(); }, 2500);
+        }else{
+          await response.complete('fail');
+          alert('No se pudo validar la compra. Si se te cobró, usa "Recuperar monedas".');
+          setLoading(false);
+        }
+      }catch(e){
+        // El usuario canceló o hubo error; no rompemos nada
+        setLoading(false);
+      }
+      return;
+    }
+
+    // ── Rama Web/PWA: MercadoPago (sin cambios) ──
     try{
       const res=await fetch('/api/mp/create-preference',{
         method:'POST',
