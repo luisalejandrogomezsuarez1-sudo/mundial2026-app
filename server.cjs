@@ -51,7 +51,14 @@ function afFetch(endpoint){
 // liveCache guarda la última versión de cada doc para servirla por HTTP
 // (GET /api/live/:docId) sin que cada usuario abra un onSnapshot a Firestore.
 const LIVE_DOCS    = ['matches','standings','scorers','fixtures','bracket','banner','livemanual','scores'];
-const ALWAYS_FRESH = ['banner','livemanual'];   // se leen de Firestore en cada request (editables a mano, sin polling)
+// Docs editados a mano (no vienen del polling de API-Football). Antes se leían
+// de Firestore en CADA request (caro: escalaba con usuarios). Ahora se cachean
+// en memoria con TTL por doc: solo se relee Firestore al vencer el TTL.
+const FRESH_TTL = {
+  banner:     30 * 60 * 1000,            // 30 min
+  livemanual: 30 * 24 * 60 * 60 * 1000,  // 30 días (prácticamente no se usa)
+};
+const freshAt = {};   // timestamp de la última lectura Firestore de cada doc "fresh"
 const liveCache  = {};
 
 // ── Save to Firestore ───────────────────────────────────
@@ -1325,17 +1332,23 @@ app.post('/api/admin/puntos', async (req,res)=>{
 app.get('/api/live/:docId', async (req,res)=>{
   const { docId } = req.params;
   if(!LIVE_DOCS.includes(docId)) return res.status(404).json({ error:'not found' });
-  const fresh = ALWAYS_FRESH.includes(docId);
-  res.set('Cache-Control', fresh ? 'no-store' : 'public, max-age=30');
-  // Vía normal: copia en memoria mantenida por el polling (los "fresh" la omiten)
-  if(!fresh && liveCache[docId]) return res.json(liveCache[docId]);
-  // Leer Firestore: los "fresh" (banner) en cada request; el resto solo en frío
-  // como fallback cuando aún no hay copia en memoria.
+  const ttl = FRESH_TTL[docId];          // undefined si no es "fresh"
+  const isFresh = ttl !== undefined;
+  res.set('Cache-Control', 'public, max-age=30');
+
+  // Servir de memoria: docs normales si hay copia; docs "fresh" si su TTL no venció
+  if(liveCache[docId]){
+    if(!isFresh) return res.json(liveCache[docId]);
+    if(Date.now() - (freshAt[docId]||0) < ttl) return res.json(liveCache[docId]);
+  }
+
+  // Leer Firestore (cold para normales; al vencer TTL para los "fresh")
   if(db){
     try{
       const snap = await db.collection('live').doc(docId).get();
       if(snap.exists){
-        if(!fresh) liveCache[docId] = snap.data();  // cachear solo los no-fresh
+        liveCache[docId] = snap.data();
+        if(isFresh) freshAt[docId] = Date.now();
         return res.json(snap.data());
       }
     }catch(e){ console.warn('live fallback read error:', e.message); }
