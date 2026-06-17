@@ -255,6 +255,12 @@ try {
 // Restore groups from Firestore on startup (in case /tmp was cleared on restart)
 async function restoreGroupsFromFirestore(){
   if(!db) return;
+  // Si /tmp ya tiene los grupos (server estable), NO releer toda la colección
+  // (~1000 grupos = ~1000 lecturas). Solo restaurar si /tmp estaba vacío (deploy nuevo).
+  if(Object.keys(serverGroups).length > 0){
+    console.log('↩️  grupos ya en /tmp, se omite releer Firestore');
+    return;
+  }
   try{
     const snap = await db.collection('groups').get();
     let restored = 0;
@@ -493,8 +499,10 @@ async function cleanupAllGroups(){
     for(const g of snap.docs) await cleanupMessages(g.id);
   }catch(e){ console.warn('cleanupAllGroups error:', e.message); }
 }
-setInterval(cleanupAllGroups, 60*60*1000); // cada hora
-setTimeout(cleanupAllGroups, 10000);       // al arrancar (+10s)
+// Con ~1000 grupos, leer toda la colección cada hora era la mayor fuga de lecturas.
+// maybeCleanup() ya limpia los grupos ACTIVOS por conteo de mensajes, así que el
+// barrido global puede ser diario y sin correr al arrancar.
+setInterval(cleanupAllGroups, 24*60*60*1000); // cada 24h
 
 // ── CHAT API — Firebase Admin for persistence + scalability ────
 app.post('/api/chat/:code', async(req,res)=>{
