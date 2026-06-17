@@ -2418,6 +2418,8 @@ function HomeScreen({onMatch,onGoToCal}){
 function CalScreen(){
   const t=useLang();
   const [fil,setFil]=useState('todos');
+  const tabsRef=useRef(null);
+  const didInitDay=useRef(false);
   const [matches,setMatches]=useState(NEXT_MATCHES);
   const [scores,setScores]=useState({}); // { matchId: {gh, ga} } desde live/scores
 
@@ -2467,6 +2469,27 @@ function CalScreen(){
   // Get unique dates from all upcoming matches
   const allDates=[...new Set(matches.map(m=>m.isoDate))].sort();
 
+  // Al abrir, seleccionar automáticamente el día actual (o el próximo con partidos)
+  useEffect(()=>{
+    if(didInitDay.current) return;
+    if(allDates.length===0) return;
+    didInitDay.current=true;
+    if(allDates.includes(todayISO)) setFil(todayISO);
+    else { const prox=allDates.find(d=>d>=todayISO); if(prox) setFil(prox); }
+  },[allDates.length,todayISO]);
+
+  // Centrar en la barra el botón del día seleccionado (scroll solo horizontal)
+  useEffect(()=>{
+    const cont=tabsRef.current;
+    if(!cont) return;
+    const el=cont.querySelector(`[data-day="${fil}"]`);
+    if(!el) return;
+    const cRect=cont.getBoundingClientRect();
+    const eRect=el.getBoundingClientRect();
+    const delta=(eRect.left-cRect.left)-(cont.clientWidth/2)+(el.clientWidth/2);
+    cont.scrollBy({left:delta,behavior:'smooth'});
+  },[fil,allDates.length]);
+
   // Filter matches by selected tab
   const filtered=matches.filter(m=>{
     if(fil==='todos')return true;
@@ -2508,11 +2531,11 @@ function CalScreen(){
       </div>
 
       {/* Filter tabs */}
-      <div style={{display:'flex',gap:8,padding:'4px 16px 10px',overflowX:'auto'}}>
+      <div ref={tabsRef} style={{display:'flex',gap:8,padding:'4px 16px 10px',overflowX:'auto'}}>
         {[['todos',t.all],
           ...allDates.map(d=>[d,new Date(d+'T00:00:00').toLocaleDateString('es',{day:'numeric',month:'short'})])
         ].map(([k,l])=>(
-          <button key={k} className={`tpill ${fil===k?'on':''}`} onClick={()=>setFil(k)}>{l}</button>
+          <button key={k} data-day={k} className={`tpill ${fil===k?'on':''}`} onClick={()=>setFil(k)}>{l}</button>
         ))}
       </div>
 
