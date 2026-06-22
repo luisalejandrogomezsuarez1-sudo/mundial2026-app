@@ -5788,11 +5788,12 @@ function BetsScreen({bets,placeBet,credito,creditoLoading,onPagar,onReset,betsSa
                   const sel=getBet(key)?.selection===p.n;
                   return(
                     <button type="button" key={p.n}
-                      onClick={e=>{e.preventDefault();place(key,`Goleador ${rank}°`,p.n,32);}}
+                      onClick={betsSaved?undefined:e=>{e.preventDefault();place(key,`Goleador ${rank}°`,p.n,32);}}
                       style={{background:sel?'rgba(240,165,0,.18)':'var(--surf2)',
                         border:`1.5px solid ${sel?'var(--gold)':'var(--br)'}`,
-                        borderRadius:8,padding:'5px 9px',cursor:'pointer',
+                        borderRadius:8,padding:'5px 9px',cursor:betsSaved?'default':'pointer',
                         display:'flex',alignItems:'center',gap:5,
+                        opacity:betsSaved&&!sel?0.4:1,
                         transition:'background .15s,border-color .15s,color .15s'}}>
                       <span style={{fontSize:14}}>{FLAGS[p.team]||'🏳️'}</span>
                       <span style={{fontSize:11,fontWeight:700,
