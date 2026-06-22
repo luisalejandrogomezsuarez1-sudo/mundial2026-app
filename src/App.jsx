@@ -5295,9 +5295,9 @@ function PagoScreen({onExito,onCancelar,esReset=false,onRecheckAccess,user,onRec
         const vj=await vr.json();
         if(vr.ok && vj.ok){
           await response.complete('success');
-          // Consumir para poder recomprar (no fatal si falla)
-          try{ await service.consume(purchaseToken); }catch(_){}
           setExito(true);
+          // Consumir en segundo plano para poder recomprar (no bloquea la UI ni es fatal si falla)
+          service.consume(purchaseToken).catch(()=>{});
           setTimeout(()=>{ if(onExito) onExito(); }, 2500);
         }else{
           await response.complete('fail');
