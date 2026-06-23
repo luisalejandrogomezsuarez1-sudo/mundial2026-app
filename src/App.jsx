@@ -6999,6 +6999,8 @@ export default function App(){
                                       setGroupSyncMsg('✓ Pronósticos guardados');
                                     }
                                     setTimeout(()=>setGroupSyncMsg(''),3500);
+                                    // Descontar 1 bloque (1000 monedas) al guardar
+                                    setCredito(prev=>prev?{...prev,coins:prev.coins-COINS_PER_PAGO}:prev);
                                   }}
                                   onEditPredictions={()=>{
                                     // Desbloquear edición sin pagar: conserva los bets actuales
