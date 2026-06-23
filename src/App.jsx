@@ -5569,8 +5569,10 @@ function BetsScreen({bets,placeBet,credito,creditoLoading,onPagar,onReset,betsSa
   const isAdminUser=credito?.isAdmin||false;
   const coinsUsed=isAdminUser?0:bets.reduce((s,b)=>s+getBetCost(b.id),0);
   const totalCoins=isAdminUser?999999:(credito?.coins??COINS_PER_PAGO);
-  const coinsLeft=isAdminUser?999999:totalCoins-coinsUsed;
-  const pctUsed=isAdminUser?0:Math.min(100,Math.round(coinsUsed/totalCoins*100));
+  // Cuando ya está guardado, las monedas ya se descontaron del saldo:
+  // no volver a restar coinsUsed (evita saldo negativo en el display).
+  const coinsLeft=isAdminUser?999999:(betsSaved?Math.max(0,totalCoins):totalCoins-coinsUsed);
+  const pctUsed=isAdminUser?0:(betsSaved?100:Math.min(100,Math.round(coinsUsed/(totalCoins||1)*100)));
   // ── REGLA DE GUARDADO ──
   // El usuario puede CERRAR su pronóstico al gastar al menos 1 bloque completo
   // (1000 monedas). Las monedas sobrantes quedan disponibles para seguir
