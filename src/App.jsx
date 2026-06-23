@@ -6716,8 +6716,11 @@ export default function App(){
           if(paq>0){
             setCredito(prev=>{
               if(prev?.gifted||prev?.isAdmin) return prev; // no pisar regalo activo ni admin
-              if(prev?.paquetes===paq && prev?.coins===paq*COINS_PER_PAGO) return prev; // sin cambio
-              return {coins:paq*COINS_PER_PAGO,paquetes:paq,paidAt:Date.now()};
+              if(prev?.paquetes===paq) return prev; // paquetes sin cambio → no tocar coins (preserva descuento)
+              // Nuevo paquete pagado: recalcular coins respetando si ya guardó
+              const savedFlag=localStorage.getItem('wc2026_saved_'+(user?.id||''));
+              const spent=savedFlag==='true'?COINS_PER_PAGO:0;
+              return {coins:paq*COINS_PER_PAGO-spent,paquetes:paq,paidAt:Date.now()};
             });
             // Sincronizar localStorage con los paquetes frescos de Firestore
             try{
