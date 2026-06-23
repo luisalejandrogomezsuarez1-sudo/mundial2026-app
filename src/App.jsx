@@ -6803,7 +6803,7 @@ export default function App(){
     setCredito(prev=>{
       newPaquetes=(prev?.paquetes||0)+1;
       console.log('[onPagar] setCredito: prev.paquetes=',prev?.paquetes,'newPaquetes=',newPaquetes);
-      return {coins:COINS_PER_PAGO,paquetes:newPaquetes,paidAt:Date.now()};
+      return {coins:newPaquetes*COINS_PER_PAGO,paquetes:newPaquetes,paidAt:Date.now()};
     });
     if(user&&!user.isAdmin){
       await dbUpdatePaquetes(user.email);
