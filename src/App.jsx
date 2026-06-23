@@ -6474,7 +6474,9 @@ export default function App(){
               const localUsers=await dbLoad();
               await dbSave(localUsers.map(x=>x.id===u.id?{...x,gifted:true,giftedCoins:gc}:x));
             } else if(fsUser?.paquetes>0){
-              setCredito({coins:fsUser.paquetes*COINS_PER_PAGO,paquetes:fsUser.paquetes,paidAt:Date.now()});
+              const savedFlag1=localStorage.getItem('wc2026_saved_'+u.id);
+              const spentCoins1=savedFlag1==='true'?COINS_PER_PAGO:0;
+              setCredito({coins:fsUser.paquetes*COINS_PER_PAGO-spentCoins1,paquetes:fsUser.paquetes,paidAt:Date.now()});
             }
           }catch(e){console.warn('checkFirestoreCredit error:',e);}
           setCreditoLoading(false);
@@ -6570,7 +6572,9 @@ export default function App(){
         const localUsers=await dbLoad();
         await dbSave(localUsers.map(x=>x.id===user.id?{...x,gifted:true,giftedCoins:gc}:x));
       } else if(fsUser?.paquetes>0){
-        setCredito({coins:fsUser.paquetes*COINS_PER_PAGO,paquetes:fsUser.paquetes,paidAt:Date.now()});
+        const savedFlag2=localStorage.getItem('wc2026_saved_'+user.id);
+        const spentCoins2=savedFlag2==='true'?COINS_PER_PAGO:0;
+        setCredito({coins:fsUser.paquetes*COINS_PER_PAGO-spentCoins2,paquetes:fsUser.paquetes,paidAt:Date.now()});
       }
     }catch(e){console.warn('recheckAccess error:',e);}
     setCreditoLoading(false);
@@ -7006,6 +7010,8 @@ export default function App(){
                                     // Desbloquear edición sin pagar: conserva los bets actuales
                                     setBetsSaved(false);
                                     if(user?.id)localStorage.removeItem('wc2026_saved_'+user.id);
+                                    // Devolver 1000 monedas al entrar en modo edición
+                                    setCredito(prev=>prev?{...prev,coins:prev.coins+COINS_PER_PAGO}:prev);
                                   }}
                                   currentUser={user} onRecheckAccess={recheckAccess} onRecover={handleMpRecover}/>}
           {tab==='grupos'     &&<GruposScreen user={user} userBets={userBets} credito={credito} creditoLoading={creditoLoading} onPagar={onPagar} onRecheckAccess={recheckAccess}/>}
