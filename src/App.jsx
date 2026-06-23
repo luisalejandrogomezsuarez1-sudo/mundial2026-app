@@ -6029,11 +6029,14 @@ function BetsScreen({bets,placeBet,credito,creditoLoading,onPagar,onReset,betsSa
               Pronóstico guardado
             </span>
           </div>
-          <button onClick={()=>onEditPredictions&&onEditPredictions()}
-            style={{background:'linear-gradient(135deg,var(--gold),var(--gold2))',
-              border:'none',color:'#000',borderRadius:10,padding:'10px 16px',
+          <button onClick={()=>{if(totalCoins>=COINS_PER_PAGO){onEditPredictions&&onEditPredictions();}}}
+            disabled={totalCoins<COINS_PER_PAGO}
+            style={{background:totalCoins<COINS_PER_PAGO?'rgba(120,120,120,.2)':'linear-gradient(135deg,var(--gold),var(--gold2))',
+              border:'none',color:totalCoins<COINS_PER_PAGO?'var(--muted)':'#000',borderRadius:10,padding:'10px 16px',
               fontFamily:'var(--ff)',fontSize:13,letterSpacing:.5,fontWeight:800,
-              cursor:'pointer',whiteSpace:'nowrap',boxShadow:'0 3px 12px rgba(240,165,0,.3)'}}>
+              cursor:totalCoins<COINS_PER_PAGO?'not-allowed':'pointer',whiteSpace:'nowrap',
+              opacity:totalCoins<COINS_PER_PAGO?0.5:1,
+              boxShadow:totalCoins<COINS_PER_PAGO?'none':'0 3px 12px rgba(240,165,0,.3)'}}>
             ✏️ Modificar
           </button>
         </div>
@@ -6066,12 +6069,15 @@ function BetsScreen({bets,placeBet,credito,creditoLoading,onPagar,onReset,betsSa
               <div style={{fontSize:12,color:'var(--muted)',lineHeight:1.6,marginBottom:12}}>
                 Tus pronósticos están guardados. Puedes <strong style={{color:'var(--gold)'}}>modificarlos</strong> con tus monedas disponibles y volver a guardar, sin pagar de nuevo.
               </div>
-              <button onClick={()=>onEditPredictions&&onEditPredictions()}
-                style={{width:'100%',background:'linear-gradient(135deg,var(--gold),var(--gold2))',
-                  border:'none',color:'#000',borderRadius:12,padding:'14px',
+              <button onClick={()=>{if(totalCoins>=COINS_PER_PAGO){onEditPredictions&&onEditPredictions();}}}
+                disabled={totalCoins<COINS_PER_PAGO}
+                style={{width:'100%',background:totalCoins<COINS_PER_PAGO?'rgba(120,120,120,.2)':'linear-gradient(135deg,var(--gold),var(--gold2))',
+                  border:'none',color:totalCoins<COINS_PER_PAGO?'var(--muted)':'#000',borderRadius:12,padding:'14px',
                   fontFamily:'var(--ff)',fontSize:16,letterSpacing:1,fontWeight:800,
-                  cursor:'pointer',marginBottom:12,boxShadow:'0 4px 16px rgba(240,165,0,.35)'}}>
-                ✏️ Modificar pronósticos
+                  cursor:totalCoins<COINS_PER_PAGO?'not-allowed':'pointer',marginBottom:12,
+                  opacity:totalCoins<COINS_PER_PAGO?0.5:1,
+                  boxShadow:totalCoins<COINS_PER_PAGO?'none':'0 4px 16px rgba(240,165,0,.35)'}}>
+                {totalCoins<COINS_PER_PAGO?'🔒 Compra un paquete para modificar':'✏️ Modificar pronósticos'}
               </button>
               <div style={{background:'rgba(240,165,0,.06)',borderRadius:12,
                 border:'1px solid rgba(240,165,0,.18)',padding:'10px 12px',marginBottom:12}}>
