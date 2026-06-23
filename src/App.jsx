@@ -6800,8 +6800,6 @@ export default function App(){
   // Called after successful $20 payment (first time)
   const onPagar=async()=>{
     console.log('[onPagar] iniciando, credito actual:', credito?.paquetes);
-    setBetsSaved(false);
-    if(user?.id) localStorage.removeItem('wc2026_saved_'+user.id);
     // setCredito funcional evita stale closure si credito cambio entre renders
     let newPaquetes=1;
     setCredito(prev=>{
@@ -7008,10 +7006,12 @@ export default function App(){
                                   }}
                                   onEditPredictions={()=>{
                                     // Desbloquear edición sin pagar: conserva los bets actuales
+                                    // Solo devolver monedas si el pronóstico estaba guardado (evita doble bonificación)
+                                    if(betsSaved){
+                                      setCredito(prev=>prev?{...prev,coins:prev.coins+COINS_PER_PAGO}:prev);
+                                    }
                                     setBetsSaved(false);
                                     if(user?.id)localStorage.removeItem('wc2026_saved_'+user.id);
-                                    // Devolver 1000 monedas al entrar en modo edición
-                                    setCredito(prev=>prev?{...prev,coins:prev.coins+COINS_PER_PAGO}:prev);
                                   }}
                                   currentUser={user} onRecheckAccess={recheckAccess} onRecover={handleMpRecover}/>}
           {tab==='grupos'     &&<GruposScreen user={user} userBets={userBets} credito={credito} creditoLoading={creditoLoading} onPagar={onPagar} onRecheckAccess={recheckAccess}/>}
