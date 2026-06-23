@@ -5260,6 +5260,8 @@ function PagoScreen({onExito,onCancelar,esReset=false,onRecheckAccess,user,onRec
   const [metodo,setMetodo]=useState('card');
   const [loading,setLoading]=useState(false);
   const [exito,setExito]=useState(false);
+  const [esTWA,setEsTWA]=useState(false);
+  useEffect(()=>{ let m=true; isTWA().then(v=>{ if(m) setEsTWA(v); }); return ()=>{m=false;}; },[]);
 
   const handlePagar=async()=>{
     setLoading(true);
@@ -5427,64 +5429,80 @@ function PagoScreen({onExito,onCancelar,esReset=false,onRecheckAccess,user,onRec
           </div>
         )}
 
-        {/* Payment method selector */}
-        <div>
-          <div style={{fontSize:11,fontWeight:700,color:'var(--muted)',marginBottom:8,letterSpacing:.5}}>
-            MÉTODO DE PAGO
-          </div>
-          <div style={{display:'flex',gap:8,marginBottom:12}}>
-            {[['card','💳','Tarjeta'],['oxxo','🏪','OXXO']].map(([m,ic,lb])=>(
-              <button key={m} onClick={()=>setMetodo(m)}
-                style={{flex:1,padding:'10px 4px',
-                  background:metodo===m?'rgba(240,165,0,.12)':'var(--surf)',
-                  border:`1.5px solid ${metodo===m?'rgba(240,165,0,.4)':'var(--br)'}`,
-                  borderRadius:11,cursor:'pointer',transition:'all .15s',fontFamily:'var(--fb)'}}>
-                <div style={{fontSize:20}}>{ic}</div>
-                <div style={{fontSize:10,color:metodo===m?'var(--gold)':'var(--muted)',
-                  fontWeight:700,marginTop:3,letterSpacing:.3}}>{lb}</div>
-              </button>
-            ))}
-          </div>
-
-          {/* Card form — vía MercadoPago Checkout */}
-          {metodo==='card'&&(
-            <div style={{background:'var(--surf)',borderRadius:12,padding:16,
-              border:'1px solid rgba(240,165,0,.2)',textAlign:'center'}}>
-              <div style={{fontSize:32,marginBottom:8}}>💳</div>
-              <div style={{fontSize:14,fontWeight:700,marginBottom:6,color:'var(--gold)'}}>
-                Pago Seguro con Tarjeta
-              </div>
-              <div style={{fontSize:12,color:'var(--muted)',lineHeight:1.6,marginBottom:10}}>
-                Visa · Mastercard · American Express<br/>
-                Proceso seguro vía <strong style={{color:'var(--txt)'}}>MercadoPago</strong>
-              </div>
-              <div style={{fontSize:12,color:'var(--dim)',background:'rgba(255,255,255,.04)',
-                borderRadius:8,padding:'8px 12px',marginBottom:4}}>
-                🔒 Tu tarjeta NO se almacena en la app.<br/>
-                Pago cifrado SSL/TLS
-              </div>
+        {/* Payment method: Google Play en TWA, MercadoPago en web */}
+        {esTWA ? (
+          <div style={{background:'var(--surf)',borderRadius:12,padding:16,
+            border:'1px solid rgba(240,165,0,.2)',textAlign:'center'}}>
+            <div style={{fontSize:32,marginBottom:8}}>🛡️</div>
+            <div style={{fontSize:14,fontWeight:700,marginBottom:6,color:'var(--gold)'}}>
+              Pago seguro vía Google Play
             </div>
-          )}
-
-          {/* OXXO — vía MercadoPago */}
-          {metodo==='oxxo'&&(
-            <div style={{background:'var(--surf)',borderRadius:12,padding:16,
-              border:'1px solid var(--br)',textAlign:'center'}}>
-              <div style={{fontSize:30,marginBottom:8}}>🏪</div>
-              <div style={{fontSize:13,fontWeight:700,marginBottom:6}}>Pago en efectivo OXXO</div>
-              <div style={{fontSize:11,color:'var(--muted)',lineHeight:1.6}}>
-                Al hacer clic en <strong style={{color:'var(--gold)'}}>Pagar $30 MXN</strong>,
-                MercadoPago generará tu referencia OXXO.<br/>
-                Válida 24 horas en cualquier tienda OXXO del país.
-              </div>
-              <div style={{marginTop:10,fontSize:11,color:'var(--dim)',
-                background:'rgba(240,165,0,.05)',borderRadius:8,padding:'8px'}}>
-                💡 Comisión OXXO: $13 MXN adicionales (total $33 MXN)
-              </div>
+            <div style={{fontSize:12,color:'var(--muted)',lineHeight:1.6}}>
+              Se abrirá la ventana de Google Play para completar tu compra de forma segura.
             </div>
-          )}
+          </div>
+        ) : (
+          <>
+            {/* Payment method selector */}
+            <div>
+              <div style={{fontSize:11,fontWeight:700,color:'var(--muted)',marginBottom:8,letterSpacing:.5}}>
+                MÉTODO DE PAGO
+              </div>
+              <div style={{display:'flex',gap:8,marginBottom:12}}>
+                {[['card','💳','Tarjeta'],['oxxo','🏪','OXXO']].map(([m,ic,lb])=>(
+                  <button key={m} onClick={()=>setMetodo(m)}
+                    style={{flex:1,padding:'10px 4px',
+                      background:metodo===m?'rgba(240,165,0,.12)':'var(--surf)',
+                      border:`1.5px solid ${metodo===m?'rgba(240,165,0,.4)':'var(--br)'}`,
+                      borderRadius:11,cursor:'pointer',transition:'all .15s',fontFamily:'var(--fb)'}}>
+                    <div style={{fontSize:20}}>{ic}</div>
+                    <div style={{fontSize:10,color:metodo===m?'var(--gold)':'var(--muted)',
+                      fontWeight:700,marginTop:3,letterSpacing:.3}}>{lb}</div>
+                  </button>
+                ))}
+              </div>
 
-        </div>
+              {/* Card form — vía MercadoPago Checkout */}
+              {metodo==='card'&&(
+                <div style={{background:'var(--surf)',borderRadius:12,padding:16,
+                  border:'1px solid rgba(240,165,0,.2)',textAlign:'center'}}>
+                  <div style={{fontSize:32,marginBottom:8}}>💳</div>
+                  <div style={{fontSize:14,fontWeight:700,marginBottom:6,color:'var(--gold)'}}>
+                    Pago Seguro con Tarjeta
+                  </div>
+                  <div style={{fontSize:12,color:'var(--muted)',lineHeight:1.6,marginBottom:10}}>
+                    Visa · Mastercard · American Express<br/>
+                    Proceso seguro vía <strong style={{color:'var(--txt)'}}>MercadoPago</strong>
+                  </div>
+                  <div style={{fontSize:12,color:'var(--dim)',background:'rgba(255,255,255,.04)',
+                    borderRadius:8,padding:'8px 12px',marginBottom:4}}>
+                    🔒 Tu tarjeta NO se almacena en la app.<br/>
+                    Pago cifrado SSL/TLS
+                  </div>
+                </div>
+              )}
+
+              {/* OXXO — vía MercadoPago */}
+              {metodo==='oxxo'&&(
+                <div style={{background:'var(--surf)',borderRadius:12,padding:16,
+                  border:'1px solid var(--br)',textAlign:'center'}}>
+                  <div style={{fontSize:30,marginBottom:8}}>🏪</div>
+                  <div style={{fontSize:13,fontWeight:700,marginBottom:6}}>Pago en efectivo OXXO</div>
+                  <div style={{fontSize:11,color:'var(--muted)',lineHeight:1.6}}>
+                    Al hacer clic en <strong style={{color:'var(--gold)'}}>Pagar $30 MXN</strong>,
+                    MercadoPago generará tu referencia OXXO.<br/>
+                    Válida 24 horas en cualquier tienda OXXO del país.
+                  </div>
+                  <div style={{marginTop:10,fontSize:11,color:'var(--dim)',
+                    background:'rgba(240,165,0,.05)',borderRadius:8,padding:'8px'}}>
+                    💡 Comisión OXXO: $13 MXN adicionales (total $33 MXN)
+                  </div>
+                </div>
+              )}
+
+            </div>
+          </>
+        )}
 
         {/* Pay button */}
         <button onClick={handlePagar} disabled={loading}
