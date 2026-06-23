@@ -7001,17 +7001,14 @@ export default function App(){
                                       setGroupSyncMsg('✓ Pronósticos guardados');
                                     }
                                     setTimeout(()=>setGroupSyncMsg(''),3500);
-                                    // Descontar 1 bloque (1000 monedas) al guardar
-                                    setCredito(prev=>prev?{...prev,coins:prev.coins-COINS_PER_PAGO}:prev);
+                                    // Descontar 1 bloque solo si tiene monedas disponibles
+                                    setCredito(prev=>prev&&prev.coins>=COINS_PER_PAGO?{...prev,coins:prev.coins-COINS_PER_PAGO}:prev);
                                   }}
                                   onEditPredictions={()=>{
                                     // Desbloquear edición sin pagar: conserva los bets actuales
-                                    // Solo devolver monedas si el pronóstico estaba guardado (evita doble bonificación)
-                                    if(betsSaved){
-                                      setCredito(prev=>prev?{...prev,coins:prev.coins+COINS_PER_PAGO}:prev);
-                                    }
+                                    // NO se borra el flag wc2026_saved_ para que al recargar
+                                    // el descuento de 1000 monedas persista
                                     setBetsSaved(false);
-                                    if(user?.id)localStorage.removeItem('wc2026_saved_'+user.id);
                                   }}
                                   currentUser={user} onRecheckAccess={recheckAccess} onRecover={handleMpRecover}/>}
           {tab==='grupos'     &&<GruposScreen user={user} userBets={userBets} credito={credito} creditoLoading={creditoLoading} onPagar={onPagar} onRecheckAccess={recheckAccess}/>}
