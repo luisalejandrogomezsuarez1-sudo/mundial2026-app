@@ -1913,9 +1913,9 @@ function NextCard({m,score}){
         <span style={{fontSize:11,color:'var(--muted)',fontWeight:600}}>{m.phase} · {m.date}</span>
         <div style={{display:'flex',gap:6,alignItems:'center'}}>
           <span style={{fontSize:11,color:'var(--muted)'}}>🕐 {m.time}</span>
-          {st==='finalizado' && <span style={{background:'#16a34a',color:'#fff',borderRadius:6,padding:'2px 8px',fontSize:11,fontWeight:600}}>✓ FINALIZADO</span>}
-          {st==='en_vivo' && <span style={{background:'#dc2626',color:'#fff',borderRadius:6,padding:'2px 8px',fontSize:11,fontWeight:600}}>🔴 EN VIVO</span>}
-          {st==='proximo' && <span style={{background:'#2563eb',color:'#fff',borderRadius:6,padding:'2px 8px',fontSize:11,fontWeight:600}}>PRÓXIMO</span>}
+          {st==='finalizado' && <span style={{fontSize:10,background:'rgba(46,204,113,.18)',color:'var(--grn)',padding:'2px 8px',borderRadius:20,fontWeight:700,letterSpacing:.5}}>✓ FINALIZADO</span>}
+          {st==='en_vivo' && <span style={{fontSize:10,background:'rgba(231,76,60,.18)',color:'#e74c3c',padding:'2px 8px',borderRadius:20,fontWeight:700,letterSpacing:.5}}>🔴 EN VIVO</span>}
+          {st==='proximo' && <span style={{fontSize:10,background:'rgba(79,142,247,.15)',color:'var(--acc)',padding:'2px 8px',borderRadius:20,fontWeight:700,letterSpacing:.5}}>PRÓXIMO</span>}
         </div>
       </div>
       <div style={{padding:'6px 14px 10px',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
