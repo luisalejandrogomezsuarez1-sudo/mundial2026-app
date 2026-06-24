@@ -27,6 +27,7 @@ import('./firebase.js').then(fb => {
   window._fbFindUserByEmail = fb.findUserByEmail;
   window._fbGiftCoinsByEmail= fb.giftCoinsByEmail;
   window._fbSaveUserBets    = fb.saveUserBetsToFirestore;
+  window._fbUpdateCoinsSpent = fb.updateCoinsSpent;
   // Auth nativo (Fase 2)
   window._fbAuthRegister    = fb.authRegister;
   window._fbAuthLogin       = fb.authLogin;
@@ -5574,11 +5575,12 @@ function BetsScreen({bets,placeBet,credito,creditoLoading,onPagar,onReset,betsSa
   const coinsLeft=isAdminUser?999999:(betsSaved?Math.max(0,totalCoins):totalCoins-coinsUsed);
   const pctUsed=isAdminUser?0:(betsSaved?100:Math.min(100,Math.round(coinsUsed/(totalCoins||1)*100)));
   // ── REGLA DE GUARDADO ──
-  // El usuario puede CERRAR su pronóstico al gastar al menos 1 bloque completo
-  // (1000 monedas). Las monedas sobrantes quedan disponibles para seguir
-  // apostando y volver a guardar. No se obliga a dejar el saldo en 0.
+  // El usuario DEBE asignar exactamente 1 bloque completo (1000 monedas) para
+  // poder guardar. El set completo de pronósticos cuesta justo 1000. Tener
+  // varios paquetes acumulados no cambia el coste de guardar (1 bloque por save).
+  // Para modificar después de guardar, debe comprar otro paquete.
   const SAVE_BLOCK=COINS_PER_PAGO; // 1000
-  const canSave=isAdminUser?bets.length>0:(coinsUsed>=SAVE_BLOCK);
+  const canSave=isAdminUser?bets.length>0:(coinsUsed===SAVE_BLOCK);
 
   const getBet=id=>bets.find(b=>b.id===id);
   const isSel=(id,val)=>getBet(id)?.selection===val;
@@ -6105,15 +6107,17 @@ function BetsScreen({bets,placeBet,credito,creditoLoading,onPagar,onReset,betsSa
                 {isAdminUser
                   ?'Como administrador puedes guardar tu pronóstico sin límite de monedas.'
                   :canSave
-                    ?`Puedes guardar tu pronóstico. Te quedan ${coinsLeft}🪙 disponibles${coinsLeft>0?' que puedes seguir usando o guardar así.':'.'}`
-                    :`Debes usar al menos ${SAVE_BLOCK.toLocaleString()}🪙 para guardar. Llevas ${coinsUsed}🪙 usadas.`
+                    ?`✅ Asignaste las ${SAVE_BLOCK.toLocaleString()}🪙 del bloque. Ya puedes guardar tu pronóstico.`
+                    :coinsUsed>SAVE_BLOCK
+                      ?`Te pasaste del bloque. Debes asignar exactamente ${SAVE_BLOCK.toLocaleString()}🪙. Llevas ${coinsUsed}🪙.`
+                      :`Asigna las ${SAVE_BLOCK.toLocaleString()}🪙 completas del bloque para guardar. Llevas ${coinsUsed}🪙 · faltan ${SAVE_BLOCK-coinsUsed}🪙.`
                 }
               </div>
               {!canSave&&!isAdminUser&&(
                 <div style={{background:'rgba(200,16,46,.06)',borderRadius:10,
                   border:'1px solid rgba(200,16,46,.2)',padding:'10px 12px',
                   marginBottom:12,fontSize:11,color:'#FC8181'}}>
-                  ⚠️ Usa al menos <strong>{SAVE_BLOCK.toLocaleString()}</strong> monedas (1 bloque) para poder guardar. Llevas <strong>{coinsUsed}</strong>.
+                  ⚠️ Debes asignar las <strong>{SAVE_BLOCK.toLocaleString()}</strong> monedas completas del bloque. Llevas <strong>{coinsUsed}</strong> · faltan <strong>{Math.max(0,SAVE_BLOCK-coinsUsed)}</strong>.
                 </div>
               )}
               <button
@@ -6482,9 +6486,9 @@ export default function App(){
               const localUsers=await dbLoad();
               await dbSave(localUsers.map(x=>x.id===u.id?{...x,gifted:true,giftedCoins:gc}:x));
             } else if(fsUser?.paquetes>0){
-              const savedFlag1=localStorage.getItem('wc2026_saved_'+u.id);
-              const spentCoins1=savedFlag1==='true'?COINS_PER_PAGO:0;
-              setCredito({coins:fsUser.paquetes*COINS_PER_PAGO-spentCoins1,paquetes:fsUser.paquetes,paidAt:Date.now()});
+              const spent1=Number(fsUser.coinsSpent)||0;
+              const saldo1=Math.max(0,fsUser.paquetes*COINS_PER_PAGO-spent1);
+              setCredito({coins:saldo1,paquetes:fsUser.paquetes,paidAt:Date.now(),coinsSpent:spent1});
             }
           }catch(e){console.warn('checkFirestoreCredit error:',e);}
           setCreditoLoading(false);
@@ -6580,9 +6584,9 @@ export default function App(){
         const localUsers=await dbLoad();
         await dbSave(localUsers.map(x=>x.id===user.id?{...x,gifted:true,giftedCoins:gc}:x));
       } else if(fsUser?.paquetes>0){
-        const savedFlag2=localStorage.getItem('wc2026_saved_'+user.id);
-        const spentCoins2=savedFlag2==='true'?COINS_PER_PAGO:0;
-        setCredito({coins:fsUser.paquetes*COINS_PER_PAGO-spentCoins2,paquetes:fsUser.paquetes,paidAt:Date.now()});
+        const spent2=Number(fsUser.coinsSpent)||0;
+        const saldo2=Math.max(0,fsUser.paquetes*COINS_PER_PAGO-spent2);
+        setCredito({coins:saldo2,paquetes:fsUser.paquetes,paidAt:Date.now(),coinsSpent:spent2});
       }
     }catch(e){console.warn('recheckAccess error:',e);}
     setCreditoLoading(false);
@@ -6724,11 +6728,11 @@ export default function App(){
           if(paq>0){
             setCredito(prev=>{
               if(prev?.gifted||prev?.isAdmin) return prev; // no pisar regalo activo ni admin
-              if(prev?.paquetes===paq) return prev; // paquetes sin cambio → no tocar coins (preserva descuento)
-              // Nuevo paquete pagado: recalcular coins respetando si ya guardó
-              const savedFlag=localStorage.getItem('wc2026_saved_'+(user?.id||''));
-              const spent=savedFlag==='true'?COINS_PER_PAGO:0;
-              return {coins:paq*COINS_PER_PAGO-spent,paquetes:paq,paidAt:Date.now()};
+              const spentL=Number(fsUser?.coinsSpent)||0;
+              const saldoL=Math.max(0,paq*COINS_PER_PAGO-spentL);
+              // Si no cambió ni paquetes ni el gasto, no re-render
+              if(prev?.paquetes===paq && prev?.coins===saldoL) return prev;
+              return {coins:saldoL,paquetes:paq,paidAt:Date.now(),coinsSpent:spentL};
             });
             // Sincronizar localStorage con los paquetes frescos de Firestore
             try{
@@ -6991,6 +6995,11 @@ export default function App(){
                                   onSave={async()=>{
                                     setBetsSaved(true);
                                     if(user?.id)localStorage.setItem('wc2026_saved_'+user.id,'true');
+                                    // Calcular coinsSpent total = paquetes*1000 - saldo restante tras descontar 1 bloque
+                                    const paqAct=credito?.paquetes||0;
+                                    const coinsAct=credito?.coins??COINS_PER_PAGO;
+                                    const nuevoSaldo=Math.max(0,coinsAct-COINS_PER_PAGO);
+                                    const coinsSpentTotal=paqAct*COINS_PER_PAGO-nuevoSaldo;
                                     // 1) Guardar los bets en el doc del USUARIO (users/{uid}.bets)
                                     //    para que el motor de puntos los calcule aunque NO esté en grupos.
                                     const uid=(window._fbCurrentUid&&window._fbCurrentUid())||user?.uid||user?.id;
@@ -6999,6 +7008,7 @@ export default function App(){
                                         await window._fbSaveUserBets(uid,userBets,{
                                           name:user?.name||user?.displayName||'Usuario',
                                           email:user?.email||'',
+                                          coinsSpent:coinsSpentTotal,
                                         });
                                       }catch(e){}
                                     }
@@ -7012,14 +7022,18 @@ export default function App(){
                                       setGroupSyncMsg('✓ Pronósticos guardados');
                                     }
                                     setTimeout(()=>setGroupSyncMsg(''),3500);
-                                    // Descontar 1 bloque solo si tiene monedas disponibles
-                                    setCredito(prev=>prev&&prev.coins>=COINS_PER_PAGO?{...prev,coins:prev.coins-COINS_PER_PAGO}:prev);
+                                    // Descontar 1 bloque solo si tiene monedas disponibles; persistir coinsSpent
+                                    setCredito(prev=>prev&&prev.coins>=COINS_PER_PAGO?{...prev,coins:prev.coins-COINS_PER_PAGO,coinsSpent:coinsSpentTotal}:prev);
                                   }}
                                   onEditPredictions={()=>{
-                                    // Desbloquear edición sin pagar: conserva los bets actuales
-                                    // NO se borra el flag wc2026_saved_ para que al recargar
-                                    // el descuento de 1000 monedas persista
+                                    // Desbloquear edición SIN devolver monedas.
+                                    // El usuario edita con el saldo que le quede; si llega a 0,
+                                    // debe comprar otro paquete para seguir modificando.
+                                    // Solo permitir si tiene al menos 1 bloque disponible.
+                                    const saldoActual=credito?.coins??0;
+                                    if(saldoActual<COINS_PER_PAGO) return; // sin saldo: no edita (debe pagar)
                                     setBetsSaved(false);
+                                    if(user?.id)localStorage.removeItem('wc2026_saved_'+user.id);
                                   }}
                                   currentUser={user} onRecheckAccess={recheckAccess} onRecover={handleMpRecover}/>}
           {tab==='grupos'     &&<GruposScreen user={user} userBets={userBets} credito={credito} creditoLoading={creditoLoading} onPagar={onPagar} onRecheckAccess={recheckAccess}/>}

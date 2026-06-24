@@ -312,6 +312,17 @@ export async function saveUserBetsToFirestore(userId, bets, meta={}) {
   } catch(e) { console.warn('saveUserBets error:', e); return { ok:false, error:e.message }; }
 }
 
+// ── Actualizar coinsSpent del usuario (devolución de bloque al editar) ──
+export async function updateCoinsSpent(userId, coinsSpent) {
+  if(!userId) return { ok:false };
+  try {
+    await setDoc(doc(db,'users', userId), {
+      coinsSpent: Math.max(0, Number(coinsSpent)||0),
+    }, { merge: true });
+    return { ok:true };
+  } catch(e) { console.warn('updateCoinsSpent error:', e); return { ok:false, error:e.message }; }
+}
+
 // ── GRUPOS — usa el CÓDIGO como ID del documento ─────────────────
 export async function saveGroupToFirestore(group, userId) {
   const data = {
