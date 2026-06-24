@@ -2213,6 +2213,21 @@ function Countdown(){
   );
 }
 
+// ── Banner publicitario (Donner & Asociados) ──────────────
+// Banner clickeable → WhatsApp. Imagen según idioma (inglés vs español).
+function SponsorBanner({margin='0 0 14px'}){
+  const t=useLang();
+  const img = t._lang==='en' ? '/inmobiliaria_en.jpg' : '/inmobiliaria.jpg';
+  const WHATSAPP='https://wa.me/523222944622?text=Hola%2C%20vi%20su%20anuncio%20en%20la%20app%20Pron%C3%B3sticos%20Futbol%202026';
+  return(
+    <a href={WHATSAPP} target="_blank" rel="noopener noreferrer"
+      style={{display:'block',textDecoration:'none',margin}}>
+      <img src={img} alt="Donner & Asociados - Bienes raíces · 322 294 4622"
+        style={{width:'100%',height:'auto',display:'block'}}/>
+    </a>
+  );
+}
+
 // ── Home Screen ──────────────────────────────────
 // ── Marquesina de comentarios (texto desde Firestore live/banner) ──
 function CommentMarquee(){
@@ -2381,6 +2396,7 @@ function HomeScreen({onMatch,onGoToCal}){
 
       {/* ── Marquesina de comentarios (siempre visible) ── */}
       <CommentMarquee/>
+      <SponsorBanner/>
 
       {/* ── LIVE matches manuales (Firestore live/livemanual) ── */}
       {livMan.length>0&&(
@@ -2552,6 +2568,7 @@ function CalScreen(){
         </div>
       </div>
 
+      <SponsorBanner margin="2px 0 0"/>
       {/* Filter tabs */}
       <div ref={tabsRef} style={{display:'flex',gap:8,padding:'4px 16px 10px',overflowX:'auto'}}>
         {[['todos',t.all],
@@ -2853,6 +2870,7 @@ function TablaScreen(){
         <div style={{fontFamily:'var(--ff)',fontSize:28,letterSpacing:2}}>{t.table_title}</div>
         <div style={{fontSize:12,color:'var(--muted)'}}>{t.group_stage} · Pronósticos Futbol 2026</div>
       </div>
+      <SponsorBanner margin="2px 0 0"/>
       <div style={{display:'flex',gap:8,padding:'4px 16px 10px',overflowX:'auto'}}>
         {GROUPS.map((g,i)=>(
           <button key={g.name} className={`tpill ${gi===i?'on':''}`} onClick={()=>setGi(i)}>{g.name}</button>
@@ -3113,6 +3131,8 @@ function GolesScreen(){
           {t.golden_boot||'Candidatos a la Bota de Oro del torneo 2026'}
         </div>
       </div>
+
+      <SponsorBanner margin="0"/>
 
       <div style={{padding:'0 12px 24px'}}>
         {!anyGoals&&(
@@ -6401,6 +6421,7 @@ export default function App(){
   const [lang,setLang]=useState('es');
   const _tr=TRANSLATIONS[lang]||TRANSLATIONS.es;
   const _fn=k=>_tr[k]||TRANSLATIONS.es[k]||k;
+  _fn._lang=lang;
   const t=new Proxy(_fn,{get(_,p){return p in _tr?_tr[p]:_fn[p];}});
   const [tab,setTab]=useState('home');
   const [match,setMatch]=useState(null);
