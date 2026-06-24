@@ -1214,8 +1214,13 @@ app.post('/api/admin/tabla', async (req,res)=>{
     // muestre "FINALIZADO" + marcador en cada partido jugado.
     const scores = {};
     for(const m of matches){
-      if(m.gh==null || m.ga==null) continue;
-      if(m.match_id!=null) scores[m.match_id] = { gh:Number(m.gh), ga:Number(m.ga) };
+      const hasScore = m.gh!=null && m.ga!=null;
+      const hasStatus = m.status && m.status!=='proximo';
+      if(!hasScore && !hasStatus) continue;
+      if(m.match_id!=null) scores[m.match_id] = {
+        ...(hasScore ? {gh:Number(m.gh), ga:Number(m.ga)} : {}),
+        status: m.status || 'proximo'
+      };
     }
     await save('scores', { scores });
     res.json({ ok:true, groups });

@@ -1905,6 +1905,7 @@ function MatchCard({m,onClick}){
 
 // ── Next Match Card ──────────────────────────────
 function NextCard({m,score}){
+  const st = score?.status || (score && score.gh!=null && score.ga!=null ? 'finalizado' : 'proximo');
   const finished = score && score.gh!=null && score.ga!=null;
   return(
     <div style={{margin:'0 16px 11px',background:'var(--surf)',borderRadius:'var(--r)',border:`1px solid ${finished?'rgba(46,204,113,.3)':'var(--br)'}`,overflow:'hidden'}}>
@@ -1912,9 +1913,9 @@ function NextCard({m,score}){
         <span style={{fontSize:11,color:'var(--muted)',fontWeight:600}}>{m.phase} · {m.date}</span>
         <div style={{display:'flex',gap:6,alignItems:'center'}}>
           <span style={{fontSize:11,color:'var(--muted)'}}>🕐 {m.time}</span>
-          {finished
-            ? <span style={{fontSize:10,background:'rgba(46,204,113,.18)',color:'var(--grn)',padding:'2px 8px',borderRadius:20,fontWeight:700,letterSpacing:.5}}>✓ FINALIZADO</span>
-            : <span style={{fontSize:10,background:'rgba(79,142,247,.15)',color:'var(--acc)',padding:'2px 8px',borderRadius:20,fontWeight:700,letterSpacing:.5}}>PRÓXIMO</span>}
+          {st==='finalizado' && <span style={{background:'#16a34a',color:'#fff',borderRadius:6,padding:'2px 8px',fontSize:11,fontWeight:600}}>✓ FINALIZADO</span>}
+          {st==='en_vivo' && <span style={{background:'#dc2626',color:'#fff',borderRadius:6,padding:'2px 8px',fontSize:11,fontWeight:600}}>🔴 EN VIVO</span>}
+          {st==='proximo' && <span style={{background:'#2563eb',color:'#fff',borderRadius:6,padding:'2px 8px',fontSize:11,fontWeight:600}}>PRÓXIMO</span>}
         </div>
       </div>
       <div style={{padding:'6px 14px 10px',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
@@ -3300,7 +3301,8 @@ function AdminResultados({onClose}){
     const matches=playable.map(m=>{
       const s=scores[m.id];
       return { match_id:m.id, group:grupoDe(m), home:m.home, away:m.away,
-               gh:s&&s.gh!==''?Number(s.gh):null, ga:s&&s.ga!==''?Number(s.ga):null };
+               gh:s&&s.gh!==''?Number(s.gh):null, ga:s&&s.ga!==''?Number(s.ga):null,
+               status: scores[m.id]?.status || 'proximo' };
     });
     const d=await post('/api/admin/tabla',{matches,groupsDef:groupsDef()});
     if(d?.ok) setMsg('✅ Tabla actualizada');
@@ -3440,6 +3442,16 @@ function AdminResultados({onClose}){
                     <input type="number" inputMode="numeric" value={s.ga} placeholder="-"
                       onChange={e=>persistScores({...scores,[m.id]:{...s,ga:e.target.value}})}
                       style={{...inp,width:42,textAlign:'center',padding:'6px 2px'}}/>
+                    <button onClick={()=>{
+                      const estados=['proximo','en_vivo','finalizado'];
+                      const actual = (scores[m.id]?.status)||'proximo';
+                      const siguiente = estados[(estados.indexOf(actual)+1)%3];
+                      persistScores({...scores,[m.id]:{...scores[m.id],status:siguiente}});
+                    }} style={{marginLeft:8,padding:'4px 10px',borderRadius:6,border:'none',cursor:'pointer',
+                      background: (scores[m.id]?.status||'proximo')==='en_vivo'?'#dc2626':(scores[m.id]?.status)==='finalizado'?'#16a34a':'#2563eb',
+                      color:'#fff',fontSize:11,fontWeight:600}}>
+                      {(scores[m.id]?.status||'proximo')==='en_vivo'?'🔴 EN VIVO':(scores[m.id]?.status)==='finalizado'?'✓ FIN':'PRÓXIMO'}
+                    </button>
                   </div>
                 );
               })}
