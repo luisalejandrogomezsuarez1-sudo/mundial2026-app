@@ -2305,6 +2305,22 @@ function HomeScreen({onMatch,onGoToCal}){
     return()=>{ mounted=false; if(typeof unsub==='function') unsub(); };
   },[]);
 
+  // Marcadores/estado de partidos (admin) desde live/scores → badge EN VIVO/FINALIZADO/PRÓXIMO
+  const [scores,setScores]=useState({}); // { matchId: {gh, ga, status} } desde live/scores
+  useEffect(()=>{
+    let unsub, mounted=true;
+    const cached=getCachedLive('scores');
+    if(cached?.scores) setScores(cached.scores);
+    const trySub=()=>{
+      if(!mounted) return;
+      const fn=window._fbSubscribeLive;
+      if(!fn){ setTimeout(trySub,800); return; }
+      try{ unsub=fn('scores',data=>{ setCachedLive('scores',data); if(data?.scores) setScores(data.scores); }); }catch(e){}
+    };
+    trySub();
+    return()=>{ mounted=false; if(typeof unsub==='function') unsub(); };
+  },[]);
+
   const doRef=useCallback(()=>{
     setRef(true);setTimeout(()=>{setRef(false);setUpd(new Date());},900);
   },[]);
@@ -2411,7 +2427,7 @@ function HomeScreen({onMatch,onGoToCal}){
         <div style={{fontFamily:'var(--ff)',fontSize:22,letterSpacing:1}}>{t.next_matches}</div>
         <span onClick={onGoToCal} style={{fontSize:12,color:'var(--gold)',fontWeight:600,cursor:'pointer'}}>{t.see_all}</span>
       </div>
-      {lista.map(m=><NextCard key={m.id} m={m}/>)}
+      {lista.map(m=><NextCard key={m.id} m={m} score={scores[m.id]}/>)}
     </div>
   );
 }
