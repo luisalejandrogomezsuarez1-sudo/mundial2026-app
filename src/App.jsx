@@ -2662,10 +2662,10 @@ function BracketSlot({slot,highlight=false}){
       boxShadow:highlight?'0 0 12px rgba(240,165,0,.15)':'none'}}>
       {/* Team home */}
       <div style={{display:'flex',alignItems:'center',gap:6,marginBottom:5,
-        opacity:isWon&&slot.winner!==slot.home?.name?.slice(0,8)?0.4:1}}>
-        <span style={{fontSize:16,lineHeight:1}}>{slot?.homeFl||'🏳️'}</span>
-        <span style={{fontSize:11,fontWeight:slot.winner===slot.home?.name?.slice(0,8)?700:500,
-          color:slot.winner===slot.home?.name?.slice(0,8)?'var(--gold)':'var(--txt)',
+        opacity:isWon&&slot.winner!==slot.home?0.4:1}}>
+        <span style={{fontSize:16,lineHeight:1}}>{FLAGS[slot?.home]||'🏳️'}</span>
+        <span style={{fontSize:11,fontWeight:slot.winner===slot.home?700:500,
+          color:slot.winner===slot.home?'var(--gold)':'var(--txt)',
           whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis',maxWidth:90}}>
           {slot?.home||<span style={{color:'var(--muted)',fontStyle:'italic'}}>{t.tbd}</span>}
         </span>
@@ -2673,10 +2673,10 @@ function BracketSlot({slot,highlight=false}){
       <div style={{height:1,background:'var(--br)',marginBottom:5}}/>
       {/* Team away */}
       <div style={{display:'flex',alignItems:'center',gap:6,
-        opacity:isWon&&slot.winner!==slot.away?.name?.slice(0,8)?0.4:1}}>
-        <span style={{fontSize:16,lineHeight:1}}>{slot?.awayFl||'🏳️'}</span>
-        <span style={{fontSize:11,fontWeight:slot.winner===slot.away?.name?.slice(0,8)?700:500,
-          color:slot.winner===slot.away?.name?.slice(0,8)?'var(--gold)':'var(--txt)',
+        opacity:isWon&&slot.winner!==slot.away?0.4:1}}>
+        <span style={{fontSize:16,lineHeight:1}}>{FLAGS[slot?.away]||'🏳️'}</span>
+        <span style={{fontSize:11,fontWeight:slot.winner===slot.away?700:500,
+          color:slot.winner===slot.away?'var(--gold)':'var(--txt)',
           whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis',maxWidth:90}}>
           {slot?.away||<span style={{color:'var(--muted)',fontStyle:'italic'}}>{t.tbd}</span>}
         </span>
@@ -2795,13 +2795,31 @@ function TablaScreen(){
     final:   mkSlot('🏆 FINAL', 'Jul 19','MetLife Stadium, New Jersey'),
   });
 
+  // Deriva el bracket desde scores (admin manual). IDs contiguos 73-104.
+  const buildBracketFromScores=(sc)=>{
+    const km=NEXT_MATCHES.filter(m=>m.id>=73);
+    const slotFrom=m=>{
+      const s=sc[m.id]||{};
+      const winner=(s.status==='finalizado'&&s.gh!=null&&s.ga!=null)
+        ? (s.gh>s.ga?s.home:s.ga>s.gh?s.away:null)
+        : null;
+      return { label:m.phase, date:m.date, venue:m.venue,
+               home:s.home||null, away:s.away||null, winner };
+    };
+    const slots=km.map(slotFrom);
+    return {
+      r32:slots.slice(0,16), r16:slots.slice(16,24), qf:slots.slice(24,28),
+      sf:slots.slice(28,30), tercero:slots[30], final:slots[31]
+    };
+  };
+
   // Firestore: clasificación y llave (con cache para evitar re-leer al volver al tab)
   useEffect(()=>{
-    const cs=getCachedLive('standings'), cb=getCachedLive('bracket');
+    const cs=getCachedLive('standings'), cb=getCachedLive('bracket'), csc=getCachedLive('scores');
     if(cs?.groups?.length>0){ setGroups(cs.groups); setApiLoaded(true); }
     if(cb?.r32) setBracket(cb);
-    if(cs && cb) return; // datos frescos en cache, no suscribir
-    let u1,u2,mounted=true;
+    if(csc?.scores) setBracket(buildBracketFromScores(csc.scores)); // admin manual gana siempre
+    let u1,u2,u3,mounted=true;
     const trySubscribe=()=>{
       if(!mounted) return;
       const fn=window._fbSubscribeLive;
@@ -2815,10 +2833,14 @@ function TablaScreen(){
           setCachedLive('bracket',data);
           if(data.r32) setBracket(data);
         });
+        u3=fn('scores',data=>{
+          setCachedLive('scores',data);
+          if(data?.scores){ setBracket(buildBracketFromScores(data.scores)); }
+        });
       }catch(e){ console.warn('standings error',e); }
     };
     trySubscribe();
-    return()=>{ mounted=false; if(typeof u1==='function') u1(); if(typeof u2==='function') u2(); };
+    return()=>{ mounted=false; if(typeof u1==='function') u1(); if(typeof u2==='function') u2(); if(typeof u3==='function') u3(); };
   },[]);
 
   const grp=groups[gi]||GROUPS[0];
