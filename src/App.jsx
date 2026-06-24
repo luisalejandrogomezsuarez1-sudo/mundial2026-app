@@ -3287,8 +3287,11 @@ function AdminResultados({onClose}){
   const persistScores=s=>{ setScores(s); try{localStorage.setItem('wc2026_admin_scores',JSON.stringify(s));}catch{} };
   const persistScorers=s=>{ setScorers(s); try{localStorage.setItem('wc2026_admin_scorers',JSON.stringify(s));}catch{} };
 
-  // Al abrir el panel, precargar goleadores desde el servidor (live/scorers)
+  // Al abrir el panel, precargar goleadores desde el servidor SOLO si no hay datos locales
   useEffect(()=>{
+    let local=[];
+    try{ local=JSON.parse(localStorage.getItem('wc2026_admin_scorers')||'[]'); }catch{}
+    if(Array.isArray(local) && local.length) return; // ya hay datos locales, no pisar
     fetch('/api/live/scorers')
       .then(r=>r.json())
       .then(d=>{ if(Array.isArray(d?.list) && d.list.length) persistScorers(d.list); })
