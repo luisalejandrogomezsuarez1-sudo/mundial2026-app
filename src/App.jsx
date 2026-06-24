@@ -1014,6 +1014,8 @@ const GROUPS=[
   {name:'Grupo K',teams:[{n:'Portugal',pj:0,g:0,e:0,p:0,gf:0,gc:0,pts:0},{n:'Colombia',pj:0,g:0,e:0,p:0,gf:0,gc:0,pts:0},{n:'Uzbekistán',pj:0,g:0,e:0,p:0,gf:0,gc:0,pts:0},{n:'Congo DR',pj:0,g:0,e:0,p:0,gf:0,gc:0,pts:0}]},
   {name:'Grupo L',teams:[{n:'Inglaterra',pj:0,g:0,e:0,p:0,gf:0,gc:0,pts:0},{n:'Croacia',pj:0,g:0,e:0,p:0,gf:0,gc:0,pts:0},{n:'Ghana',pj:0,g:0,e:0,p:0,gf:0,gc:0,pts:0},{n:'Panamá',pj:0,g:0,e:0,p:0,gf:0,gc:0,pts:0}]},
 ];
+// Lista plana de los 48 equipos para selects de eliminatorias
+const ALL_TEAMS = GROUPS.flatMap(g=>g.teams.map(t=>t.n)).sort((a,b)=>a.localeCompare(b));
 const SCORERS=[
   // Candidatos al Trofeo de Bota de Oro 2026
   {n:'Kylian Mbappé',   team:'Francia',   g:0,a:0,debut:'AS Monaco · 2015',  ori:'Bondy, Francia',            bio:'Máximo favorito a la Bota de Oro. 8 goles en Qatar 2022. Capitán de Francia, crack del Real Madrid. Mejor jugador del mundo.',       wiki:'Kylian_Mbappé'},
@@ -1907,6 +1909,8 @@ function MatchCard({m,onClick}){
 function NextCard({m,score}){
   const st = score?.status || (score && score.gh!=null && score.ga!=null ? 'finalizado' : 'proximo');
   const finished = score && score.gh!=null && score.ga!=null;
+  const homeT = score?.home || m.home;
+  const awayT = score?.away || m.away;
   return(
     <div style={{margin:'0 16px 11px',background:'var(--surf)',borderRadius:'var(--r)',border:`1px solid ${finished?'rgba(46,204,113,.3)':'var(--br)'}`,overflow:'hidden'}}>
       <div style={{padding:'8px 14px 3px',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
@@ -1920,8 +1924,8 @@ function NextCard({m,score}){
       </div>
       <div style={{padding:'6px 14px 10px',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
         <div style={{flex:1,display:'flex',flexDirection:'column',gap:5}}>
-          <span style={{fontSize:28}}>{FLAGS[m.home]||'🏴'}</span>
-          <span style={{fontWeight:700,fontSize:14}}>{m.home}</span>
+          <span style={{fontSize:28}}>{FLAGS[homeT]||'🏴'}</span>
+          <span style={{fontWeight:700,fontSize:14}}>{homeT}</span>
         </div>
         <div style={{textAlign:'center',minWidth:82}}>
           {finished
@@ -1931,8 +1935,8 @@ function NextCard({m,score}){
           <div style={{fontSize:10,color:'var(--muted)'}}>🏟 {m.venue}</div>
         </div>
         <div style={{flex:1,display:'flex',flexDirection:'column',alignItems:'flex-end',gap:5}}>
-          <span style={{fontSize:28}}>{FLAGS[m.away]||'🏴'}</span>
-          <span style={{fontWeight:700,fontSize:14}}>{m.away}</span>
+          <span style={{fontSize:28}}>{FLAGS[awayT]||'🏴'}</span>
+          <span style={{fontWeight:700,fontSize:14}}>{awayT}</span>
         </div>
       </div>
       <div style={{padding:'8px 14px',background:'rgba(255,255,255,.02)',borderTop:'1px solid rgba(255,255,255,.05)',
@@ -3317,13 +3321,20 @@ function AdminResultados({onClose}){
 
   // ── Acción: actualizar TABLA ──
   const updateTabla=async()=>{
-    const matches=playable.map(m=>{
+    // Partidos de grupos (playable) + eliminatorias (id>=73) con equipos desde scores
+    const grupos=playable.map(m=>{
       const s=scores[m.id];
       return { match_id:m.id, group:grupoDe(m), home:m.home, away:m.away,
-               gh:s&&s.gh!==''?Number(s.gh):null, ga:s&&s.ga!==''?Number(s.ga):null,
+               gh:s&&s.gh!==''&&s.gh!=null?Number(s.gh):null, ga:s&&s.ga!==''&&s.ga!=null?Number(s.ga):null,
                status: scores[m.id]?.status || 'proximo' };
     });
-    const d=await post('/api/admin/tabla',{matches,groupsDef:groupsDef()});
+    const elim=NEXT_MATCHES.filter(m=>m.id>=73).map(m=>{
+      const s=scores[m.id]||{};
+      return { match_id:m.id, group:null, home:s.home||null, away:s.away||null,
+               gh:s.gh!=null&&s.gh!==''?Number(s.gh):null, ga:s.ga!=null&&s.ga!==''?Number(s.ga):null,
+               status: s.status || 'proximo' };
+    });
+    const d=await post('/api/admin/tabla',{matches:[...grupos,...elim],groupsDef:groupsDef()});
     if(d?.ok) setMsg('✅ Tabla actualizada');
   };
 
@@ -3421,7 +3432,7 @@ function AdminResultados({onClose}){
 
         {/* Tabs de sección */}
         <div style={{display:'flex',gap:7,marginBottom:14}}>
-          {[['tabla','📊 Tabla'],['goles','⚽ Goles'],['puntos','🏆 Puntos']].map(([k,l])=>(
+          {[['tabla','📊 Tabla'],['goles','⚽ Goles'],['puntos','🏆 Puntos'],['llave','🏆 Llave']].map(([k,l])=>(
             <button key={k} onClick={()=>{setSec(k);setMsg('');}}
               style={{flex:1,background:sec===k?'var(--gold)':'var(--surf)',
                 color:sec===k?'#000':'var(--muted)',border:`1px solid ${sec===k?'var(--gold)':'var(--br)'}`,
@@ -3477,6 +3488,54 @@ function AdminResultados({onClose}){
             </div>
             <button disabled={busy} onClick={updateTabla} style={btn(busy?'var(--surf2)':'linear-gradient(135deg,var(--gold),var(--gold2))')}>
               {busy?'Procesando…':'📊 Actualizar Tabla'}
+            </button>
+          </div>
+        )}
+
+        {/* ── SECCIÓN LLAVE (ELIMINATORIAS) ── */}
+        {sec==='llave'&&(
+          <div>
+            <div style={{fontSize:11,color:'var(--muted)',marginBottom:10,lineHeight:1.5}}>
+              Asigna los equipos de eliminatoria conforme se definan. Elige local y visitante, marca el estado y mete el marcador. Luego pulsa <strong>Actualizar Tabla</strong>.
+            </div>
+            <div style={{display:'flex',flexDirection:'column',gap:6,marginBottom:14}}>
+              {NEXT_MATCHES.filter(m=>m.id>=73).map(m=>{
+                const s=scores[m.id]||{};
+                const est=s.status||'proximo';
+                const selStyle={background:'var(--surf)',color:'var(--txt)',border:'1px solid var(--br)',borderRadius:7,padding:'5px 6px',fontSize:11,fontFamily:'var(--fb)',maxWidth:120};
+                return(
+                  <div key={m.id} style={{background:'var(--surf)',borderRadius:9,padding:'8px 9px',border:'1px solid var(--br)'}}>
+                    <div style={{fontSize:10,color:'var(--muted)',marginBottom:6,fontWeight:700}}>{m.phase}</div>
+                    <div style={{display:'flex',alignItems:'center',gap:6,flexWrap:'wrap'}}>
+                      <span style={{fontSize:16}}>{FLAGS[s.home]||'🏴'}</span>
+                      <select value={s.home||''} onChange={e=>persistScores({...scores,[m.id]:{...s,home:e.target.value}})} style={selStyle}>
+                        <option value="">Local…</option>
+                        {ALL_TEAMS.map(t=><option key={t} value={t}>{t}</option>)}
+                      </select>
+                      <input type="number" value={s.gh??''} onChange={e=>persistScores({...scores,[m.id]:{...s,gh:e.target.value===''?null:+e.target.value}})} style={{width:38,textAlign:'center',background:'var(--bg)',color:'var(--txt)',border:'1px solid var(--br)',borderRadius:6,padding:'4px',fontSize:12}}/>
+                      <span style={{color:'var(--muted)'}}>-</span>
+                      <input type="number" value={s.ga??''} onChange={e=>persistScores({...scores,[m.id]:{...s,ga:e.target.value===''?null:+e.target.value}})} style={{width:38,textAlign:'center',background:'var(--bg)',color:'var(--txt)',border:'1px solid var(--br)',borderRadius:6,padding:'4px',fontSize:12}}/>
+                      <select value={s.away||''} onChange={e=>persistScores({...scores,[m.id]:{...s,away:e.target.value}})} style={selStyle}>
+                        <option value="">Visitante…</option>
+                        {ALL_TEAMS.map(t=><option key={t} value={t}>{t}</option>)}
+                      </select>
+                      <span style={{fontSize:16}}>{FLAGS[s.away]||'🏴'}</span>
+                    </div>
+                    <button onClick={()=>{
+                      const estados=['proximo','en_vivo','finalizado'];
+                      const siguiente=estados[(estados.indexOf(est)+1)%3];
+                      persistScores({...scores,[m.id]:{...s,status:siguiente}});
+                    }} style={{marginTop:7,padding:'4px 10px',borderRadius:6,border:'none',cursor:'pointer',fontSize:11,fontWeight:700,
+                      background:est==='en_vivo'?'rgba(231,76,60,.18)':est==='finalizado'?'rgba(46,204,113,.18)':'rgba(79,142,247,.15)',
+                      color:est==='en_vivo'?'#e74c3c':est==='finalizado'?'var(--grn)':'var(--acc)'}}>
+                      {est==='en_vivo'?'🔴 EN VIVO':est==='finalizado'?'✓ FINALIZADO':'PRÓXIMO'}
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+            <button onClick={updateTabla} style={{width:'100%',background:'var(--gold)',color:'#000',border:'none',borderRadius:9,padding:'12px',fontSize:13,fontWeight:800,cursor:'pointer',fontFamily:'var(--fb)'}}>
+              💾 Guardar Eliminatorias
             </button>
           </div>
         )}

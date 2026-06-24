@@ -1195,6 +1195,7 @@ app.post('/api/admin/tabla', async (req,res)=>{
     };
     // Aplicar cada marcador FINALIZADO
     for(const m of matches){
+      if(!m.group) continue; // eliminatorias (group:null) no cuentan para la tabla de grupos
       if(m.gh==null || m.ga==null) continue; // sin marcador → no jugado
       const gh=Number(m.gh), ga=Number(m.ga);
       const home=findTeam(m.home), away=findTeam(m.away);
@@ -1216,9 +1217,11 @@ app.post('/api/admin/tabla', async (req,res)=>{
     for(const m of matches){
       const hasScore = m.gh!=null && m.ga!=null;
       const hasStatus = m.status && m.status!=='proximo';
-      if(!hasScore && !hasStatus) continue;
+      const hasTeams = m.home && m.away && m.home!=='Por definir' && m.away!=='Por definir';
+      if(!hasScore && !hasStatus && !hasTeams) continue;
       if(m.match_id!=null) scores[m.match_id] = {
         ...(hasScore ? {gh:Number(m.gh), ga:Number(m.ga)} : {}),
+        ...(hasTeams ? {home:m.home, away:m.away} : {}),
         status: m.status || 'proximo'
       };
     }
