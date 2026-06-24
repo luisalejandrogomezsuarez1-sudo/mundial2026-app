@@ -2218,7 +2218,7 @@ function Countdown(){
 function SponsorBanner({margin='0 0 14px'}){
   const t=useLang();
   const img = t._lang==='en' ? '/inmobiliaria_en.jpg' : '/inmobiliaria.jpg';
-  const WHATSAPP='https://wa.me/523222944622?text=Hola%2C%20vi%20su%20anuncio%20en%20la%20app%20Pron%C3%B3sticos%20Futbol%202026';
+  const WHATSAPP='https://wa.me/523222944622?text=Hola%2C%20vi%20su%20anuncio%20en%20la%20app%20Pron%C3%B3sticos%20Futbol%202026%2C%20me%20gustaria%20informacion';
   return(
     <a href={WHATSAPP} target="_blank" rel="noopener noreferrer"
       style={{display:'block',textDecoration:'none',margin}}>
