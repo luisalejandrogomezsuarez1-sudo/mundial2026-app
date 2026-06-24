@@ -3270,6 +3270,14 @@ function AdminResultados({onClose}){
   const persistScores=s=>{ setScores(s); try{localStorage.setItem('wc2026_admin_scores',JSON.stringify(s));}catch{} };
   const persistScorers=s=>{ setScorers(s); try{localStorage.setItem('wc2026_admin_scorers',JSON.stringify(s));}catch{} };
 
+  // Al abrir el panel, precargar goleadores desde el servidor (live/scorers)
+  useEffect(()=>{
+    fetch('/api/live/scorers')
+      .then(r=>r.json())
+      .then(d=>{ if(Array.isArray(d?.list) && d.list.length) persistScorers(d.list); })
+      .catch(()=>{});
+  },[]);
+
   const grupoDe=m=>{ const mt=(m.phase||'').match(/Grupo ([A-L])/); return mt?('Grupo '+mt[1]):null; };
 
   // groupsDef desde GROUPS: { "Grupo A":["México",...] }
