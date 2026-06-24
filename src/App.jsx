@@ -5550,6 +5550,7 @@ function BetsScreen({bets,placeBet,credito,creditoLoading,onPagar,onReset,betsSa
   const [exact,setExact]=useState({});
   const [showReset,setShowReset]=useState(false);
   const [confirmReset,setConfirmReset]=useState(false);
+  const [showAddPackage,setShowAddPackage]=useState(false);
 
   // ── Payment gates ──
   if(!credito&&creditoLoading) return(
@@ -5564,6 +5565,12 @@ function BetsScreen({bets,placeBet,credito,creditoLoading,onPagar,onReset,betsSa
       onExito={()=>{onReset();setShowReset(false);setConfirmReset(false);}}
       onCancelar={()=>{setShowReset(false);setConfirmReset(false);}}
       esReset={true} user={currentUser}/>
+  );
+  if(showAddPackage) return(
+    <PagoScreen
+      onExito={()=>{onPagar();setShowAddPackage(false);}}
+      onCancelar={()=>{setShowAddPackage(false);}}
+      user={currentUser}/>
   );
 
   // Coins
@@ -6089,12 +6096,12 @@ function BetsScreen({bets,placeBet,credito,creditoLoading,onPagar,onReset,betsSa
                   ¿Quieres más monedas? Compra otro paquete de <strong style={{color:'var(--gold)'}}>$30 MXN</strong> y recibirás 1,000🪙 nuevas.
                 </div>
               </div>
-              <button onClick={()=>setConfirmReset(true)}
+              <button onClick={()=>setShowAddPackage(true)}
                 style={{width:'100%',background:'rgba(240,165,0,.1)',
                   border:'1px solid rgba(240,165,0,.3)',color:'var(--gold)',
                   borderRadius:10,padding:'11px',fontSize:13,fontWeight:700,
                   cursor:'pointer',fontFamily:'var(--fb)'}}>
-                💳 Comprar otro paquete ($30 MXN)
+                💳 Comprar otro paquete ($30 MXN) · conserva pronóstico
               </button>
             </div>
           ):(
@@ -6819,8 +6826,10 @@ export default function App(){
     let newPaquetes=1;
     setCredito(prev=>{
       newPaquetes=(prev?.paquetes||0)+1;
-      console.log('[onPagar] setCredito: prev.paquetes=',prev?.paquetes,'newPaquetes=',newPaquetes);
-      return {coins:newPaquetes*COINS_PER_PAGO,paquetes:newPaquetes,paidAt:Date.now()};
+      const spentPrev=prev?.coinsSpent||0;
+      const nuevoSaldo=Math.max(0,newPaquetes*COINS_PER_PAGO-spentPrev);
+      console.log('[onPagar] setCredito: prev.paquetes=',prev?.paquetes,'newPaquetes=',newPaquetes,'spent=',spentPrev);
+      return {coins:nuevoSaldo,paquetes:newPaquetes,paidAt:Date.now(),coinsSpent:spentPrev};
     });
     if(user&&!user.isAdmin){
       await dbUpdatePaquetes(user.email);
