@@ -3159,10 +3159,6 @@ function GolesScreen(){
         {/* ── LISTA — todos los jugadores del 4º en adelante (incl. 0 goles) ── */}
         {listPlayers.length>0&&(
           <>
-            <div style={{fontFamily:'var(--ff)',fontSize:15,letterSpacing:1.5,
-              color:'var(--gold)',margin:'4px 2px 10px'}}>
-              Posibles goleadores
-            </div>
             <div style={{display:'flex',flexDirection:'column',gap:8}}>
               {listPlayers.map((p,i)=>(
                 <ListRow key={p.n} p={p} rank={i+4}/>
