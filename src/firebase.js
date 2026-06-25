@@ -312,6 +312,26 @@ export async function saveUserBetsToFirestore(userId, bets, meta={}) {
   } catch(e) { console.warn('saveUserBets error:', e); return { ok:false, error:e.message }; }
 }
 
+// ── Quiniela de Eliminatorias ────────────────────────────────────────────────
+export async function saveElimBetsToFirestore(userId, elimBets) {
+  if(!userId) return { ok:false };
+  try {
+    await setDoc(doc(db,'users', userId), {
+      elimBets,
+      elimBetsSavedAt: new Date().toISOString(),
+    }, { merge: true });
+    return { ok:true };
+  } catch(e) { console.warn('saveElimBets error:', e); return { ok:false, error:e.message }; }
+}
+
+export async function getElimBetsFromFirestore(userId) {
+  if(!userId) return null;
+  try {
+    const snap = await getDoc(doc(db,'users', userId));
+    return snap.exists() ? (snap.data().elimBets || null) : null;
+  } catch(e) { console.warn('getElimBets error:', e); return null; }
+}
+
 // ── Actualizar coinsSpent del usuario (devolución de bloque al editar) ──
 export async function updateCoinsSpent(userId, coinsSpent) {
   if(!userId) return { ok:false };

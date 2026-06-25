@@ -27,6 +27,8 @@ import('./firebase.js').then(fb => {
   window._fbFindUserByEmail = fb.findUserByEmail;
   window._fbGiftCoinsByEmail= fb.giftCoinsByEmail;
   window._fbSaveUserBets    = fb.saveUserBetsToFirestore;
+  window._fbSaveElimBets    = fb.saveElimBetsToFirestore;
+  window._fbGetElimBets     = fb.getElimBetsFromFirestore;
   window._fbUpdateCoinsSpent = fb.updateCoinsSpent;
   // Auth nativo (Fase 2)
   window._fbAuthRegister    = fb.authRegister;
@@ -1157,6 +1159,9 @@ const GRP_WIN=[
 
 // ── Coin System ───────────────────────────────────
 const COINS_PER_PAGO=1000; // 1 pago de $30 MXN = 1000 monedas
+// Odds por ronda para quiniela de eliminatorias
+const ELIM_ODDS={r32:[1.5,2.5],r16:[1.6,2.4],qf:[1.7,2.2],sf:[1.8,2.1],final:[1.9,2.0]};
+const ELIM_ROUND=id=>id>=73&&id<=88?'r32':id>=89&&id<=96?'r16':id>=97&&id<=100?'qf':id>=101&&id<=102?'sf':'final';
 const PRECIO_PAQUETE=30; // MXN por paquete — fuente única para ingresos del panel
 // 72 partidos × (1X2:7 + BTTS:6=13) = 936
 // Fijos: campeon:6 + bota:6 + balon:4 + gol1:15 + gol2:4 + gol3:5 + grupos(12×2):24 = 64
@@ -5680,8 +5685,239 @@ function PagoScreen({onExito,onCancelar,esReset=false,onRecheckAccess,user,onRec
   );
 }
 
+// ── QUINIELA DE ELIMINATORIAS ─────────────────────────────────────────────
+function ElimScreen({credito,creditoLoading,onPagar,currentUser,onRecheckAccess,elimBets,setElimBets}){
+  const [scores,setScores]=useState({});
+  const [exacto,setExacto]=useState({h:'',a:''});
+  const [saving,setSaving]=useState(false);
+  const [msg,setMsg]=useState('');
+
+  useEffect(()=>{
+    const fn=window._fbSubscribeLive;
+    if(!fn)return;
+    const unsub=fn('scores',data=>{ if(data?.scores) setScores(data.scores); });
+    return()=>{ if(typeof unsub==='function') unsub(); };
+  },[]);
+
+  // Restaurar exacto guardado
+  useEffect(()=>{
+    const b=elimBets[104];
+    if(b?.exacto) setExacto({h:String(b.exacto.gh),a:String(b.exacto.ga)});
+  },[]);
+
+  if(!credito&&creditoLoading) return(
+    <div className="scr fin" style={{display:'flex',alignItems:'center',justifyContent:'center',flexDirection:'column',gap:12}}>
+      <div style={{width:32,height:32,border:'3px solid var(--gold)',borderTopColor:'transparent',borderRadius:'50%',animation:'spin .8s linear infinite'}}/>
+      <div style={{fontSize:13,color:'var(--muted)'}}>Verificando acceso…</div>
+    </div>
+  );
+  if(!credito) return <PagoScreen onExito={onPagar} onRecheckAccess={onRecheckAccess} user={currentUser}/>;
+
+  const allDefined=ids=>ids.every(id=>{
+    const s=scores[id];
+    return s?.home&&s?.away&&s.home!=='Por definir'&&s.away!=='Por definir';
+  });
+  const roundLocked=ids=>ids.some(id=>{
+    const s=scores[id];
+    return s?.status==='en_vivo'||s?.status==='finalizado';
+  });
+
+  const rounds=[
+    {key:'r32',  label:'⚔️ 16avos de Final', ids:Array.from({length:16},(_,i)=>73+i), color:'var(--acc)'},
+    {key:'r16',  label:'🎯 Octavos de Final', ids:Array.from({length:8}, (_,i)=>89+i), color:'#4F8EF7'},
+    {key:'qf',   label:'⚡ Cuartos de Final', ids:[97,98,99,100],                       color:'var(--grn)'},
+    {key:'sf',   label:'⭐ Semifinales',       ids:[101,102],                            color:'#A855F7'},
+    {key:'3rd',  label:'🥉 Tercer Lugar',      ids:[103],                               color:'#CD7F32'},
+    {key:'final',label:'🏆 GRAN FINAL',        ids:[104],                               color:'var(--gold)'},
+  ];
+
+  const placeElim=(matchId,val,odds)=>{
+    setElimBets(prev=>{
+      const cur=prev[matchId]||{};
+      if(cur.sel===val) return {...prev,[matchId]:{}};
+      return {...prev,[matchId]:{sel:val,odds}};
+    });
+  };
+
+  const handleSave=async(idsToSave)=>{
+    setSaving(true);
+    const uid=(window._fbCurrentUid&&window._fbCurrentUid())||currentUser?.uid||currentUser?.id;
+    // Mergear exacto de final si aplica
+    const merged={...elimBets};
+    if(idsToSave.includes(104)&&exacto.h!==''&&exacto.a!==''){
+      merged[104]={...(merged[104]||{}),exacto:{gh:Number(exacto.h),ga:Number(exacto.a)}};
+      setElimBets(merged);
+    }
+    if(uid&&window._fbSaveElimBets){
+      try{ await window._fbSaveElimBets(uid,merged); }catch(e){}
+    }
+    try{ if(uid) localStorage.setItem('wc2026_elim_'+uid,JSON.stringify(merged)); }catch(e){}
+    setMsg('✓ Guardado');
+    setTimeout(()=>setMsg(''),2500);
+    setSaving(false);
+  };
+
+  const totalApostados=Object.values(elimBets).filter(b=>b?.sel).length;
+
+  return(
+    <div className="scr fin">
+      <div style={{padding:'18px 16px 10px'}}>
+        <div style={{fontFamily:'var(--ff)',fontSize:26,letterSpacing:2}}>🏆 ELIMINATORIAS</div>
+        <div style={{fontSize:12,color:'var(--muted)',marginTop:3}}>
+          Pronostica el ganador · 3 pts × odds · sin empate posible
+        </div>
+        <div style={{fontSize:11,color:'var(--acc)',marginTop:2}}>
+          {totalApostados}/32 apostados
+        </div>
+      </div>
+
+      {rounds.map(({key,label,ids,color})=>{
+        const unlocked=allDefined(ids);
+        const locked=roundLocked(ids);
+        const apostados=ids.filter(id=>elimBets[id]?.sel).length;
+        return(
+          <div key={key} style={{margin:'0 12px 14px',background:'var(--surf)',borderRadius:14,
+            border:`1px solid ${unlocked?(locked?'rgba(255,255,255,.1)':color):'var(--br)'}`,
+            overflow:'hidden',opacity:unlocked?1:0.45}}>
+            {/* Cabecera ronda */}
+            <div style={{padding:'9px 14px',borderBottom:`1px solid ${unlocked?color+'33':'var(--br)'}`,
+              display:'flex',alignItems:'center',justifyContent:'space-between',
+              background:unlocked?`${color}0d`:'transparent'}}>
+              <span style={{fontFamily:'var(--ff)',fontSize:14,color:unlocked?color:'var(--muted)',letterSpacing:.8}}>{label}</span>
+              <div style={{display:'flex',alignItems:'center',gap:6}}>
+                {!unlocked&&<span style={{fontSize:10,color:'var(--muted)'}}>🔒 Equipos pendientes</span>}
+                {unlocked&&locked&&<span style={{fontSize:10,color:'var(--muted)'}}>🔒 Ronda en curso</span>}
+                {unlocked&&!locked&&<span style={{fontSize:10,color:'var(--grn)'}}>{apostados}/{ids.length} ✓</span>}
+              </div>
+            </div>
+
+            {/* Partidos */}
+            {unlocked&&ids.map(id=>{
+              const s=scores[id]||{};
+              const nm=NEXT_MATCHES.find(m=>m.id===id)||{};
+              const home=s.home||nm.home||'?';
+              const away=s.away||nm.away||'?';
+              const rnd=ELIM_ROUND(id);
+              const [o1,o2]=ELIM_ODDS[rnd]||[1.5,2.5];
+              const bet=elimBets[id]||{};
+              const isFinal=id===104;
+
+              return(
+                <div key={id}>
+                  <div style={{padding:'9px 12px',borderBottom:'1px solid rgba(255,255,255,.04)',
+                    display:'flex',alignItems:'center',gap:8}}>
+                    {/* Equipos */}
+                    <div style={{width:112,flexShrink:0}}>
+                      <div style={{display:'flex',alignItems:'center',gap:5,marginBottom:3}}>
+                        <span style={{fontSize:15,flexShrink:0}}>{FLAGS[home]||'🏴'}</span>
+                        <span style={{fontSize:11,fontWeight:700,color:'var(--txt)',
+                          overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{home}</span>
+                      </div>
+                      <div style={{display:'flex',alignItems:'center',gap:5,marginBottom:2}}>
+                        <span style={{fontSize:15,flexShrink:0}}>{FLAGS[away]||'🏴'}</span>
+                        <span style={{fontSize:11,fontWeight:700,color:'var(--txt)',
+                          overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{away}</span>
+                      </div>
+                      <div style={{fontSize:9,color:'var(--muted)'}}>{nm.date||''}{nm.time?' · '+nm.time:''}</div>
+                    </div>
+                    {/* Botones */}
+                    <div style={{flex:1,display:'grid',gridTemplateColumns:'1fr 1fr',gap:4}}>
+                      {[{val:'home',team:home,odds:o1},{val:'away',team:away,odds:o2}].map(({val,team,odds})=>{
+                        const sel=bet.sel===val;
+                        return(
+                          <button type="button" key={val}
+                            onClick={locked?undefined:e=>{e.preventDefault();placeElim(id,val,odds);}}
+                            style={{background:sel?'rgba(240,165,0,.18)':'var(--surf2)',
+                              border:`1.5px solid ${sel?'var(--gold)':'var(--br)'}`,
+                              borderRadius:10,padding:'7px 4px',
+                              cursor:locked?'default':'pointer',
+                              display:'flex',flexDirection:'column',alignItems:'center',gap:1,
+                              transition:'background .15s,border-color .15s',
+                              opacity:locked&&!sel?0.45:1}}>
+                            <span style={{fontSize:10,fontWeight:700,
+                              color:sel?'var(--gold)':'var(--txt)',
+                              textAlign:'center',lineHeight:1.2,
+                              overflow:'hidden',textOverflow:'ellipsis',
+                              whiteSpace:'nowrap',width:'100%',padding:'0 2px'}}>
+                              {team.substring(0,9)}
+                            </span>
+                            <span style={{fontSize:10,color:sel?'var(--gold)':'#6B82AF',fontWeight:700}}>{odds}x</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                    {bet.sel&&<span style={{fontSize:12,color:'var(--grn)',flexShrink:0}}>✓</span>}
+                  </div>
+
+                  {/* Marcador exacto — solo Final */}
+                  {isFinal&&!locked&&(
+                    <div style={{padding:'11px 14px',background:'rgba(240,165,0,.04)',
+                      borderTop:'1px solid rgba(240,165,0,.15)'}}>
+                      <div style={{fontSize:10,color:'var(--gold)',fontWeight:700,marginBottom:8,letterSpacing:.8}}>
+                        🎯 MARCADOR EXACTO · +100 pts bonus
+                      </div>
+                      <div style={{display:'flex',alignItems:'center',gap:8}}>
+                        <input type="text" inputMode="numeric" maxLength={1} placeholder="0" value={exacto.h}
+                          onChange={e=>setExacto(p=>({...p,h:e.target.value.replace(/[^0-9]/g,'').slice(-1)}))}
+                          onFocus={e=>e.target.select()}
+                          style={{width:48,padding:'8px 4px',background:'var(--surf2)',
+                            border:'1.5px solid rgba(240,165,0,.4)',borderRadius:10,
+                            color:'var(--txt)',fontSize:22,fontFamily:'var(--ff)',
+                            textAlign:'center',outline:'none'}}/>
+                        <span style={{fontFamily:'var(--ff)',fontSize:22,color:'var(--muted)'}}>–</span>
+                        <input type="text" inputMode="numeric" maxLength={1} placeholder="0" value={exacto.a}
+                          onChange={e=>setExacto(p=>({...p,a:e.target.value.replace(/[^0-9]/g,'').slice(-1)}))}
+                          onFocus={e=>e.target.select()}
+                          style={{width:48,padding:'8px 4px',background:'var(--surf2)',
+                            border:'1.5px solid rgba(240,165,0,.4)',borderRadius:10,
+                            color:'var(--txt)',fontSize:22,fontFamily:'var(--ff)',
+                            textAlign:'center',outline:'none'}}/>
+                        <span style={{fontSize:11,color:exacto.h!==''&&exacto.a!==''?'var(--grn)':'var(--muted)'}}>
+                          {exacto.h!==''&&exacto.a!==''?`${exacto.h}-${exacto.a} registrado ✓`:'Escribe el marcador'}
+                        </span>
+                      </div>
+                    </div>
+                  )}
+                  {isFinal&&locked&&bet.exacto&&(
+                    <div style={{padding:'8px 14px',background:'rgba(240,165,0,.04)',
+                      borderTop:'1px solid rgba(240,165,0,.15)',fontSize:11,color:'var(--gold)'}}>
+                      🎯 Tu marcador: <strong>{bet.exacto.gh}–{bet.exacto.ga}</strong>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+
+            {/* Botón guardar por ronda */}
+            {unlocked&&!locked&&(
+              <div style={{padding:'10px 12px',borderTop:'1px solid rgba(255,255,255,.05)'}}>
+                <button type="button" onClick={()=>handleSave(ids)} disabled={saving}
+                  style={{width:'100%',background:'linear-gradient(135deg,var(--gold),var(--gold2))',
+                    border:'none',color:'#000',borderRadius:10,padding:'11px',fontSize:13,
+                    fontWeight:700,cursor:saving?'wait':'pointer',fontFamily:'var(--ff)',
+                    letterSpacing:.5,boxShadow:'0 3px 12px rgba(240,165,0,.3)'}}>
+                  {saving?'Guardando…':`💾 Guardar ${label}`}
+                </button>
+              </div>
+            )}
+          </div>
+        );
+      })}
+
+      {msg&&(
+        <div style={{margin:'0 12px 8px',padding:'10px 14px',background:'rgba(30,198,108,.1)',
+          border:'1px solid rgba(30,198,108,.3)',borderRadius:10,
+          fontSize:12,color:'var(--grn)',fontWeight:700,textAlign:'center'}}>
+          {msg}
+        </div>
+      )}
+      <div style={{height:32}}/>
+    </div>
+  );
+}
+
 // ── Bets Screen ───────────────────────────────────
-function BetsScreen({bets,placeBet,credito,creditoLoading,onPagar,onReset,betsSaved=false,onSave,onEditPredictions,currentUser,onRecheckAccess,onRecover}){
+function BetsScreen({bets,placeBet,credito,creditoLoading,onPagar,onReset,betsSaved=false,onSave,onEditPredictions,currentUser,onRecheckAccess,onRecover,elimBets={},setElimBets=()=>{}}){
   const t=useLang();
   const [tab,setTab]=useState('largo');
   const [exact,setExact]=useState({});
@@ -6191,7 +6427,7 @@ function BetsScreen({bets,placeBet,credito,creditoLoading,onPagar,onReset,betsSa
       )}
       {/* Tabs */}
       <div style={{display:'flex',gap:8,padding:'8px 16px',overflowX:'auto',borderBottom:'1px solid rgba(255,255,255,.04)'}}>
-        {[['largo','🏅 '+t('long_term')],['partido','⚽ '+t('per_match')],['especiales','🎯 '+t('specials')],['stats','📈 '+t('stats')]].map(([k,l])=>(
+        {[['largo','🏅 '+t('long_term')],['partido','⚽ '+t('per_match')],['especiales','🎯 '+t('specials')],['stats','📈 '+t('stats')],['elim','🏆 Elim']].map(([k,l])=>(
           <button key={k} className={`tpill ${tab===k?'on':''}`} onClick={()=>setTab(k)}>{l}</button>
         ))}
       </div>
@@ -6200,6 +6436,9 @@ function BetsScreen({bets,placeBet,credito,creditoLoading,onPagar,onReset,betsSa
       {tab==='partido'&&PorPartido()}
       {tab==='especiales'&&Especiales()}
       {tab==='stats'&&<StatsScreen bets={bets} noWrapper={true}/>}
+      {tab==='elim'&&<ElimScreen credito={credito} creditoLoading={creditoLoading} onPagar={onPagar}
+        currentUser={currentUser} onRecheckAccess={onRecheckAccess}
+        elimBets={elimBets} setElimBets={setElimBets}/>}
 
       {/* ── BOTÓN GUARDAR PRONÓSTICO ── (también visible para admin) */}
       {(
@@ -6435,6 +6674,7 @@ export default function App(){
   // mpVerify: null | "verifying" | {ok:true,paymentId,coins} | {ok:false,paymentId,error}
   //         | {kind:'pending'} | {kind:'failure'}
   const [betsSaved,setBetsSaved]=useState(false); // predictions locked after saving
+  const [elimBets,setElimBets]=useState({});
   const [groupSyncMsg,setGroupSyncMsg]=useState(''); // feedback de subida a grupos (Flujo A)
   const [logoutMsg,setLogoutMsg]=useState('');
   // credito = {coins:1000, paquetes:N, paidAt:timestamp} | null
@@ -6499,6 +6739,16 @@ export default function App(){
     try{
       const saved=localStorage.getItem('wc2026_bets_'+u.id);
       if(saved){const parsed=JSON.parse(saved);if(Array.isArray(parsed))setUserBets(parsed);}
+    }catch(e){}
+    // Cargar elimBets — respaldo localStorage
+    try{
+      const _euid=u?.uid||u?.id;
+      if(_euid){
+        const _els=localStorage.getItem('wc2026_elim_'+_euid);
+        if(_els) setElimBets(JSON.parse(_els));
+        // También intentar desde Firestore (más fresco)
+        if(window._fbGetElimBets) window._fbGetElimBets(_euid).then(eb=>{if(eb) setElimBets(eb);});
+      }
     }catch(e){}
     // Apply user language preference
     if(u.lang && TRANSLATIONS[u.lang]) setLang(u.lang);
@@ -7139,6 +7389,7 @@ export default function App(){
           {tab==='pronostico' &&<BetsScreen bets={userBets} placeBet={placeBet}
                                   credito={credito} creditoLoading={creditoLoading} onPagar={onPagar} onReset={onReset}
                                   betsSaved={betsSaved}
+                                  elimBets={elimBets} setElimBets={setElimBets}
                                   onSave={async()=>{
                                     setBetsSaved(true);
                                     if(user?.id)localStorage.setItem('wc2026_saved_'+user.id,'true');
