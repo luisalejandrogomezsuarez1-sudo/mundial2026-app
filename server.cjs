@@ -120,6 +120,8 @@ async function pollScorers(){
       g:   p.statistics[0]?.goals?.total||0,
       a:   p.statistics[0]?.goals?.assists||0,
     }));
+    if(list.length===0){ console.log('[pollScorers] API devolvió 0 — no se sobrescribe'); return; }
+    if(liveCache['scorers']?.manual){ console.log('[pollScorers] scorers es manual — no se sobrescribe'); return; }
     await save('scorers', { list });
   }catch(e){ console.warn('pollScorers error:', e.message); }
 }
@@ -1243,7 +1245,7 @@ app.post('/api/admin/goles', async (req,res)=>{
                  g:Number(s.g)||0, a:Number(s.a)||0 }))
       .filter(s=>s.n)
       .sort((x,y)=>y.g-x.g || y.a-x.a);
-    await save('scorers', { list });
+    await save('scorers', { list, manual:true });
     res.json({ ok:true, count:list.length, list });
   }catch(e){ console.warn('admin/goles error:', e.message); res.status(500).json({error:e.message}); }
 });
