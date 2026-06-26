@@ -1795,8 +1795,14 @@ function Auth({onLogin,onLangChange=()=>{},logoutMsg='',onClearMsg=()=>{}}){
         {mode==='reg'&&<>
           <div>
             <div style={{fontSize:11,color:'var(--muted)',marginBottom:5,paddingLeft:2}}>{t.birthdate}</div>
-            <input className="inp" type="date" value={f.bd} onChange={set('bd')}
-              style={{colorScheme:'dark'}}/>
+            <input className="inp" type="text" inputMode="numeric" placeholder="DD/MM/AAAA" maxLength={10}
+              value={f.bd}
+              onChange={e=>{
+                let v=e.target.value.replace(/\D/g,'').slice(0,8);
+                if(v.length>=5) v=v.slice(0,2)+'/'+v.slice(2,4)+'/'+v.slice(4);
+                else if(v.length>=3) v=v.slice(0,2)+'/'+v.slice(2);
+                set('bd')({target:{value:v}});
+              }}/>
           </div>
           <input className="inp" placeholder={t.nationality} value={f.nat}
             onChange={e=>{
