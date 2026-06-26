@@ -784,6 +784,7 @@ body{font-family:var(--fb);background:var(--bg);color:var(--txt);height:100%;ove
 @keyframes pulse{0%,100%{box-shadow:var(--glow)}50%{box-shadow:0 0 32px rgba(240,165,0,.3)}}
 @keyframes marquee{0%{transform:translateX(100%)}100%{transform:translateX(-100%)}}
 @keyframes elimGlow{0%,100%{box-shadow:0 0 6px rgba(240,165,0,.5);border-color:rgba(240,165,0,.6)}50%{box-shadow:0 0 18px rgba(240,165,0,.95),0 0 28px rgba(240,165,0,.5);border-color:rgba(240,165,0,1)}}
+.leader-glow{animation:elimGlow 1.8s ease-in-out infinite}
 .marquee-wrap{overflow:hidden;white-space:nowrap;background:linear-gradient(90deg,rgba(200,16,46,.12),rgba(240,165,0,.08));border-top:1px solid rgba(240,165,0,.2);border-bottom:1px solid rgba(240,165,0,.2);padding:8px 0;}
 .marquee-text{display:inline-block;padding-left:100%;font-size:13px;font-weight:700;color:var(--gold);animation-name:marquee;animation-timing-function:linear;animation-iteration-count:infinite;}
 .marquee-text:hover{animation-play-state:paused;}
@@ -5005,7 +5006,7 @@ function GruposScreen({user,userBets,credito,creditoLoading,onPagar,onRecheckAcc
                 const pct=Math.round(((m.pts||0)/topPts)*100);
                 const acc=m.correct!=null&&m.total?Math.round((m.correct/m.total)*100):null;
                 return(
-                <div key={m.id} style={{padding:'10px 16px',borderBottom:'1px solid rgba(255,255,255,.04)',
+                <div key={m.id} className={i===0?'leader-glow':''} style={{padding:'10px 16px',borderBottom:'1px solid rgba(255,255,255,.04)',
                   background:m.id==='user'?'rgba(240,165,0,.04)':'transparent'}}>
                   <div style={{display:'flex',alignItems:'center',gap:10}}>
                     {/* Posición */}
