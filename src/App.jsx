@@ -2826,7 +2826,8 @@ function TablaScreen(){
         ? (s.gh>s.ga?s.home:s.ga>s.gh?s.away:null)
         : null;
       return { label:m.phase, date:m.date, venue:m.venue,
-               home:s.home||null, away:s.away||null, winner };
+               home:s.home||null, away:s.away||null, winner,
+               winnerFl: winner ? (FLAGS[winner]||'🏳️') : null };
     };
     const slots=km.map(slotFrom);
     return {
