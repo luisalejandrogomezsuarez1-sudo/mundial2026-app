@@ -1265,6 +1265,14 @@ app.post('/api/admin/puntos', async (req,res)=>{
     return res.status(400).json({error:'results debe ser { betId: seleccionGanadora }'});
 
   try{
+    // Ganadores reales de eliminatorias (ids 73-104) derivados de live/scores — una sola lectura
+    const elimScores = liveCache['scores']?.scores || (await db.collection('live').doc('scores').get()).data()?.scores || {};
+    const elimWinner = (id)=>{
+      const s = elimScores[id];
+      if(!s || s.status!=='finalizado' || s.gh==null || s.ga==null) return null;
+      if(s.gh === s.ga) return null; // sin empate en eliminatorias
+      return s.gh > s.ga ? s.home : s.away;
+    };
     const snap = await db.collection('users').get();
     const ptsByUid = {};       // uid -> pts (para actualizar grupos)
     const ptsByAlias = {};     // alias (migratedFrom/email/nombre) -> pts (match robusto)
@@ -1274,7 +1282,8 @@ app.post('/api/admin/puntos', async (req,res)=>{
     for(const docSnap of snap.docs){
       const u = docSnap.data();
       const bets = Array.isArray(u.bets) ? u.bets : [];
-      if(bets.length===0) continue;
+      const elimBets = u.elimBets && typeof u.elimBets==='object' ? u.elimBets : {};
+      if(bets.length===0 && Object.keys(elimBets).length===0) continue;
       let pts = 0, hits = 0;
       for(const b of bets){
         const winner = results[b.id];
@@ -1282,6 +1291,24 @@ app.post('/api/admin/puntos', async (req,res)=>{
         if(norm(b.selection)===norm(winner)){
           pts += Math.round(basePointsFor(b.id)*(Number(b.odds)||0)*10)/10;
           hits++;
+        }
+      }
+      // Calificación de quiniela de eliminatorias
+      for(const [mid, eb] of Object.entries(elimBets)){
+        if(!eb || !eb.sel) continue;
+        const id = Number(mid);
+        const realWinner = elimWinner(id);
+        if(!realWinner) continue; // partido no finalizado aún
+        const s = elimScores[id] || {};
+        const apostado = eb.sel === 'home' ? s.home : s.away;
+        if(apostado && apostado === realWinner){
+          pts += 3 * (Number(eb.odds) || 1);
+        }
+        // Bonus marcador exacto de la final (id 104)
+        if(id === 104 && eb.exacto && s.gh!=null && s.ga!=null){
+          if(Number(eb.exacto.gh) === Number(s.gh) && Number(eb.exacto.ga) === Number(s.ga)){
+            pts += 100;
+          }
         }
       }
       pts = Math.round(pts*10)/10;
