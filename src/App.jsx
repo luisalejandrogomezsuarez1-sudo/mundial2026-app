@@ -783,6 +783,7 @@ body{font-family:var(--fb);background:var(--bg);color:var(--txt);height:100%;ove
 @keyframes slide{0%{transform:translateX(-100%)}100%{transform:translateX(350%)}}
 @keyframes pulse{0%,100%{box-shadow:var(--glow)}50%{box-shadow:0 0 32px rgba(240,165,0,.3)}}
 @keyframes marquee{0%{transform:translateX(100%)}100%{transform:translateX(-100%)}}
+@keyframes elimGlow{0%,100%{box-shadow:0 0 6px rgba(240,165,0,.5);border-color:rgba(240,165,0,.6)}50%{box-shadow:0 0 18px rgba(240,165,0,.95),0 0 28px rgba(240,165,0,.5);border-color:rgba(240,165,0,1)}}
 .marquee-wrap{overflow:hidden;white-space:nowrap;background:linear-gradient(90deg,rgba(200,16,46,.12),rgba(240,165,0,.08));border-top:1px solid rgba(240,165,0,.2);border-bottom:1px solid rgba(240,165,0,.2);padding:8px 0;}
 .marquee-text{display:inline-block;padding-left:100%;font-size:13px;font-weight:700;color:var(--gold);animation-name:marquee;animation-timing-function:linear;animation-iteration-count:infinite;}
 .marquee-text:hover{animation-play-state:paused;}
@@ -803,6 +804,7 @@ body{font-family:var(--fb);background:var(--bg);color:var(--txt);height:100%;ove
 .btng:hover{border-color:var(--gold);background:var(--surf3);}
 .tpill{flex-shrink:0;padding:7px 16px;border-radius:20px;font-size:13px;font-weight:600;cursor:pointer;background:var(--surf2);color:var(--muted);border:1.5px solid transparent;transition:all .2s;font-family:var(--fb);}
 .tpill.on{background:rgba(240,165,0,.12);color:var(--gold);border-color:rgba(240,165,0,.4);}
+.tpill.elim-glow{animation:elimGlow 1.6s ease-in-out infinite;color:var(--gold)!important;font-weight:700;}
 .mc{margin:0 16px 12px;border-radius:var(--r);border:1px solid rgba(255,255,255,0.08);overflow:hidden;cursor:pointer;transition:transform .15s,border-color .2s,box-shadow .2s;
   background:
     radial-gradient(ellipse 90% 65% at 0% 100%, rgba(0,104,71,0.16) 0%,transparent 50%),
@@ -6424,8 +6426,8 @@ function BetsScreen({bets,placeBet,credito,creditoLoading,onPagar,onReset,betsSa
       )}
       {/* Tabs */}
       <div style={{display:'flex',gap:8,padding:'8px 16px',overflowX:'auto',borderBottom:'1px solid rgba(255,255,255,.04)'}}>
-        {[['largo','🏅 '+t('long_term')],['partido','⚽ '+t('per_match')],['especiales','🎯 '+t('specials')],['stats','📈 '+t('stats')],['elim','🏆 Elim']].map(([k,l])=>(
-          <button key={k} className={`tpill ${tab===k?'on':''}`} onClick={()=>setTab(k)}>{l}</button>
+        {[['elim','🏆 Eliminatorias'],['largo','🏅 '+t('long_term')],['partido','⚽ '+t('per_match')],['especiales','🎯 '+t('specials')],['stats','📈 '+t('stats')]].map(([k,l])=>(
+          <button key={k} className={`tpill ${tab===k?'on':''} ${k==='elim'?'elim-glow':''}`} onClick={()=>setTab(k)}>{l}</button>
         ))}
       </div>
       <div style={{height:10}}/>
