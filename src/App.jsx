@@ -2694,6 +2694,8 @@ function BracketSlot({slot,highlight=false}){
           whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis',maxWidth:90}}>
           {slot?.home||<span style={{color:'var(--muted)',fontStyle:'italic'}}>{t.tbd}</span>}
         </span>
+        {slot.gh!=null&&<span style={{marginLeft:'auto',fontSize:13,fontWeight:700,
+          color:slot.winner===slot.home?'var(--gold)':'var(--txt)'}}>{slot.gh}</span>}
       </div>
       <div style={{height:1,background:'var(--br)',marginBottom:5}}/>
       {/* Team away */}
@@ -2705,6 +2707,8 @@ function BracketSlot({slot,highlight=false}){
           whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis',maxWidth:90}}>
           {slot?.away||<span style={{color:'var(--muted)',fontStyle:'italic'}}>{t.tbd}</span>}
         </span>
+        {slot.ga!=null&&<span style={{marginLeft:'auto',fontSize:13,fontWeight:700,
+          color:slot.winner===slot.away?'var(--gold)':'var(--txt)'}}>{slot.ga}</span>}
       </div>
       {/* Date/venue */}
       <div style={{marginTop:5,fontSize:9,color:'var(--muted)',whiteSpace:'nowrap',overflow:'hidden',
@@ -2830,6 +2834,7 @@ function TablaScreen(){
         : null;
       return { label:m.phase, date:m.date, venue:m.venue,
                home:s.home||null, away:s.away||null, winner,
+               gh:s.gh!=null?s.gh:null, ga:s.ga!=null?s.ga:null,
                winnerFl: winner ? (FLAGS[winner]||'🏳️') : null };
     };
     const slots=km.map(slotFrom);
