@@ -785,6 +785,7 @@ body{font-family:var(--fb);background:var(--bg);color:var(--txt);height:100%;ove
 @keyframes marquee{0%{transform:translateX(100%)}100%{transform:translateX(-100%)}}
 @keyframes elimGlow{0%,100%{box-shadow:0 0 6px rgba(240,165,0,.5);border-color:rgba(240,165,0,.6)}50%{box-shadow:0 0 18px rgba(240,165,0,.95),0 0 28px rgba(240,165,0,.5);border-color:rgba(240,165,0,1)}}
 .leader-glow{animation:elimGlow 1.8s ease-in-out infinite}
+.score-live{animation:elimGlow 1.2s ease-in-out infinite;padding:1px 6px;border-radius:8px;color:var(--gold)!important}
 .marquee-wrap{overflow:hidden;white-space:nowrap;background:linear-gradient(90deg,rgba(200,16,46,.12),rgba(240,165,0,.08));border-top:1px solid rgba(240,165,0,.2);border-bottom:1px solid rgba(240,165,0,.2);padding:8px 0;}
 .marquee-text{display:inline-block;padding-left:100%;font-size:13px;font-weight:700;color:var(--gold);animation-name:marquee;animation-timing-function:linear;animation-iteration-count:infinite;}
 .marquee-text:hover{animation-play-state:paused;}
@@ -2694,7 +2695,7 @@ function BracketSlot({slot,highlight=false}){
           whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis',maxWidth:90}}>
           {slot?.home||<span style={{color:'var(--muted)',fontStyle:'italic'}}>{t.tbd}</span>}
         </span>
-        {slot.gh!=null&&<span style={{marginLeft:'auto',fontSize:13,fontWeight:700,
+        {slot.gh!=null&&<span className={slot.status==='en_vivo'?'score-live':''} style={{marginLeft:'auto',fontSize:13,fontWeight:700,
           color:slot.winner===slot.home?'var(--gold)':'var(--txt)'}}>{slot.gh}</span>}
       </div>
       <div style={{height:1,background:'var(--br)',marginBottom:5}}/>
@@ -2707,7 +2708,7 @@ function BracketSlot({slot,highlight=false}){
           whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis',maxWidth:90}}>
           {slot?.away||<span style={{color:'var(--muted)',fontStyle:'italic'}}>{t.tbd}</span>}
         </span>
-        {slot.ga!=null&&<span style={{marginLeft:'auto',fontSize:13,fontWeight:700,
+        {slot.ga!=null&&<span className={slot.status==='en_vivo'?'score-live':''} style={{marginLeft:'auto',fontSize:13,fontWeight:700,
           color:slot.winner===slot.away?'var(--gold)':'var(--txt)'}}>{slot.ga}</span>}
       </div>
       {/* Date/venue */}
@@ -2834,7 +2835,7 @@ function TablaScreen(){
         : null;
       return { label:m.phase, date:m.date, venue:m.venue,
                home:s.home||null, away:s.away||null, winner,
-               gh:s.gh!=null?s.gh:null, ga:s.ga!=null?s.ga:null,
+               gh:s.gh!=null?s.gh:null, ga:s.ga!=null?s.ga:null, status:s.status||'proximo',
                winnerFl: winner ? (FLAGS[winner]||'🏳️') : null };
     };
     const slots=km.map(slotFrom);
