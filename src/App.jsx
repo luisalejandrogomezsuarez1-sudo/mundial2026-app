@@ -2655,11 +2655,15 @@ function CalScreen(){
       ))}
 
       {/* Venues section */}
+      {(()=>{
+        const venuesDelDia = VENUES.filter(v => filtered.some(m => m.venue===v.n));
+        if(venuesDelDia.length===0) return null;
+        return <>
       <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'10px 16px 8px'}}>
         <div style={{fontFamily:'var(--ff)',fontSize:22,letterSpacing:1}}>Sedes Oficiales</div>
         <span style={{fontSize:10,color:'var(--muted)'}}>Fotos reales en app desplegada</span>
       </div>
-      {VENUES.map(v=>(
+      {venuesDelDia.map(v=>(
         <div key={v.n} style={{margin:'0 16px 14px',background:'var(--surf)',
           borderRadius:14,border:'1px solid var(--br)',overflow:'hidden'}}>
           <StadiumCard v={v} height={150}/>
@@ -2678,6 +2682,8 @@ function CalScreen(){
           </div>
         </div>
       ))}
+      </>;
+      })()}
     </div>
   );
 }
