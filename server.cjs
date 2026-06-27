@@ -1219,11 +1219,11 @@ app.post('/api/admin/tabla', async (req,res)=>{
     for(const m of matches){
       const hasScore = m.gh!=null && m.ga!=null;
       const hasStatus = m.status && m.status!=='proximo';
-      const hasTeams = m.home && m.away && m.home!=='Por definir' && m.away!=='Por definir';
+      const hasTeams = (m.home && m.home!=='Por definir') || (m.away && m.away!=='Por definir');
       if(!hasScore && !hasStatus && !hasTeams) continue;
       if(m.match_id!=null) scores[m.match_id] = {
         ...(hasScore ? {gh:Number(m.gh), ga:Number(m.ga)} : {}),
-        ...(hasTeams ? {home:m.home, away:m.away} : {}),
+        ...(hasTeams ? {home:m.home||'Por definir', away:m.away||'Por definir'} : {}),
         status: m.status || 'proximo'
       };
     }
