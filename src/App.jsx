@@ -3567,7 +3567,11 @@ function AdminResultados({onClose}){
                 const selStyle={background:'var(--surf)',color:'var(--txt)',border:'1px solid var(--br)',borderRadius:7,padding:'5px 6px',fontSize:11,fontFamily:'var(--fb)',maxWidth:120};
                 return(
                   <div key={m.id} style={{background:'var(--surf)',borderRadius:9,padding:'8px 9px',border:'1px solid var(--br)'}}>
-                    <div style={{fontSize:10,color:'var(--muted)',marginBottom:6,fontWeight:700}}>{m.phase}</div>
+                    <div style={{marginBottom:6}}>
+                      <div style={{fontSize:11,color:'var(--gold)',fontWeight:700}}>#{m.id} · {m.phase}</div>
+                      <div style={{fontSize:10,color:'var(--muted)',marginTop:2}}>📅 {m.date}{m.time?' · '+m.time:''}</div>
+                      <div style={{fontSize:10,color:'var(--muted)'}}>🏟️ {m.venue}{m.city?' · '+m.city:''}</div>
+                    </div>
                     <div style={{display:'flex',alignItems:'center',gap:6,flexWrap:'wrap'}}>
                       <span style={{fontSize:16}}>{FLAGS[s.home]||'🏴'}</span>
                       <select value={s.home||''} onChange={e=>persistScores({...scores,[m.id]:{...s,home:e.target.value}})} style={selStyle}>
