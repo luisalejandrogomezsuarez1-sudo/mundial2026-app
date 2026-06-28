@@ -1168,6 +1168,26 @@ const COINS_PER_PAGO=1000; // 1 pago de $30 MXN = 1000 monedas
 // Odds por ronda para quiniela de eliminatorias
 const ELIM_ODDS={r32:[1.5,2.5],r16:[1.6,2.4],qf:[1.7,2.2],sf:[1.8,2.1],final:[1.9,2.0]};
 const ELIM_ROUND=id=>id>=73&&id<=88?'r32':id>=89&&id<=96?'r16':id>=97&&id<=100?'qf':id>=101&&id<=102?'sf':'final';
+// Fuerza de cada selección (1-10). Determina las odds de cualquier cruce automáticamente.
+const TEAM_STRENGTH={
+  'Argentina':10,'Francia':9.5,'España':9.5,'Inglaterra':9.5,'Brasil':9,'Alemania':9,
+  'Portugal':8,'Países Bajos':7.5,'Bélgica':7.5,
+  'Colombia':6.5,'Croacia':6.5,'Uruguay':6.5,'Suiza':6,'Noruega':6,
+  'México':5.5,'USA':5.5,'Marruecos':5.5,'Japón':5,'Senegal':5,'Ecuador':5,'Egipto':5,
+  'Canadá':4.5,'Austria':4.5,'Costa de Marfil':4,'Australia':4,'Ghana':4,'Paraguay':4,'Bosnia y Herzegovina':4,
+  'Argelia':3.5,'Cabo Verde':2.5,'Congo DR':2.5,
+  'Sudáfrica':4,'Corea del Sur':4.5,'República Checa':4.5,'Qatar':3,'Haití':2.5,
+  'Escocia':4.5,'Turquía':5,'Curazao':2.5,'Suecia':5.5,'Túnez':4,'Arabia Saudita':3.5,
+  'Irán':4.5,'Nueva Zelanda':3,'Irak':3.5,'Jordania':3,'Uzbekistán':3.5,'Panamá':3.5
+};
+// Calcula [oddLocal, oddVisitante] según la fuerza de ambos equipos. Favorito paga menos.
+const calcOdds=(home,away)=>{
+  const sh=TEAM_STRENGTH[home]??5, sa=TEAM_STRENGTH[away]??5;
+  const diff=sh-sa;
+  let oh=Math.max(1.1, 2.0-diff*0.18);
+  let oa=Math.max(1.1, 2.0+diff*0.18);
+  return [Math.round(oh*10)/10, Math.round(oa*10)/10];
+};
 const PRECIO_PAQUETE=30; // MXN por paquete — fuente única para ingresos del panel
 // 72 partidos × (1X2:7 + BTTS:6=13) = 936
 // Fijos: campeon:6 + bota:6 + balon:4 + gol1:15 + gol2:4 + gol3:5 + grupos(12×2):24 = 64
@@ -5839,8 +5859,7 @@ function ElimScreen({credito,creditoLoading,onPagar,currentUser,onRecheckAccess,
               const nm=NEXT_MATCHES.find(m=>m.id===id)||{};
               const home=s.home||nm.home||'?';
               const away=s.away||nm.away||'?';
-              const rnd=ELIM_ROUND(id);
-              const [o1,o2]=ELIM_ODDS[rnd]||[1.5,2.5];
+              const [o1,o2]=calcOdds(home,away);      // cuotas según fuerza de los equipos
               const bet=elimBets[id]||{};
               const isFinal=id===104;
 
