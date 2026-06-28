@@ -2669,7 +2669,7 @@ function CalScreen(){
             color:'var(--muted)',letterSpacing:.8}}>
             {dateLabel(date)} · {fmt(date).toUpperCase()}
           </div>
-          {byDate[date].map(m=><NextCard key={m.id} m={m} score={scores[m.id]}/>)}
+          {[...byDate[date]].sort((a,b)=>(a.time||'').localeCompare(b.time||'')).map(m=><NextCard key={m.id} m={m} score={scores[m.id]}/>)}
         </div>
       ))}
 
@@ -2858,7 +2858,7 @@ function TablaScreen(){
 
   // Deriva el bracket desde scores (admin manual). IDs contiguos 73-104.
   const buildBracketFromScores=(sc)=>{
-    const km=NEXT_MATCHES.filter(m=>m.id>=73);
+    const km=NEXT_MATCHES.filter(m=>m.id>=73).sort((a,b)=>a.id-b.id);
     const slotFrom=m=>{
       const s=sc[m.id]||{};
       const winner=(s.status==='finalizado'&&s.gh!=null&&s.ga!=null)
@@ -5782,6 +5782,12 @@ function ElimScreen({credito,creditoLoading,onPagar,currentUser,onRecheckAccess,
   ];
 
   const placeElim=(matchId,val,odds)=>{
+    // Refuerzo: no permitir cambios si la ronda del partido está bloqueada o ya guardada
+    const r=rounds.find(rd=>rd.ids.includes(matchId));
+    if(r){
+      if(roundsSaved.includes(r.key)) return;           // ronda ya guardada (bloqueo permanente)
+      if(roundLocked(r.ids)) return;                     // algún partido en vivo/finalizado
+    }
     setElimBets(prev=>{
       const cur=prev[matchId]||{};
       if(cur.sel===val) return {...prev,[matchId]:{}};
