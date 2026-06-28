@@ -1165,9 +1165,6 @@ const GRP_WIN=[
 
 // ── Coin System ───────────────────────────────────
 const COINS_PER_PAGO=1000; // 1 pago de $30 MXN = 1000 monedas
-// Odds por ronda para quiniela de eliminatorias
-const ELIM_ODDS={r32:[1.5,2.5],r16:[1.6,2.4],qf:[1.7,2.2],sf:[1.8,2.1],final:[1.9,2.0]};
-const ELIM_ROUND=id=>id>=73&&id<=88?'r32':id>=89&&id<=96?'r16':id>=97&&id<=100?'qf':id>=101&&id<=102?'sf':'final';
 // Fuerza de cada selección (1-10). Determina las odds de cualquier cruce automáticamente.
 const TEAM_STRENGTH={
   'Argentina':10,'Francia':9.5,'España':9.5,'Inglaterra':9.5,'Brasil':9,'Alemania':9,
