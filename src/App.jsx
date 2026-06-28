@@ -5732,7 +5732,6 @@ function ElimScreen({credito,creditoLoading,onPagar,currentUser,onRecheckAccess,
   const [exacto,setExacto]=useState({h:'',a:''});
   const [saving,setSaving]=useState(false);
   const [msg,setMsg]=useState('');
-  const [roundsSaved,setRoundsSaved]=useState([]); // rondas ya guardadas/bloqueadas por el usuario
 
   useEffect(()=>{
     const fn=window._fbSubscribeLive;
@@ -5751,8 +5750,6 @@ function ElimScreen({credito,creditoLoading,onPagar,currentUser,onRecheckAccess,
   useEffect(()=>{
     const uid=(window._fbCurrentUid&&window._fbCurrentUid())||currentUser?.uid||currentUser?.id;
     if(!uid) return;
-    try{ const ls=localStorage.getItem('wc2026_elimrounds_'+uid); if(ls) setRoundsSaved(JSON.parse(ls)); }catch(e){}
-    if(window._fbGetElimRounds) window._fbGetElimRounds(uid).then(r=>{ if(Array.isArray(r)) setRoundsSaved(r); });
   },[]);
 
   if(!credito&&creditoLoading) return(
@@ -5771,6 +5768,7 @@ function ElimScreen({credito,creditoLoading,onPagar,currentUser,onRecheckAccess,
     const s=scores[id];
     return s?.status==='en_vivo'||s?.status==='finalizado';
   });
+  const matchLocked=(id)=>{const s=scores[id];return s?.status==='en_vivo'||s?.status==='finalizado';};
 
   const rounds=[
     {key:'r32',  label:'⚔️ 16avos de Final', ids:Array.from({length:16},(_,i)=>73+i), color:'var(--acc)'},
@@ -5785,8 +5783,7 @@ function ElimScreen({credito,creditoLoading,onPagar,currentUser,onRecheckAccess,
     // Refuerzo: no permitir cambios si la ronda del partido está bloqueada o ya guardada
     const r=rounds.find(rd=>rd.ids.includes(matchId));
     if(r){
-      if(roundsSaved.includes(r.key)) return;           // ronda ya guardada (bloqueo permanente)
-      if(roundLocked(r.ids)) return;                     // algún partido en vivo/finalizado
+      if(matchLocked(matchId)) return;                   // este partido ya empezó
     }
     setElimBets(prev=>{
       const cur=prev[matchId]||{};
@@ -5795,7 +5792,7 @@ function ElimScreen({credito,creditoLoading,onPagar,currentUser,onRecheckAccess,
     });
   };
 
-  const handleSave=async(idsToSave,roundKey)=>{
+  const handleSave=async(idsToSave)=>{
     setSaving(true);
     const uid=(window._fbCurrentUid&&window._fbCurrentUid())||currentUser?.uid||currentUser?.id;
     // Mergear exacto de final si aplica
@@ -5808,13 +5805,6 @@ function ElimScreen({credito,creditoLoading,onPagar,currentUser,onRecheckAccess,
       try{ await window._fbSaveElimBets(uid,merged); }catch(e){}
     }
     try{ if(uid) localStorage.setItem('wc2026_elim_'+uid,JSON.stringify(merged)); }catch(e){}
-    // Registrar la ronda como guardada/bloqueada de forma permanente
-    const nuevasRondas=[...new Set([...roundsSaved,roundKey])];
-    setRoundsSaved(nuevasRondas);
-    if(uid&&window._fbSaveElimRounds){
-      try{ await window._fbSaveElimRounds(uid,nuevasRondas); }catch(e){}
-    }
-    try{ if(uid) localStorage.setItem('wc2026_elimrounds_'+uid,JSON.stringify(nuevasRondas)); }catch(e){}
     setMsg('✓ Guardado');
     setTimeout(()=>setMsg(''),2500);
     setSaving(false);
@@ -5837,7 +5827,6 @@ function ElimScreen({credito,creditoLoading,onPagar,currentUser,onRecheckAccess,
       {rounds.map(({key,label,ids,color})=>{
         const unlocked=allDefined(ids);
         const locked=roundLocked(ids);
-        const yaGuardada=roundsSaved.includes(key); // el usuario ya bloqueó esta ronda
         const apostados=ids.filter(id=>elimBets[id]?.sel).length;
         return(
           <div key={key} style={{margin:'0 12px 14px',background:'var(--surf)',borderRadius:14,
@@ -5851,8 +5840,7 @@ function ElimScreen({credito,creditoLoading,onPagar,currentUser,onRecheckAccess,
               <div style={{display:'flex',alignItems:'center',gap:6}}>
                 {!unlocked&&<span style={{fontSize:10,color:'var(--muted)'}}>🔒 Equipos pendientes</span>}
                 {unlocked&&locked&&<span style={{fontSize:10,color:'var(--muted)'}}>🔒 Ronda en curso</span>}
-                {unlocked&&!locked&&yaGuardada&&<span style={{fontSize:10,color:'var(--grn)'}}>🔒 Guardado</span>}
-                {unlocked&&!locked&&!yaGuardada&&<span style={{fontSize:10,color:'var(--grn)'}}>{apostados}/{ids.length} ✓</span>}
+                {unlocked&&!locked&&<span style={{fontSize:10,color:'var(--grn)'}}>{apostados}/{ids.length} ✓</span>}
               </div>
             </div>
 
@@ -5890,14 +5878,14 @@ function ElimScreen({credito,creditoLoading,onPagar,currentUser,onRecheckAccess,
                         const sel=bet.sel===val;
                         return(
                           <button type="button" key={val}
-                            onClick={(locked||yaGuardada)?undefined:e=>{e.preventDefault();placeElim(id,val,odds);}}
+                            onClick={matchLocked(id)?undefined:e=>{e.preventDefault();placeElim(id,val,odds);}}
                             style={{background:sel?'rgba(240,165,0,.18)':'var(--surf2)',
                               border:`1.5px solid ${sel?'var(--gold)':'var(--br)'}`,
                               borderRadius:10,padding:'7px 4px',
-                              cursor:(locked||yaGuardada)?'default':'pointer',
+                              cursor:matchLocked(id)?'default':'pointer',
                               display:'flex',flexDirection:'column',alignItems:'center',gap:1,
                               transition:'background .15s,border-color .15s',
-                              opacity:(locked||yaGuardada)&&!sel?0.45:1}}>
+                              opacity:matchLocked(id)&&!sel?0.45:1}}>
                             <span style={{fontSize:10,fontWeight:700,
                               color:sel?'var(--gold)':'var(--txt)',
                               textAlign:'center',lineHeight:1.2,
@@ -5914,7 +5902,7 @@ function ElimScreen({credito,creditoLoading,onPagar,currentUser,onRecheckAccess,
                   </div>
 
                   {/* Marcador exacto — solo Final */}
-                  {isFinal&&!locked&&!yaGuardada&&(
+                  {isFinal&&!matchLocked(104)&&(
                     <div style={{padding:'11px 14px',background:'rgba(240,165,0,.04)',
                       borderTop:'1px solid rgba(240,165,0,.15)'}}>
                       <div style={{fontSize:10,color:'var(--gold)',fontWeight:700,marginBottom:8,letterSpacing:.8}}>
@@ -5942,7 +5930,7 @@ function ElimScreen({credito,creditoLoading,onPagar,currentUser,onRecheckAccess,
                       </div>
                     </div>
                   )}
-                  {isFinal&&(locked||yaGuardada)&&bet.exacto&&(
+                  {isFinal&&matchLocked(104)&&bet.exacto&&(
                     <div style={{padding:'8px 14px',background:'rgba(240,165,0,.04)',
                       borderTop:'1px solid rgba(240,165,0,.15)',fontSize:11,color:'var(--gold)'}}>
                       🎯 Tu marcador: <strong>{bet.exacto.gh}–{bet.exacto.ga}</strong>
@@ -5953,9 +5941,9 @@ function ElimScreen({credito,creditoLoading,onPagar,currentUser,onRecheckAccess,
             })}
 
             {/* Botón guardar por ronda */}
-            {unlocked&&!locked&&!yaGuardada&&(
+            {unlocked&&(
               <div style={{padding:'10px 12px',borderTop:'1px solid rgba(255,255,255,.05)'}}>
-                <button type="button" onClick={()=>handleSave(ids,key)} disabled={saving}
+                <button type="button" onClick={()=>handleSave(ids)} disabled={saving}
                   style={{width:'100%',background:'linear-gradient(135deg,var(--gold),var(--gold2))',
                     border:'none',color:'#000',borderRadius:10,padding:'11px',fontSize:13,
                     fontWeight:700,cursor:saving?'wait':'pointer',fontFamily:'var(--ff)',
