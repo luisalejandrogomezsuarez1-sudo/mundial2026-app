@@ -5983,7 +5983,7 @@ function ElimScreen({credito,creditoLoading,onPagar,currentUser,onRecheckAccess,
 // ── Bets Screen ───────────────────────────────────
 function BetsScreen({bets,placeBet,credito,creditoLoading,onPagar,onReset,betsSaved=false,onSave,onEditPredictions,currentUser,onRecheckAccess,onRecover,elimBets={},setElimBets=()=>{}}){
   const t=useLang();
-  const [tab,setTab]=useState('largo');
+  const [tab,setTab]=useState('elim');
   const [exact,setExact]=useState({});
   const [showReset,setShowReset]=useState(false);
   const [confirmReset,setConfirmReset]=useState(false);
