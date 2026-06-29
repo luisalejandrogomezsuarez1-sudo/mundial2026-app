@@ -5802,7 +5802,7 @@ function ElimScreen({credito,creditoLoading,onPagar,currentUser,onRecheckAccess,
       setElimBets(merged);
     }
     if(uid&&window._fbSaveElimBets){
-      try{ await window._fbSaveElimBets(uid,merged); }catch(e){}
+      try{ const _r=await window._fbSaveElimBets(uid,merged); console.log('[ElimSave]',_r,merged); }catch(e){console.error('[ElimSave ERROR]',e,merged);}
     }
     try{ if(uid) localStorage.setItem('wc2026_elim_'+uid,JSON.stringify(merged)); }catch(e){}
     setMsg('✓ Guardado');
