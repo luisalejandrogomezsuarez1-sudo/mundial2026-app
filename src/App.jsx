@@ -2752,6 +2752,18 @@ function BracketSlot({slot,highlight=false}){
 }
 
 function BracketRound({title,slots,color='var(--acc)',icon=''}){
+  const rowRef=useRef(null);
+  useEffect(()=>{
+    const row=rowRef.current;
+    if(!row) return;
+    const idx=slots.findIndex(s=>s?.status==='en_vivo');
+    if(idx<0) return;                                  // sin partido en vivo en esta ronda
+    const card=row.children[idx];
+    if(!card) return;
+    // Centrar la tarjeta en vivo dentro de su fila (scroll horizontal, sin mover la página)
+    const target=card.offsetLeft-(row.clientWidth/2)+(card.clientWidth/2);
+    row.scrollTo({left:Math.max(0,target),behavior:'smooth'});
+  },[slots]);
   return(
     <div style={{marginBottom:20}}>
       <div style={{display:'flex',alignItems:'center',gap:8,padding:'0 16px',marginBottom:10}}>
@@ -2762,7 +2774,7 @@ function BracketRound({title,slots,color='var(--acc)',icon=''}){
           {slots.length} {slots.length===1?'partido':'partidos'}
         </span>
       </div>
-      <div style={{display:'flex',gap:10,padding:'0 16px',overflowX:'auto',paddingBottom:4}}>
+      <div ref={rowRef} style={{display:'flex',gap:10,padding:'0 16px',overflowX:'auto',paddingBottom:4}}>
         {slots.map((s,i)=>(
           <BracketSlot key={i} slot={s}
             highlight={title.includes('FINAL')&&!title.includes('3er')}/>
