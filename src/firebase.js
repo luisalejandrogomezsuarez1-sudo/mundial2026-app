@@ -313,13 +313,15 @@ export async function saveUserBetsToFirestore(userId, bets, meta={}) {
 }
 
 // ── Quiniela de Eliminatorias ────────────────────────────────────────────────
-export async function saveElimBetsToFirestore(userId, elimBets) {
+export async function saveElimBetsToFirestore(userId, elimBets, elimSaved=null) {
   if(!userId) return { ok:false };
   try {
-    await setDoc(doc(db,'users', userId), {
+    const payload = {
       elimBets,
       elimBetsSavedAt: new Date().toISOString(),
-    }, { merge: true });
+    };
+    if(elimSaved) payload.elimSaved = elimSaved;
+    await setDoc(doc(db,'users', userId), payload, { merge: true });
     return { ok:true };
   } catch(e) { console.warn('saveElimBets error:', e); return { ok:false, error:e.message }; }
 }
@@ -328,7 +330,9 @@ export async function getElimBetsFromFirestore(userId) {
   if(!userId) return null;
   try {
     const snap = await getDoc(doc(db,'users', userId));
-    return snap.exists() ? (snap.data().elimBets || null) : null;
+    if(!snap.exists()) return null;
+    const d = snap.data();
+    return { elimBets: d.elimBets || {}, elimSaved: d.elimSaved || {}, paquetes: d.paquetes || 0, giftedAt: d.giftedAt || null };
   } catch(e) { console.warn('getElimBets error:', e); return null; }
 }
 

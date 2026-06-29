@@ -5732,6 +5732,8 @@ function ElimScreen({credito,creditoLoading,onPagar,currentUser,onRecheckAccess,
   const [exacto,setExacto]=useState({h:'',a:''});
   const [saving,setSaving]=useState(false);
   const [msg,setMsg]=useState('');
+  const [elimSaved,setElimSaved]=useState({});   // {ronda: firmaConQueSeGuardó}
+  const [accessSig,setAccessSig]=useState('');   // firma de acceso del doc Firestore
 
   useEffect(()=>{
     const fn=window._fbSubscribeLive;
@@ -5746,10 +5748,15 @@ function ElimScreen({credito,creditoLoading,onPagar,currentUser,onRecheckAccess,
     if(b?.exacto) setExacto({h:String(b.exacto.gh),a:String(b.exacto.ga)});
   },[]);
 
-  // Cargar rondas ya guardadas — localStorage + Firestore
+  // Cargar rondas guardadas + firma de acceso desde Firestore
   useEffect(()=>{
     const uid=(window._fbCurrentUid&&window._fbCurrentUid())||currentUser?.uid||currentUser?.id;
-    if(!uid) return;
+    if(!uid||!window._fbGetElimBets) return;
+    window._fbGetElimBets(uid).then(eb=>{
+      if(!eb) return;
+      if(eb.elimSaved) setElimSaved(eb.elimSaved);
+      setAccessSig(`${eb.paquetes||0}|${eb.giftedAt||''}`);
+    });
   },[]);
 
   if(!credito&&creditoLoading) return(
@@ -5770,6 +5777,18 @@ function ElimScreen({credito,creditoLoading,onPagar,currentUser,onRecheckAccess,
   });
   const matchLocked=(id)=>{const s=scores[id];return s?.status==='en_vivo'||s?.status==='finalizado';};
 
+  // Candado 2 (por guardado): bloqueada si se guardó con la firma de acceso actual.
+  // Un pago/regalo nuevo cambia accessSig → deja de coincidir → se re-habilita.
+  const roundBloqueada=(key)=>elimSaved[key]!==undefined&&elimSaved[key]===accessSig;
+  // Partido editable: NO ha empezado (Candado 1 inverso).
+  const matchEditable=(id)=>!matchLocked(id);
+  // Se puede guardar solo si TODOS los partidos editables de la ronda están marcados.
+  const puedeGuardar=(ids)=>{
+    const editables=ids.filter(matchEditable);
+    if(editables.length===0) return false;
+    return editables.every(id=>elimBets[id]?.sel);
+  };
+
   const rounds=[
     {key:'r32',  label:'⚔️ 16avos de Final', ids:Array.from({length:16},(_,i)=>73+i), color:'var(--acc)'},
     {key:'r16',  label:'🎯 Octavos de Final', ids:Array.from({length:8}, (_,i)=>89+i), color:'#4F8EF7'},
@@ -5780,11 +5799,9 @@ function ElimScreen({credito,creditoLoading,onPagar,currentUser,onRecheckAccess,
   ];
 
   const placeElim=(matchId,val,odds)=>{
-    // Refuerzo: no permitir cambios si la ronda del partido está bloqueada o ya guardada
+    if(matchLocked(matchId)) return;                     // Candado 1: el partido ya empezó
     const r=rounds.find(rd=>rd.ids.includes(matchId));
-    if(r){
-      if(matchLocked(matchId)) return;                   // este partido ya empezó
-    }
+    if(r&&roundBloqueada(r.key)) return;                 // Candado 2: ronda guardada sin pago nuevo
     setElimBets(prev=>{
       const cur=prev[matchId]||{};
       if(cur.sel===val) return {...prev,[matchId]:{}};
@@ -5792,7 +5809,7 @@ function ElimScreen({credito,creditoLoading,onPagar,currentUser,onRecheckAccess,
     });
   };
 
-  const handleSave=async(idsToSave)=>{
+  const handleSave=async(idsToSave,roundKey)=>{
     setSaving(true);
     const uid=(window._fbCurrentUid&&window._fbCurrentUid())||currentUser?.uid||currentUser?.id;
     // Mergear exacto de final si aplica
@@ -5801,11 +5818,14 @@ function ElimScreen({credito,creditoLoading,onPagar,currentUser,onRecheckAccess,
       merged[104]={...(merged[104]||{}),exacto:{gh:Number(exacto.h),ga:Number(exacto.a)}};
       setElimBets(merged);
     }
+    // Candado 2: registrar la ronda como guardada con la firma de acceso actual
+    const nuevoElimSaved={...elimSaved,[roundKey]:accessSig};
+    setElimSaved(nuevoElimSaved);
     if(uid&&window._fbSaveElimBets){
-      try{ const _r=await window._fbSaveElimBets(uid,merged); console.log('[ElimSave]',_r,merged); }catch(e){console.error('[ElimSave ERROR]',e,merged);}
+      try{ await window._fbSaveElimBets(uid,merged,nuevoElimSaved); }catch(e){console.warn('saveElim error',e);}
     }
     try{ if(uid) localStorage.setItem('wc2026_elim_'+uid,JSON.stringify(merged)); }catch(e){}
-    setMsg('✓ Guardado');
+    setMsg('✓ Guardado · bloqueado');
     setTimeout(()=>setMsg(''),2500);
     setSaving(false);
   };
@@ -5827,7 +5847,11 @@ function ElimScreen({credito,creditoLoading,onPagar,currentUser,onRecheckAccess,
       {rounds.map(({key,label,ids,color})=>{
         const unlocked=allDefined(ids);
         const locked=roundLocked(ids);
+        const bloqueada=roundBloqueada(key);          // Candado 2 (guardado, sin pago nuevo)
         const apostados=ids.filter(id=>elimBets[id]?.sel).length;
+        const editablesCount=ids.filter(matchEditable).length;
+        const apostadosEditables=ids.filter(id=>matchEditable(id)&&elimBets[id]?.sel).length;
+        const canSaveRound=puedeGuardar(ids)&&!bloqueada;
         return(
           <div key={key} style={{margin:'0 12px 14px',background:'var(--surf)',borderRadius:14,
             border:`1px solid ${unlocked?(locked?'rgba(255,255,255,.1)':color):'var(--br)'}`,
@@ -5839,8 +5863,8 @@ function ElimScreen({credito,creditoLoading,onPagar,currentUser,onRecheckAccess,
               <span style={{fontFamily:'var(--ff)',fontSize:14,color:unlocked?color:'var(--muted)',letterSpacing:.8}}>{label}</span>
               <div style={{display:'flex',alignItems:'center',gap:6}}>
                 {!unlocked&&<span style={{fontSize:10,color:'var(--muted)'}}>🔒 Equipos pendientes</span>}
-                {unlocked&&locked&&<span style={{fontSize:10,color:'var(--muted)'}}>🔒 Ronda en curso</span>}
-                {unlocked&&!locked&&<span style={{fontSize:10,color:'var(--grn)'}}>{apostados}/{ids.length} ✓</span>}
+                {unlocked&&bloqueada&&<span style={{fontSize:10,color:'var(--gold)'}}>🔒 Guardado</span>}
+                {unlocked&&!bloqueada&&<span style={{fontSize:10,color:'var(--grn)'}}>{apostadosEditables}/{editablesCount} ✓</span>}
               </div>
             </div>
 
@@ -5902,7 +5926,7 @@ function ElimScreen({credito,creditoLoading,onPagar,currentUser,onRecheckAccess,
                   </div>
 
                   {/* Marcador exacto — solo Final */}
-                  {isFinal&&!matchLocked(104)&&(
+                  {isFinal&&!matchLocked(104)&&!bloqueada&&(
                     <div style={{padding:'11px 14px',background:'rgba(240,165,0,.04)',
                       borderTop:'1px solid rgba(240,165,0,.15)'}}>
                       <div style={{fontSize:10,color:'var(--gold)',fontWeight:700,marginBottom:8,letterSpacing:.8}}>
@@ -5930,7 +5954,7 @@ function ElimScreen({credito,creditoLoading,onPagar,currentUser,onRecheckAccess,
                       </div>
                     </div>
                   )}
-                  {isFinal&&matchLocked(104)&&bet.exacto&&(
+                  {isFinal&&(matchLocked(104)||bloqueada)&&bet.exacto&&(
                     <div style={{padding:'8px 14px',background:'rgba(240,165,0,.04)',
                       borderTop:'1px solid rgba(240,165,0,.15)',fontSize:11,color:'var(--gold)'}}>
                       🎯 Tu marcador: <strong>{bet.exacto.gh}–{bet.exacto.ga}</strong>
@@ -6799,7 +6823,7 @@ export default function App(){
         const _els=localStorage.getItem('wc2026_elim_'+_euid);
         if(_els) setElimBets(JSON.parse(_els));
         // También intentar desde Firestore (más fresco)
-        if(window._fbGetElimBets) window._fbGetElimBets(_euid).then(eb=>{if(eb) setElimBets(eb);});
+        if(window._fbGetElimBets) window._fbGetElimBets(_euid).then(eb=>{if(eb&&eb.elimBets) setElimBets(eb.elimBets);});
       }
     }catch(e){}
     // Apply user language preference
