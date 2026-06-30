@@ -29,8 +29,6 @@ import('./firebase.js').then(fb => {
   window._fbSaveUserBets    = fb.saveUserBetsToFirestore;
   window._fbSaveElimBets    = fb.saveElimBetsToFirestore;
   window._fbGetElimBets     = fb.getElimBetsFromFirestore;
-  window._fbSaveElimRounds  = fb.saveElimRoundsToFirestore;
-  window._fbGetElimRounds   = fb.getElimRoundsFromFirestore;
   window._fbUpdateCoinsSpent = fb.updateCoinsSpent;
   // Auth nativo (Fase 2)
   window._fbAuthRegister    = fb.authRegister;

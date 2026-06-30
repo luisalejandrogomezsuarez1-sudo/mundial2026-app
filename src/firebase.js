@@ -336,22 +336,6 @@ export async function getElimBetsFromFirestore(userId) {
   } catch(e) { console.warn('getElimBets error:', e); return null; }
 }
 
-export async function saveElimRoundsToFirestore(userId, rounds) {
-  if(!userId) return { ok:false };
-  try {
-    await setDoc(doc(db,'users', userId), { elimRoundsSaved: rounds }, { merge: true });
-    return { ok:true };
-  } catch(e) { console.warn('saveElimRounds error:', e); return { ok:false }; }
-}
-
-export async function getElimRoundsFromFirestore(userId) {
-  if(!userId) return null;
-  try {
-    const snap = await getDoc(doc(db,'users', userId));
-    return snap.exists() ? (snap.data().elimRoundsSaved || null) : null;
-  } catch(e) { console.warn('getElimRounds error:', e); return null; }
-}
-
 // ── Actualizar coinsSpent del usuario (devolución de bloque al editar) ──
 export async function updateCoinsSpent(userId, coinsSpent) {
   if(!userId) return { ok:false };
