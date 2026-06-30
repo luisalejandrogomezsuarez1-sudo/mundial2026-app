@@ -2346,10 +2346,10 @@ function RadialBracket({ scores }) {
 
   const NodeCircle = ({ x, y, flag, active, r = 18 }) => (
     <g>
-      <circle cx={x} cy={y} r={r + 3} fill="none" stroke={active ? GOLD : DIM}
-        strokeWidth={active ? 2.5 : 1} opacity={active ? 1 : 0.5}
+      <circle cx={x} cy={y} r={r + 1.5} fill="none" stroke={active ? GOLD : DIM}
+        strokeWidth={active ? 1 : 0.5} opacity={active ? 0.9 : 0.4}
         filter={active ? 'url(#glow)' : undefined} />
-      <circle cx={x} cy={y} r={r} fill="#111" stroke={active ? GOLD : '#333'} strokeWidth={1.5} />
+      <circle cx={x} cy={y} r={r} fill="#111" stroke={active ? GOLD : '#333'} strokeWidth={0.8} />
       {flag && <text x={x} y={y + 8} textAnchor="middle" fontSize={r * 1.3}>{flag}</text>}
     </g>
   );
@@ -2416,8 +2416,8 @@ function RadialBracket({ scores }) {
         const hPt = pt(R.teams, aT[2*p]);
         const aPt = pt(R.teams, aT[2*p+1]);
         return <g key={`tf${p}`}>
-          <NodeCircle x={hPt.x} y={hPt.y} flag={slot?.homeFlag} active={!!slot?.home} />
-          <NodeCircle x={aPt.x} y={aPt.y} flag={slot?.awayFlag} active={!!slot?.away} />
+          <NodeCircle x={hPt.x} y={hPt.y} flag={slot?.homeFl} active={!!slot?.home} />
+          <NodeCircle x={aPt.x} y={aPt.y} flag={slot?.awayFl} active={!!slot?.away} />
         </g>;
       })}
 
@@ -2454,6 +2454,12 @@ function RadialBracket({ scores }) {
       {br.final?.winner && (
         <text x={cx} y={cy - 108} textAnchor="middle" fontSize={28}>{br.final.winnerFl}</text>
       )}
+
+      {/* Título */}
+      <text x={cx} y={30} textAnchor="middle" fontSize={22} fontWeight="bold"
+        fill={GOLD} fontFamily="var(--ff)" letterSpacing="2" opacity={0.9}>
+        ELIMINATORIAS
+      </text>
     </svg>
   );
 }
@@ -2973,7 +2979,9 @@ const buildBracketFromScores=(sc)=>{
     return { label:m.phase, date:m.date, venue:m.venue,
              home:s.home||null, away:s.away||null, winner,
              gh:s.gh!=null?s.gh:null, ga:s.ga!=null?s.ga:null, status:s.status||'proximo',
-             winnerFl: winner ? (FLAGS[winner]||'🏳️') : null };
+             winnerFl: winner ? (FLAGS[winner]||'🏳️') : null,
+             homeFl: s.home ? (FLAGS[s.home]||'🏳️') : null,
+             awayFl: s.away ? (FLAGS[s.away]||'🏳️') : null };
   };
   const slots=km.map(slotFrom);
   return {
