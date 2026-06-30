@@ -2456,8 +2456,8 @@ function RadialBracket({ scores }) {
       )}
 
       {/* Título */}
-      <text x={cx} y={30} textAnchor="middle" fontSize={22} fontWeight="bold"
-        fill={GOLD} fontFamily="var(--ff)" letterSpacing="2" opacity={0.9}>
+      <text x={cx} y={30} textAnchor="middle" fontSize={24} fontWeight="bold"
+        fill="#fff" fontFamily="var(--ff)" letterSpacing="1" opacity={1}>
         ELIMINATORIAS
       </text>
     </svg>
