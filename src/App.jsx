@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef, createContext, useContext } from "react";
+import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
 
 // ── Firebase ACTIVO ─────────────────────────────────────────────
 let fbSendMsg = null, fbSubscribeChat = null, fbSaveUser = null, fbGetAllUsers = null, fbGiftCoins = null, fbGiftCoinsByEmail = null, fbFindUserByEmail = null, fbSaveGroup = null, fbGetGroupByCode = null, fbDeleteUser = null;
@@ -2311,6 +2312,152 @@ function CommentMarquee(){
   );
 }
 
+function RadialBracket({ scores }) {
+  const br = buildBracketFromScores(scores || {});
+  const cx = 500, cy = 508;
+  const A0 = -90;
+  const SP = 11.25;
+  const R = { teams: 470, r32: 384, r16: 296, qf: 212, sf: 132 };
+
+  const rad = (deg) => (deg + A0) * Math.PI / 180;
+  const pt = (r, deg) => ({
+    x: cx + r * Math.cos(rad(deg)),
+    y: cy + r * Math.sin(rad(deg)),
+  });
+
+  // Ángulos
+  const aT  = Array.from({length:32}, (_,i) => i * SP);
+  const a32 = Array.from({length:16}, (_,p) => (aT[2*p] + aT[2*p+1]) / 2);
+  const a16 = Array.from({length:8},  (_,j) => (a32[2*j] + a32[2*j+1]) / 2);
+  const aQF = Array.from({length:4},  (_,m) => (a16[2*m] + a16[2*m+1]) / 2);
+  const aSF = Array.from({length:2},  (_,s) => (aQF[2*s] + aQF[2*s+1]) / 2);
+
+  // Nodos
+  const teamNodes = aT.map((a,i) => ({ ...pt(R.teams, a), flag: null, i }));
+  const r32Nodes  = a32.map((a,p) => ({ ...pt(R.r32,  a), slot: br.r32?.[p] }));
+  const r16Nodes  = a16.map((a,j) => ({ ...pt(R.r16,  a), slot: br.r16?.[j] }));
+  const qfNodes   = aQF.map((a,m) => ({ ...pt(R.qf,   a), slot: br.qf?.[m] }));
+  const sfNodes   = aSF.map((a,s) => ({ ...pt(R.sf,   a), slot: br.sf?.[s] }));
+  const finalNode = { x: cx, y: cy - 78, slot: br.final };
+
+  // Colores
+  const GOLD = '#FFD700';
+  const DIM  = '#444';
+
+  const NodeCircle = ({ x, y, flag, active, r = 18 }) => (
+    <g>
+      <circle cx={x} cy={y} r={r + 3} fill="none" stroke={active ? GOLD : DIM}
+        strokeWidth={active ? 2.5 : 1} opacity={active ? 1 : 0.5}
+        filter={active ? 'url(#glow)' : undefined} />
+      <circle cx={x} cy={y} r={r} fill="#111" stroke={active ? GOLD : '#333'} strokeWidth={1.5} />
+      {flag && <text x={x} y={y + 8} textAnchor="middle" fontSize={r * 1.3}>{flag}</text>}
+    </g>
+  );
+
+  // Líneas helper
+  const Line = ({ from, to, active }) => (
+    <line x1={from.x} y1={from.y} x2={to.x} y2={to.y}
+      stroke={active ? GOLD : '#333'} strokeWidth={active ? 1.5 : 0.8} opacity={active ? 0.8 : 0.4} />
+  );
+
+  // Equipos del r32 (outer home/away)
+  const r32Flags = br.r32 || [];
+
+  return (
+    <svg viewBox="0 0 1000 1016" style={{ width:'100%', maxWidth:700, display:'block', margin:'0 auto' }}>
+      <defs>
+        <filter id="glow">
+          <feGaussianBlur stdDeviation="4" result="blur"/>
+          <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+      </defs>
+
+      {/* Líneas teams→r32 */}
+      {r32Nodes.map((n,p) => {
+        const h = pt(R.teams, aT[2*p]);
+        const a = pt(R.teams, aT[2*p+1]);
+        return <g key={`tl${p}`}>
+          <Line from={h} to={n} active={!!r32Flags[p]?.home} />
+          <Line from={a} to={n} active={!!r32Flags[p]?.away} />
+        </g>;
+      })}
+
+      {/* Líneas r32→r16 */}
+      {r16Nodes.map((n,j) => (
+        <g key={`r32l${j}`}>
+          <Line from={r32Nodes[2*j]} to={n} active={!!r32Nodes[2*j]?.slot?.winner} />
+          <Line from={r32Nodes[2*j+1]} to={n} active={!!r32Nodes[2*j+1]?.slot?.winner} />
+        </g>
+      ))}
+
+      {/* Líneas r16→qf */}
+      {qfNodes.map((n,m) => (
+        <g key={`r16l${m}`}>
+          <Line from={r16Nodes[2*m]} to={n} active={!!r16Nodes[2*m]?.slot?.winner} />
+          <Line from={r16Nodes[2*m+1]} to={n} active={!!r16Nodes[2*m+1]?.slot?.winner} />
+        </g>
+      ))}
+
+      {/* Líneas qf→sf */}
+      {sfNodes.map((n,s) => (
+        <g key={`qfl${s}`}>
+          <Line from={qfNodes[2*s]} to={n} active={!!qfNodes[2*s]?.slot?.winner} />
+          <Line from={qfNodes[2*s+1]} to={n} active={!!qfNodes[2*s+1]?.slot?.winner} />
+        </g>
+      ))}
+
+      {/* Líneas sf→final */}
+      {sfNodes.map((n,s) => (
+        <Line key={`sfl${s}`} from={n} to={finalNode} active={!!n.slot?.winner} />
+      ))}
+
+      {/* Nodos teams (banderas exteriores) */}
+      {r32Flags.map((slot,p) => {
+        const hPt = pt(R.teams, aT[2*p]);
+        const aPt = pt(R.teams, aT[2*p+1]);
+        return <g key={`tf${p}`}>
+          <NodeCircle x={hPt.x} y={hPt.y} flag={slot?.homeFlag} active={!!slot?.home} />
+          <NodeCircle x={aPt.x} y={aPt.y} flag={slot?.awayFlag} active={!!slot?.away} />
+        </g>;
+      })}
+
+      {/* Nodos r32 */}
+      {r32Nodes.map((n,p) => (
+        <NodeCircle key={`r32n${p}`} x={n.x} y={n.y}
+          flag={r32Flags[p]?.winner ? (r32Flags[p]?.winnerFl || '🏆') : null}
+          active={!!r32Flags[p]?.winner} />
+      ))}
+
+      {/* Nodos r16 */}
+      {r16Nodes.map((n,j) => (
+        <NodeCircle key={`r16n${j}`} x={n.x} y={n.y}
+          flag={n.slot?.winnerFl || null} active={!!n.slot?.winner} />
+      ))}
+
+      {/* Nodos QF */}
+      {qfNodes.map((n,m) => (
+        <NodeCircle key={`qfn${m}`} x={n.x} y={n.y}
+          flag={n.slot?.winnerFl || null} active={!!n.slot?.winner} r={20} />
+      ))}
+
+      {/* Nodos SF */}
+      {sfNodes.map((n,s) => (
+        <NodeCircle key={`sfn${s}`} x={n.x} y={n.y}
+          flag={n.slot?.winnerFl || null} active={!!n.slot?.winner} r={22} />
+      ))}
+
+      {/* Trofeo central */}
+      <image href="/trofeo2.png" x={cx - 63} y={cy - 99}
+        width={126} height={198} style={{ imageRendering:'crisp-edges' }} />
+
+      {/* Campeón encima del trofeo */}
+      {br.final?.winner && (
+        <text x={cx} y={cy - 108} textAnchor="middle" fontSize={28}>{br.final.winnerFl}</text>
+      )}
+    </svg>
+  );
+}
+
 function HomeScreen({onMatch,onGoToCal}){
   const t=useLang();
   const [ref,setRef]=useState(false);
@@ -2477,11 +2624,11 @@ function HomeScreen({onMatch,onGoToCal}){
         </div>
       )}
 
-      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'6px 16px 8px'}}>
-        <div style={{fontFamily:'var(--ff)',fontSize:22,letterSpacing:1}}>{t.next_matches}</div>
-        <span onClick={onGoToCal} style={{fontSize:12,color:'var(--gold)',fontWeight:600,cursor:'pointer'}}>{t.see_all}</span>
-      </div>
-      {lista.map(m=><NextCard key={m.id} m={m} score={scores[m.id]}/>)}
+      <TransformWrapper minScale={0.5} maxScale={3} initialScale={1}>
+        <TransformComponent wrapperStyle={{width:'100%'}} contentStyle={{width:'100%'}}>
+          <RadialBracket scores={scores} />
+        </TransformComponent>
+      </TransformWrapper>
     </div>
   );
 }
@@ -2815,6 +2962,26 @@ function BracketView({bracket}){
   );
 }
 
+// Deriva el bracket desde scores (admin manual). IDs contiguos 73-104.
+const buildBracketFromScores=(sc)=>{
+  const km=NEXT_MATCHES.filter(m=>m.id>=73).sort((a,b)=>a.id-b.id);
+  const slotFrom=m=>{
+    const s=sc[m.id]||{};
+    const winner=(s.status==='finalizado'&&s.gh!=null&&s.ga!=null)
+      ? (s.gh>s.ga?s.home:s.ga>s.gh?s.away:null)
+      : null;
+    return { label:m.phase, date:m.date, venue:m.venue,
+             home:s.home||null, away:s.away||null, winner,
+             gh:s.gh!=null?s.gh:null, ga:s.ga!=null?s.ga:null, status:s.status||'proximo',
+             winnerFl: winner ? (FLAGS[winner]||'🏳️') : null };
+  };
+  const slots=km.map(slotFrom);
+  return {
+    r32:slots.slice(0,16), r16:slots.slice(16,24), qf:slots.slice(24,28),
+    sf:slots.slice(28,30), tercero:slots[30], final:slots[31]
+  };
+};
+
 // ── Standings Screen ─────────────────────────────
 function TablaScreen(){
   const t=useLang();
@@ -2867,26 +3034,6 @@ function TablaScreen(){
     tercero: mkSlot('3er Lugar','Jul 18','Miami · Hard Rock Stadium'),
     final:   mkSlot('🏆 FINAL', 'Jul 19','MetLife Stadium, New Jersey'),
   });
-
-  // Deriva el bracket desde scores (admin manual). IDs contiguos 73-104.
-  const buildBracketFromScores=(sc)=>{
-    const km=NEXT_MATCHES.filter(m=>m.id>=73).sort((a,b)=>a.id-b.id);
-    const slotFrom=m=>{
-      const s=sc[m.id]||{};
-      const winner=(s.status==='finalizado'&&s.gh!=null&&s.ga!=null)
-        ? (s.gh>s.ga?s.home:s.ga>s.gh?s.away:null)
-        : null;
-      return { label:m.phase, date:m.date, venue:m.venue,
-               home:s.home||null, away:s.away||null, winner,
-               gh:s.gh!=null?s.gh:null, ga:s.ga!=null?s.ga:null, status:s.status||'proximo',
-               winnerFl: winner ? (FLAGS[winner]||'🏳️') : null };
-    };
-    const slots=km.map(slotFrom);
-    return {
-      r32:slots.slice(0,16), r16:slots.slice(16,24), qf:slots.slice(24,28),
-      sf:slots.slice(28,30), tercero:slots[30], final:slots[31]
-    };
-  };
 
   // Firestore: clasificación y llave (con cache para evitar re-leer al volver al tab)
   useEffect(()=>{
