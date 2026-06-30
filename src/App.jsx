@@ -2313,7 +2313,6 @@ function CommentMarquee(){
 }
 
 function RadialBracket({ scores }) {
-  console.log('[RadialBracket] scores keys:', Object.keys(scores||{}), 'sample 73:', scores?.[73], 'sample 91:', scores?.[91]);
   const br = buildBracketFromScores(scores || {});
   const cx = 500, cy = 508;
   const A0 = -90;
