@@ -2432,19 +2432,19 @@ function RadialBracket({ scores }) {
       {/* Nodos r16 */}
       {r16Nodes.map((n,j) => (
         <NodeCircle key={`r16n${j}`} x={n.x} y={n.y}
-          flag={n.slot?.winnerFl || null} active={!!n.slot?.winner} />
+          flag={n.slot?.winnerFl || n.slot?.homeFl || null} active={!!n.slot?.winner || !!n.slot?.home} />
       ))}
 
       {/* Nodos QF */}
       {qfNodes.map((n,m) => (
         <NodeCircle key={`qfn${m}`} x={n.x} y={n.y}
-          flag={n.slot?.winnerFl || null} active={!!n.slot?.winner} r={20} />
+          flag={n.slot?.winnerFl || n.slot?.homeFl || null} active={!!n.slot?.winner || !!n.slot?.home} r={20} />
       ))}
 
       {/* Nodos SF */}
       {sfNodes.map((n,s) => (
         <NodeCircle key={`sfn${s}`} x={n.x} y={n.y}
-          flag={n.slot?.winnerFl || null} active={!!n.slot?.winner} r={22} />
+          flag={n.slot?.winnerFl || n.slot?.homeFl || null} active={!!n.slot?.winner || !!n.slot?.home} r={22} />
       ))}
 
       {/* Trofeo central */}
