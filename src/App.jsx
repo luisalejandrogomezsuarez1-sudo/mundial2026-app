@@ -1185,6 +1185,8 @@ const calcOdds=(home,away)=>{
   let oa=Math.max(1.1, 2.0+diff*0.18);
   return [Math.round(oh*10)/10, Math.round(oa*10)/10];
 };
+// Cuotas fijas para la forma de victoria (octavos en adelante)
+const FORMA_ODDS={normal:1.8, extra:3.5, penales:4.5};
 const PRECIO_PAQUETE=30; // MXN por paquete — fuente única para ingresos del panel
 // 72 partidos × (1X2:7 + BTTS:6=13) = 936
 // Fijos: campeon:6 + bota:6 + balon:4 + gol1:15 + gol2:4 + gol3:5 + grupos(12×2):24 = 64
@@ -3425,7 +3427,7 @@ function AdminResultados({onClose}){
       const s=scores[m.id]||{};
       return { match_id:m.id, group:null, home:s.home||null, away:s.away||null,
                gh:s.gh!=null&&s.gh!==''?Number(s.gh):null, ga:s.ga!=null&&s.ga!==''?Number(s.ga):null,
-               status: s.status || 'proximo' };
+               status: s.status || 'proximo', forma: s.forma || null };
     });
     const d=await post('/api/admin/tabla',{matches:[...grupos,...elim],groupsDef:groupsDef()});
     if(d?.ok) setMsg('✅ Tabla actualizada');
@@ -3627,6 +3629,20 @@ function AdminResultados({onClose}){
                       color:est==='en_vivo'?'#e74c3c':est==='finalizado'?'var(--grn)':'var(--acc)'}}>
                       {est==='en_vivo'?'🔴 EN VIVO':est==='finalizado'?'✓ FINALIZADO':'PRÓXIMO'}
                     </button>
+                    {m.id>=89&&(
+                      <div style={{marginTop:7,display:'flex',alignItems:'center',gap:5,flexWrap:'wrap'}}>
+                        <span style={{fontSize:10,color:'var(--muted)'}}>Forma:</span>
+                        {[['normal','Normal'],['extra','T.Extra'],['penales','Penales']].map(([f,lbl])=>{
+                          const fsel=s.forma===f;
+                          return(
+                            <button key={f} onClick={()=>persistScores({...scores,[m.id]:{...s,forma:fsel?null:f}})}
+                              style={{padding:'4px 8px',borderRadius:6,border:`1px solid ${fsel?'#4F8EF7':'var(--br)'}`,cursor:'pointer',
+                                fontSize:10,fontWeight:700,background:fsel?'rgba(79,142,247,.18)':'var(--surf)',
+                                color:fsel?'#4F8EF7':'var(--muted)'}}>{lbl}</button>
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
                 );
               })}
@@ -5798,7 +5814,12 @@ function ElimScreen({credito,creditoLoading,onPagar,currentUser,onRecheckAccess,
   const puedeGuardar=(ids)=>{
     const editables=ids.filter(matchEditable);
     if(editables.length===0) return false;
-    return editables.every(id=>elimBets[id]?.sel);
+    return editables.every(id=>{
+      const b=elimBets[id];
+      if(!b?.sel) return false;                          // falta el ganador
+      if(id>=89&&!b?.forma) return false;                // octavos+: falta la forma
+      return true;
+    });
   };
 
   const rounds=[
@@ -5818,6 +5839,17 @@ function ElimScreen({credito,creditoLoading,onPagar,currentUser,onRecheckAccess,
       const cur=prev[matchId]||{};
       if(cur.sel===val) return {...prev,[matchId]:{}};
       return {...prev,[matchId]:{sel:val,odds}};
+    });
+  };
+
+  const placeForma=(matchId,forma)=>{
+    if(matchLocked(matchId)) return;                     // Candado 1: el partido ya empezó
+    const r=rounds.find(rd=>rd.ids.includes(matchId));
+    if(r&&roundBloqueada(r.key)) return;                 // Candado 2: ronda guardada sin pago nuevo
+    setElimBets(prev=>{
+      const cur=prev[matchId]||{};
+      if(cur.forma===forma){const{forma:_,formaOdds:__,...rest}=cur; return {...prev,[matchId]:rest};}
+      return {...prev,[matchId]:{...cur,forma,formaOdds:FORMA_ODDS[forma]}};
     });
   };
 
@@ -5936,6 +5968,34 @@ function ElimScreen({credito,creditoLoading,onPagar,currentUser,onRecheckAccess,
                     </div>
                     {bet.sel&&<span style={{fontSize:12,color:'var(--grn)',flexShrink:0}}>✓</span>}
                   </div>
+
+                  {/* Forma de victoria — octavos en adelante (id>=89) */}
+                  {id>=89&&!matchLocked(id)&&!bloqueada&&(
+                    <div style={{padding:'0 12px 10px',display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:4}}>
+                      {[{f:'normal',lbl:'Normal'},{f:'extra',lbl:'T. Extra'},{f:'penales',lbl:'Penales'}].map(({f,lbl})=>{
+                        const fsel=bet.forma===f;
+                        return(
+                          <button type="button" key={f}
+                            onClick={e=>{e.preventDefault();placeForma(id,f);}}
+                            style={{background:fsel?'rgba(79,142,247,.18)':'var(--surf2)',
+                              border:`1.5px solid ${fsel?'#4F8EF7':'var(--br)'}`,
+                              borderRadius:10,padding:'6px 3px',cursor:'pointer',
+                              display:'flex',flexDirection:'column',alignItems:'center',gap:1,
+                              transition:'background .15s,border-color .15s'}}>
+                            <span style={{fontSize:10,fontWeight:700,color:fsel?'#4F8EF7':'var(--txt)',
+                              textAlign:'center',whiteSpace:'nowrap'}}>{lbl}</span>
+                            <span style={{fontSize:9,color:fsel?'#4F8EF7':'#6B82AF',fontWeight:700}}>{FORMA_ODDS[f]}x</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                  {/* Vista solo lectura de la forma cuando está bloqueado */}
+                  {id>=89&&(matchLocked(id)||bloqueada)&&bet.forma&&(
+                    <div style={{padding:'0 12px 8px',fontSize:10,color:'#4F8EF7'}}>
+                      🏆 Tu forma: <strong>{bet.forma==='normal'?'Tiempo normal':bet.forma==='extra'?'Tiempo extra':'Penales'}</strong> · {FORMA_ODDS[bet.forma]}x
+                    </div>
+                  )}
 
                   {/* Marcador exacto — solo Final */}
                   {isFinal&&!matchLocked(104)&&!bloqueada&&(

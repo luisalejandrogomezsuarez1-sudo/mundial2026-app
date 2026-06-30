@@ -1220,10 +1220,12 @@ app.post('/api/admin/tabla', async (req,res)=>{
       const hasScore = m.gh!=null && m.ga!=null;
       const hasStatus = m.status && m.status!=='proximo';
       const hasTeams = (m.home && m.home!=='Por definir') || (m.away && m.away!=='Por definir');
-      if(!hasScore && !hasStatus && !hasTeams) continue;
+      const hasForma = m.forma!=null;
+      if(!hasScore && !hasStatus && !hasTeams && !hasForma) continue;
       if(m.match_id!=null) scores[m.match_id] = {
         ...(hasScore ? {gh:Number(m.gh), ga:Number(m.ga)} : {}),
         ...(hasTeams ? {home:m.home||'Por definir', away:m.away||'Por definir'} : {}),
+        ...(m.forma ? {forma:m.forma} : {}),
         status: m.status || 'proximo'
       };
     }
@@ -1303,6 +1305,10 @@ app.post('/api/admin/puntos', async (req,res)=>{
         const apostado = eb.sel === 'home' ? s.home : s.away;
         if(apostado && apostado === realWinner){
           pts += 3 * (Number(eb.odds) || 1);
+        }
+        // Forma de victoria (octavos+): independiente del acierto del ganador
+        if(id >= 89 && eb.forma && s.forma && eb.forma === s.forma){
+          pts += 3 * (Number(eb.formaOdds) || 1);
         }
         // Bonus marcador exacto de la final (id 104)
         if(id === 104 && eb.exacto && s.gh!=null && s.ga!=null){
