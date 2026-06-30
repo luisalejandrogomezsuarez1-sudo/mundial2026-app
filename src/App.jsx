@@ -2454,12 +2454,6 @@ function RadialBracket({ scores }) {
       {br.final?.winner && (
         <text x={cx} y={cy - 108} textAnchor="middle" fontSize={28}>{br.final.winnerFl}</text>
       )}
-
-      {/* Título */}
-      <text x={cx} y={30} textAnchor="middle" fontSize={24} fontWeight="bold"
-        fill="#fff" fontFamily="var(--ff)" letterSpacing="1" opacity={1}>
-        ELIMINATORIAS
-      </text>
     </svg>
   );
 }
@@ -2630,6 +2624,7 @@ function HomeScreen({onMatch,onGoToCal}){
         </div>
       )}
 
+      <div style={{textAlign:'center',padding:'10px 0 4px',fontFamily:'var(--ff)',fontSize:22,fontWeight:'bold',color:'#fff',letterSpacing:2,textTransform:'uppercase'}}>Eliminatorias</div>
       <TransformWrapper minScale={0.5} maxScale={3} initialScale={1}>
         <TransformComponent wrapperStyle={{width:'100%'}} contentStyle={{width:'100%'}}>
           <RadialBracket scores={scores} />
