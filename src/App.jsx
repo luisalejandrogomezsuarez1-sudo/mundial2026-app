@@ -2965,23 +2965,32 @@ function BracketView({bracket}){
 
 // Deriva el bracket desde scores (admin manual). IDs contiguos 73-104.
 const buildBracketFromScores=(sc)=>{
-  const km=NEXT_MATCHES.filter(m=>m.id>=73).sort((a,b)=>a.id-b.id);
-  const slotFrom=m=>{
-    const s=sc[m.id]||{};
+  const byId={};
+  NEXT_MATCHES.filter(m=>m.id>=73).forEach(m=>{ byId[m.id]=m; });
+  const slotFrom=id=>{
+    const m=byId[id]||{}; const s=sc[id]||{};
     const winner=(s.status==='finalizado'&&s.gh!=null&&s.ga!=null)
       ? (s.gh>s.ga?s.home:s.ga>s.gh?s.away:null)
       : null;
-    return { label:m.phase, date:m.date, venue:m.venue,
+    return { label:m.phase||'', date:m.date||'', venue:m.venue||'',
              home:s.home||null, away:s.away||null, winner,
              gh:s.gh!=null?s.gh:null, ga:s.ga!=null?s.ga:null, status:s.status||'proximo',
              winnerFl: winner ? (FLAGS[winner]||'🏳️') : null,
              homeFl: s.home ? (FLAGS[s.home]||'🏳️') : null,
              awayFl: s.away ? (FLAGS[s.away]||'🏳️') : null };
   };
-  const slots=km.map(slotFrom);
+  // Orden explícito bracket FIFA 2026: pares de 16avos que convergen a cada Octavo
+  const r32Order=[73,74, 75,76, 77,78, 79,80, 83,84, 81,82, 85,87, 86,88];
+  const r16Order=[89,90,91,92,93,94,96,95];
+  const qfOrder =[97,98,99,100];
+  const sfOrder =[101,102];
   return {
-    r32:slots.slice(0,16), r16:slots.slice(16,24), qf:slots.slice(24,28),
-    sf:slots.slice(28,30), tercero:slots[30], final:slots[31]
+    r32: r32Order.map(slotFrom),
+    r16: r16Order.map(slotFrom),
+    qf:  qfOrder.map(slotFrom),
+    sf:  sfOrder.map(slotFrom),
+    tercero: slotFrom(103),
+    final:   slotFrom(104)
   };
 };
 
