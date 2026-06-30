@@ -2314,54 +2314,54 @@ function CommentMarquee(){
 
 function RadialBracket({ scores }) {
   const br = buildBracketFromScores(scores || {});
-  const cx = 500, cy = 508;
-  const A0 = -90;
-  const SP = 11.25;
-  const R = { teams: 470, r32: 384, r16: 296, qf: 212, sf: 132 };
+  const cx = 500, cy = 508, A0 = -90, SP = 11.25;
+  const R = { teams: 472, r32: 392, r16: 306, qf: 220, sf: 138 };
+  const GOLD = '#FFD700';
 
-  const rad = (deg) => (deg + A0) * Math.PI / 180;
-  const pt = (r, deg) => ({
-    x: cx + r * Math.cos(rad(deg)),
-    y: cy + r * Math.sin(rad(deg)),
-  });
+  const rad = (d) => (d + A0) * Math.PI / 180;
+  const P = (r, d) => [cx + r * Math.cos(rad(d)), cy + r * Math.sin(rad(d))];
 
-  // Ángulos
   const aT  = Array.from({length:32}, (_,i) => i * SP);
   const a32 = Array.from({length:16}, (_,p) => (aT[2*p] + aT[2*p+1]) / 2);
   const a16 = Array.from({length:8},  (_,j) => (a32[2*j] + a32[2*j+1]) / 2);
   const aQF = Array.from({length:4},  (_,m) => (a16[2*m] + a16[2*m+1]) / 2);
   const aSF = Array.from({length:2},  (_,s) => (aQF[2*s] + aQF[2*s+1]) / 2);
 
-  // Nodos
-  const teamNodes = aT.map((a,i) => ({ ...pt(R.teams, a), flag: null, i }));
-  const r32Nodes  = a32.map((a,p) => ({ ...pt(R.r32,  a), slot: br.r32?.[p] }));
-  const r16Nodes  = a16.map((a,j) => ({ ...pt(R.r16,  a), slot: br.r16?.[j] }));
-  const qfNodes   = aQF.map((a,m) => ({ ...pt(R.qf,   a), slot: br.qf?.[m] }));
-  const sfNodes   = aSF.map((a,s) => ({ ...pt(R.sf,   a), slot: br.sf?.[s] }));
-  const finalNode = { x: cx, y: cy - 78, slot: br.final };
+  const arc = (r, d1, d2) => {
+    const [x1,y1] = P(r, d1), [x2,y2] = P(r, d2);
+    const large = Math.abs(d2 - d1) > 180 ? 1 : 0;
+    const sweep = d2 > d1 ? 1 : 0;
+    return `M ${x1} ${y1} A ${r} ${r} 0 ${large} ${sweep} ${x2} ${y2}`;
+  };
 
-  // Colores
-  const GOLD = '#FFD700';
-  const DIM  = '#444';
+  const paths = [];
+  const elbow = (rO, d1, d2, rI, dMid, active1, active2) => {
+    const rBus = (rO + rI) / 2;
+    const [c1x,c1y] = P(rO, d1), [b1x,b1y] = P(rBus, d1);
+    const [c2x,c2y] = P(rO, d2), [b2x,b2y] = P(rBus, d2);
+    const [pmx,pmy] = P(rBus, dMid), [nx,ny] = P(rI, dMid);
+    const col = (a) => a ? GOLD : '#444';
+    paths.push(<path key={`e${rO}-${d1}-1`} d={`M ${c1x} ${c1y} L ${b1x} ${b1y}`} fill="none" stroke={col(active1)} strokeWidth={active1?1.3:0.7} opacity={active1?0.85:0.45}/>);
+    paths.push(<path key={`e${rO}-${d1}-2`} d={`M ${c2x} ${c2y} L ${b2x} ${b2y}`} fill="none" stroke={col(active2)} strokeWidth={active2?1.3:0.7} opacity={active2?0.85:0.45}/>);
+    paths.push(<path key={`e${rO}-${d1}-arc`} d={arc(rBus, d1, d2)} fill="none" stroke="#444" strokeWidth={0.7} opacity={0.45}/>);
+    paths.push(<path key={`e${rO}-${d1}-rad`} d={`M ${pmx} ${pmy} L ${nx} ${ny}`} fill="none" stroke={(active1||active2)?GOLD:'#444'} strokeWidth={(active1||active2)?1.3:0.7} opacity={(active1||active2)?0.85:0.45}/>);
+  };
 
-  const NodeCircle = ({ x, y, flag, active, r = 18 }) => (
+  const r32S = br.r32 || [], r16S = br.r16 || [], qfS = br.qf || [], sfS = br.sf || [];
+
+  for (let p=0;p<16;p++){ const sl=r32S[p]||{}; elbow(R.teams, aT[2*p], aT[2*p+1], R.r32, a32[p], !!sl.home, !!sl.away); }
+  for (let j=0;j<8;j++){ elbow(R.r32, a32[2*j], a32[2*j+1], R.r16, a16[j], !!r32S[2*j]?.winner, !!r32S[2*j+1]?.winner); }
+  for (let m=0;m<4;m++){ elbow(R.r16, a16[2*m], a16[2*m+1], R.qf, aQF[m], !!r16S[2*m]?.winner, !!r16S[2*m+1]?.winner); }
+  for (let m=0;m<2;m++){ elbow(R.qf, aQF[2*m], aQF[2*m+1], R.sf, aSF[m], !!qfS[2*m]?.winner, !!qfS[2*m+1]?.winner); }
+  for (let m=0;m<2;m++){ const [ax,ay]=P(R.sf, aSF[m]); paths.push(<path key={`sf${m}`} d={`M ${ax} ${ay} L ${cx} ${cy-72}`} fill="none" stroke={sfS[m]?.winner?GOLD:'#444'} strokeWidth={sfS[m]?.winner?1.3:0.7} opacity={sfS[m]?.winner?0.85:0.45}/>); }
+
+  const Node = ({ x, y, flag, active, r = 17 }) => (
     <g>
-      <circle cx={x} cy={y} r={r + 1.5} fill="none" stroke={active ? GOLD : DIM}
-        strokeWidth={active ? 1 : 0.5} opacity={active ? 0.9 : 0.4}
-        filter={active ? 'url(#glow)' : undefined} />
-      <circle cx={x} cy={y} r={r} fill="#111" stroke={active ? GOLD : '#333'} strokeWidth={0.8} />
-      {flag && <text x={x} y={y + 8} textAnchor="middle" fontSize={r * 1.3}>{flag}</text>}
+      <circle cx={x} cy={y} r={r+1.5} fill="none" stroke={active?GOLD:'#555'} strokeWidth={active?1.2:0.6} opacity={active?0.9:0.4} filter={active?'url(#glow)':undefined}/>
+      <circle cx={x} cy={y} r={r} fill="#111" stroke={active?GOLD:'#333'} strokeWidth={0.8}/>
+      {flag && <text x={x} y={y+7} textAnchor="middle" fontSize={r*1.25}>{flag}</text>}
     </g>
   );
-
-  // Líneas helper
-  const Line = ({ from, to, active }) => (
-    <line x1={from.x} y1={from.y} x2={to.x} y2={to.y}
-      stroke={active ? GOLD : '#333'} strokeWidth={active ? 1.5 : 0.8} opacity={active ? 0.8 : 0.4} />
-  );
-
-  // Equipos del r32 (outer home/away)
-  const r32Flags = br.r32 || [];
 
   return (
     <svg viewBox="0 0 1000 1016" style={{ width:'100%', maxWidth:700, display:'block', margin:'0 auto' }}>
@@ -2372,85 +2372,28 @@ function RadialBracket({ scores }) {
         </filter>
       </defs>
 
-      {/* Líneas teams→r32 */}
-      {r32Nodes.map((n,p) => {
-        const h = pt(R.teams, aT[2*p]);
-        const a = pt(R.teams, aT[2*p+1]);
-        return <g key={`tl${p}`}>
-          <Line from={h} to={n} active={!!r32Flags[p]?.home} />
-          <Line from={a} to={n} active={!!r32Flags[p]?.away} />
-        </g>;
-      })}
+      {paths}
 
-      {/* Líneas r32→r16 */}
-      {r16Nodes.map((n,j) => (
-        <g key={`r32l${j}`}>
-          <Line from={r32Nodes[2*j]} to={n} active={!!r32Nodes[2*j]?.slot?.winner} />
-          <Line from={r32Nodes[2*j+1]} to={n} active={!!r32Nodes[2*j+1]?.slot?.winner} />
-        </g>
-      ))}
-
-      {/* Líneas r16→qf */}
-      {qfNodes.map((n,m) => (
-        <g key={`r16l${m}`}>
-          <Line from={r16Nodes[2*m]} to={n} active={!!r16Nodes[2*m]?.slot?.winner} />
-          <Line from={r16Nodes[2*m+1]} to={n} active={!!r16Nodes[2*m+1]?.slot?.winner} />
-        </g>
-      ))}
-
-      {/* Líneas qf→sf */}
-      {sfNodes.map((n,s) => (
-        <g key={`qfl${s}`}>
-          <Line from={qfNodes[2*s]} to={n} active={!!qfNodes[2*s]?.slot?.winner} />
-          <Line from={qfNodes[2*s+1]} to={n} active={!!qfNodes[2*s+1]?.slot?.winner} />
-        </g>
-      ))}
-
-      {/* Líneas sf→final */}
-      {sfNodes.map((n,s) => (
-        <Line key={`sfl${s}`} from={n} to={finalNode} active={!!n.slot?.winner} />
-      ))}
-
-      {/* Nodos teams (banderas exteriores) */}
-      {r32Flags.map((slot,p) => {
-        const hPt = pt(R.teams, aT[2*p]);
-        const aPt = pt(R.teams, aT[2*p+1]);
+      {Array.from({length:16}).map((_,p) => {
+        const sl = r32S[p] || {};
+        const [hx,hy] = P(R.teams, aT[2*p]);
+        const [ax,ay] = P(R.teams, aT[2*p+1]);
         return <g key={`tf${p}`}>
-          <NodeCircle x={hPt.x} y={hPt.y} flag={slot?.homeFl} active={!!slot?.home} />
-          <NodeCircle x={aPt.x} y={aPt.y} flag={slot?.awayFl} active={!!slot?.away} />
+          <Node x={hx} y={hy} flag={sl.homeFl} active={!!sl.home} />
+          <Node x={ax} y={ay} flag={sl.awayFl} active={!!sl.away} />
         </g>;
       })}
 
-      {/* Nodos r32 */}
-      {r32Nodes.map((n,p) => (
-        <NodeCircle key={`r32n${p}`} x={n.x} y={n.y}
-          flag={r32Flags[p]?.winner ? (r32Flags[p]?.winnerFl || '🏆') : null}
-          active={!!r32Flags[p]?.winner} />
-      ))}
+      {a32.map((a,p) => { const [x,y]=P(R.r32,a); const sl=r32S[p]||{};
+        return <Node key={`n32${p}`} x={x} y={y} flag={sl.winnerFl} active={!!sl.winner} r={12} />; })}
+      {a16.map((a,j) => { const [x,y]=P(R.r16,a); const sl=r16S[j]||{};
+        return <Node key={`n16${j}`} x={x} y={y} flag={sl.winnerFl||sl.homeFl} active={!!sl.winner||!!sl.home} r={14} />; })}
+      {aQF.map((a,m) => { const [x,y]=P(R.qf,a); const sl=qfS[m]||{};
+        return <Node key={`nqf${m}`} x={x} y={y} flag={sl.winnerFl||sl.homeFl} active={!!sl.winner||!!sl.home} r={16} />; })}
+      {aSF.map((a,s) => { const [x,y]=P(R.sf,a); const sl=sfS[s]||{};
+        return <Node key={`nsf${s}`} x={x} y={y} flag={sl.winnerFl||sl.homeFl} active={!!sl.winner||!!sl.home} r={18} />; })}
 
-      {/* Nodos r16 */}
-      {r16Nodes.map((n,j) => (
-        <NodeCircle key={`r16n${j}`} x={n.x} y={n.y}
-          flag={n.slot?.winnerFl || n.slot?.homeFl || null} active={!!n.slot?.winner || !!n.slot?.home} />
-      ))}
-
-      {/* Nodos QF */}
-      {qfNodes.map((n,m) => (
-        <NodeCircle key={`qfn${m}`} x={n.x} y={n.y}
-          flag={n.slot?.winnerFl || n.slot?.homeFl || null} active={!!n.slot?.winner || !!n.slot?.home} r={20} />
-      ))}
-
-      {/* Nodos SF */}
-      {sfNodes.map((n,s) => (
-        <NodeCircle key={`sfn${s}`} x={n.x} y={n.y}
-          flag={n.slot?.winnerFl || n.slot?.homeFl || null} active={!!n.slot?.winner || !!n.slot?.home} r={22} />
-      ))}
-
-      {/* Trofeo central */}
-      <image href="/trofeo2.png" x={cx - 63} y={cy - 99}
-        width={126} height={198} style={{ imageRendering:'crisp-edges' }} />
-
-      {/* Campeón encima del trofeo */}
+      <image href="/trofeo2.png" x={cx - 63} y={cy - 99} width={126} height={198} style={{ imageRendering:'crisp-edges' }} />
       {br.final?.winner && (
         <text x={cx} y={cy - 108} textAnchor="middle" fontSize={28}>{br.final.winnerFl}</text>
       )}
