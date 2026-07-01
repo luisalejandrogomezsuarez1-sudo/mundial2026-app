@@ -2489,7 +2489,16 @@ function HomeScreen({onMatch,onGoToCal}){
       )}
 
       <div style={{textAlign:'center',padding:'10px 0 4px',fontFamily:'var(--ff)',fontSize:22,fontWeight:'bold',color:'#fff',letterSpacing:2,textTransform:'uppercase'}}>Eliminatorias</div>
-      <TransformWrapper minScale={0.5} maxScale={3} initialScale={1}>
+      <TransformWrapper
+        minScale={1}
+        maxScale={3}
+        initialScale={1}
+        centerOnInit={true}
+        limitToBounds={true}
+        doubleClick={{ mode: 'zoomIn', step: 0.7 }}
+        wheel={{ step: 0.1 }}
+        pinch={{ step: 5 }}
+      >
         <TransformComponent wrapperStyle={{width:'100%'}} contentStyle={{width:'100%'}}>
           <RadialBracket scores={scores} />
         </TransformComponent>
