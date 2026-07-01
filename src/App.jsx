@@ -2313,11 +2313,104 @@ function CommentMarquee(){
 }
 
 function RadialBracket({ scores }) {
+  const br = buildBracketFromScores(scores || {});
+  const W = 760, H = 900;
+  const GOLD = '#E9C24A', GOLD2 = '#F4D97A', DIM = '#3a3a42';
+
+  const L_FIX = [['Alemania','Paraguay'],['Francia','Suecia'],['Sudáfrica','Canadá'],['Países Bajos','Marruecos'],
+                 ['Portugal','Croacia'],['España','Austria'],['USA','Bosnia y Herzegovina'],['Bélgica','Senegal']];
+  const R_FIX = [['Brasil','Japón'],['Costa de Marfil','Noruega'],['México','Ecuador'],['Inglaterra','Congo DR'],
+                 ['Argentina','Cabo Verde'],['Australia','Egipto'],['Suiza','Argelia'],['Colombia','Ghana']];
+  const fl = (name) => (typeof FLAGS!=='undefined' && FLAGS[name]) || '🏳️';
+
+  const r16S = br.r16 || [], qfS = br.qf || [], sfS = br.sf || [];
+
+  const top = 60, gap = (H - top - 60) / 8;
+  const ys8 = Array.from({length:8}, (_,i) => top + gap*(i+0.5));
+  const cL_flag=60, cL_n1=150, cL_n2=220, cL_n3=285;
+  const cR_flag=W-60, cR_n1=W-150, cR_n2=W-220, cR_n3=W-285;
+  const centerX = W/2;
+
+  const nodes = [], lines = [];
+  let k = 0;
+
+  const FlagBox = (x, y, flag, active) => {
+    const w=38, h=28, st=active?GOLD:DIM;
+    nodes.push(
+      <g key={`fb${k++}`}>
+        <rect x={x-w/2-1.5} y={y-h/2-1.5} width={w+3} height={h+3} rx={4} fill="none" stroke={st} strokeWidth={active?0.8:0.5} opacity={active?0.9:0.45}/>
+        <rect x={x-w/2} y={y-h/2} width={w} height={h} rx={3} fill="#15151b" stroke={st} strokeWidth={0.5}/>
+        {flag && <text x={x} y={y+9} textAnchor="middle" fontSize={25}>{flag}</text>}
+      </g>
+    );
+  };
+  const SmallBox = (x, y, flag, active) => {
+    const w=24, h=18, st=active?GOLD:DIM;
+    nodes.push(
+      <g key={`sb${k++}`}>
+        <rect x={x-w/2} y={y-h/2} width={w} height={h} rx={3} fill="#15151b" stroke={st} strokeWidth={active?1:0.6} opacity={active?1:0.55}/>
+        {flag && <text x={x} y={y+6} textAnchor="middle" fontSize={15}>{flag}</text>}
+      </g>
+    );
+  };
+  const elbow = (x1, y1, x2, y2, xmid, active) => {
+    lines.push(<path key={`el${k++}`} d={`M ${x1} ${y1} L ${xmid} ${y1} L ${xmid} ${y2} L ${x2} ${y2}`} fill="none" stroke={active?GOLD:DIM} strokeWidth={active?1.6:1} opacity={active?0.85:0.5} strokeLinejoin="round"/>);
+  };
+
+  const buildSide = (side) => {
+    const isL = side==='L';
+    const FIX = isL?L_FIX:R_FIX;
+    const flagX = isL?cL_flag:cR_flag, n1=isL?cL_n1:cR_n1, n2=isL?cL_n2:cR_n2, n3=isL?cL_n3:cR_n3;
+    const off = isL?34:-34, dir = isL?1:-1;
+    const r16base = isL?0:4, qfbase = isL?0:2;
+
+    for (let i=0;i<8;i++){
+      const y=ys8[i];
+      FlagBox(flagX, y-14, fl(FIX[i][0]), true);
+      FlagBox(flagX, y+14, fl(FIX[i][1]), true);
+      elbow(flagX+off, y-14, n1, y, flagX+off*0.6, true);
+      elbow(flagX+off, y+14, n1, y, flagX+off*0.6, true);
+      SmallBox(n1, y, '', false);
+    }
+    const y16 = [];
+    for (let i=0;i<4;i++){
+      const ya=ys8[2*i], yb=ys8[2*i+1], y=(ya+yb)/2; y16.push(y);
+      const sl=r16S[r16base+i]||{};
+      elbow(n1, ya, n2, y, n1+off*1.03, true);
+      elbow(n1, yb, n2, y, n1+off*1.03, true);
+      SmallBox(n2, y, sl.winnerFl||sl.homeFl||'', !!sl.winner||!!sl.home);
+    }
+    const yqf=[];
+    for (let i=0;i<2;i++){
+      const ya=y16[2*i], yb=y16[2*i+1], y=(ya+yb)/2; yqf.push(y);
+      const sl=qfS[qfbase+i]||{};
+      elbow(n2, ya, n3, y, n2+off*1.03, true);
+      elbow(n2, yb, n3, y, n2+off*1.03, true);
+      SmallBox(n3, y, sl.winnerFl||sl.homeFl||'', !!sl.winner||!!sl.home);
+    }
+    const ysf=(yqf[0]+yqf[1])/2;
+    elbow(n3, yqf[0], centerX-70*dir, ysf, n3+off*1.03, true);
+    elbow(n3, yqf[1], centerX-70*dir, ysf, n3+off*1.03, true);
+    return ysf;
+  };
+
+  const ysfL = buildSide('L');
+  const ysfR = buildSide('R');
+  const cyC = (ysfL+ysfR)/2;
+
+  lines.push(<line key="fcL" x1={centerX-70} y1={ysfL} x2={centerX-30} y2={cyC} stroke={GOLD} strokeWidth={1.6} opacity={0.85}/>);
+  lines.push(<line key="fcR" x1={centerX+70} y1={ysfR} x2={centerX+30} y2={cyC} stroke={GOLD} strokeWidth={1.6} opacity={0.85}/>);
+
   return (
-    <div style={{display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:'30px 16px 40px',gap:16}}>
-      <img src="/trofeo2.png" alt="trofeo" style={{width:120,height:'auto',filter:'drop-shadow(0 0 24px rgba(240,165,0,.35))'}}/>
-      <div style={{fontFamily:'var(--ff)',fontSize:20,letterSpacing:2,color:'var(--gold)',textTransform:'uppercase'}}>Próximamente Bracket</div>
-      <div style={{fontSize:13,color:'var(--muted)',textAlign:'center',maxWidth:280,lineHeight:1.5}}>El bracket de eliminatorias estará disponible muy pronto</div>
+    <div style={{width:'100%'}}>
+      <div style={{textAlign:'center',padding:'16px 0 8px',fontFamily:'Georgia, serif',fontSize:26,fontWeight:700,color:GOLD2,letterSpacing:2}}>Bracket De Equipos</div>
+      <svg viewBox={`0 0 ${W} ${H}`} style={{width:'100%',display:'block'}}>
+        {lines}
+        {nodes}
+        <image href="/trofeo2.png" x={centerX-52} y={cyC-175} width={104} height={160} preserveAspectRatio="xMidYMid meet"/>
+        <text x={centerX} y={cyC+12} textAnchor="middle" fontFamily="Georgia, serif" fontSize={40} fontWeight={800} fill={GOLD2}>VS</text>
+        {br.final?.winner && <text x={centerX} y={cyC-185} textAnchor="middle" fontSize={26}>{br.final.winnerFl}</text>}
+      </svg>
     </div>
   );
 }
