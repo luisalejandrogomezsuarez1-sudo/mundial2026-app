@@ -2321,7 +2321,9 @@ function RadialBracket({ scores }) {
   const rad = (d) => (d + A0) * Math.PI / 180;
   const P = (r, d) => [cx + r * Math.cos(rad(d)), cy + r * Math.sin(rad(d))];
 
-  const aT  = Array.from({length:32}, (_,i) => i * SP);
+  const PAIR_STEP = 360/16, GAP = 8;
+  const aT = [];
+  for (let p=0;p<16;p++){ const c=p*PAIR_STEP; aT.push(c - GAP/2); aT.push(c + GAP/2); }
   const a32 = Array.from({length:16}, (_,p) => (aT[2*p] + aT[2*p+1]) / 2);
   const a16 = Array.from({length:8},  (_,j) => (a32[2*j] + a32[2*j+1]) / 2);
   const aQF = Array.from({length:4},  (_,m) => (a16[2*m] + a16[2*m+1]) / 2);
