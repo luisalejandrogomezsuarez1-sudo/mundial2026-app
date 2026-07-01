@@ -981,8 +981,8 @@ const NEXT_MATCHES=[
   {id:88, home:'Por definir',away:'Por definir',isoDate:'2026-07-03',date:'Jul 3', time:'19:30',phase:'16avos · P88', venue:'Kansas City Stadium',            city:'Kansas City, MO',      wx:{ic:'⛅',desc:'',t:'--'},odds:[2.0,3.2,3.0]},
 
   // ══ OCTAVOS DE FINAL (Jul 4 – Jul 7) ══════════════════════════
-  {id:89, home:'Por definir',away:'Por definir',isoDate:'2026-07-04',date:'Jul 4', time:'11:00',phase:'Octavos · P89', venue:'Philadelphia Stadium',          city:'Filadelfia, PA',       wx:{ic:'⛅',desc:'',t:'--'},odds:[2.0,3.2,3.0]},
-  {id:90, home:'Por definir',away:'Por definir',isoDate:'2026-07-04',date:'Jul 4', time:'15:00',phase:'Octavos · P90', venue:'Houston Stadium',               city:'Houston, Texas',       wx:{ic:'⛅',desc:'',t:'--'},odds:[2.0,3.2,3.0]},
+  {id:89, home:'Por definir',away:'Por definir',isoDate:'2026-07-04',date:'Jul 4', time:'11:00',phase:'Octavos · P89', venue:'Houston Stadium',               city:'Houston, Texas',       wx:{ic:'⛅',desc:'',t:'--'},odds:[2.0,3.2,3.0]},
+  {id:90, home:'Por definir',away:'Por definir',isoDate:'2026-07-04',date:'Jul 4', time:'15:00',phase:'Octavos · P90', venue:'Philadelphia Stadium',          city:'Filadelfia, PA',       wx:{ic:'⛅',desc:'',t:'--'},odds:[2.0,3.2,3.0]},
   {id:91, home:'Por definir',away:'Por definir',isoDate:'2026-07-05',date:'Jul 5', time:'14:00',phase:'Octavos · P91', venue:'New York New Jersey Stadium',   city:'East Rutherford, NJ',  wx:{ic:'⛅',desc:'',t:'--'},odds:[2.0,3.2,3.0]},
   {id:92, home:'Por definir',away:'Por definir',isoDate:'2026-07-05',date:'Jul 5', time:'18:00',phase:'Octavos · P92', venue:'Estadio Azteca',                city:'Tlalpan, CDMX',        wx:{ic:'⛅',desc:'',t:'--'},odds:[2.0,3.2,3.0]},
   {id:93, home:'Por definir',away:'Por definir',isoDate:'2026-07-06',date:'Jul 6', time:'13:00',phase:'Octavos · P93', venue:'Dallas Stadium',                city:'Arlington, Texas',     wx:{ic:'⛅',desc:'',t:'--'},odds:[2.0,3.2,3.0]},
