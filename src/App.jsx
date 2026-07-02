@@ -2370,15 +2370,8 @@ function RadialBracket({ scores }) {
       elbow(n1, ya, n2, y, n1+off*0.9, !!s1.winner);
       elbow(n1, yb, n2, y, n1+off*0.9, !!s2.winner);
       const oct=r16S[r16base+i]||{};
-      // equipos del octavo: si capturado usa home/away; si no, ganadores de los 2 pares
-      const octH = oct.home || s1.winner || '';
-      const octA = oct.away || s2.winner || '';
-      if (octH || octA) {
-        Box(n2, y-9, fl(octH), oct.winner ? oct.winner===octH : true);
-        Box(n2, y+9, fl(octA), oct.winner ? oct.winner===octA : true);
-      } else {
-        Box(n2, y, '', false);
-      }
+      // solo el GANADOR del octavo; vacío hasta que se capture
+      Box(n2, y, oct.winner ? (oct.winnerFl||fl(oct.winner)) : '', !!oct.winner);
     }
     // cuartos: n2 -> n3
     const yqf=[];
