@@ -2411,9 +2411,9 @@ function RadialBracket({ scores }) {
   lines.push(<line key="fcR" x1={cx+95} y1={ysfR} x2={cx+40} y2={cyC} stroke={DIM} strokeWidth={1} opacity={0.4}/>);
 
   return (
-    <div style={{width:'100%'}}>
+    <div style={{width:'100%',background:'transparent'}}>
       <div style={{textAlign:'center',padding:'16px 0 8px',fontFamily:'Georgia, serif',fontSize:26,fontWeight:700,color:GOLD2,letterSpacing:2}}>Bracket De Equipos</div>
-      <svg viewBox={`0 0 ${W} ${H}`} style={{width:'100%',display:'block'}}>
+      <svg viewBox={`0 0 ${W} ${H}`} style={{width:'100%',display:'block',background:'transparent'}}>
         <defs>
           <filter id="tglow" x="-50%" y="-50%" width="200%" height="200%">
             <feGaussianBlur stdDeviation="10" result="b"/>
