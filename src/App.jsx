@@ -2362,7 +2362,7 @@ function RadialBracket({ scores }) {
       elbow(flagX+edge, y+15, n1, y, flagX+off*0.55, !!s.winner && s.winner===s.away);
       Box(n1, y, s.winner ? (s.winnerFl||fl(s.winner)) : '', !!s.winner);
     }
-    // octavos: pares n1 -> n2 (muestra ganador del octavo del slot r16)
+    // octavos: pares n1 -> n2. Muestra los 2 equipos del octavo (capturado o ganadores de 16avos)
     const y16 = [];
     for (let i=0;i<4;i++){
       const ya=ys8[2*i], yb=ys8[2*i+1], y=(ya+yb)/2; y16.push(y);
@@ -2370,7 +2370,15 @@ function RadialBracket({ scores }) {
       elbow(n1, ya, n2, y, n1+off*0.9, !!s1.winner);
       elbow(n1, yb, n2, y, n1+off*0.9, !!s2.winner);
       const oct=r16S[r16base+i]||{};
-      Box(n2, y, oct.winner ? (oct.winnerFl||fl(oct.winner)) : '', !!oct.winner);
+      // equipos del octavo: si capturado usa home/away; si no, ganadores de los 2 pares
+      const octH = oct.home || s1.winner || '';
+      const octA = oct.away || s2.winner || '';
+      if (octH || octA) {
+        Box(n2, y-9, fl(octH), oct.winner ? oct.winner===octH : true);
+        Box(n2, y+9, fl(octA), oct.winner ? oct.winner===octA : true);
+      } else {
+        Box(n2, y, '', false);
+      }
     }
     // cuartos: n2 -> n3
     const yqf=[];
@@ -2939,8 +2947,8 @@ const buildBracketFromScores=(sc)=>{
              awayFl: s.away ? (FLAGS[s.away]||'🏳️') : null };
   };
   // Orden explícito bracket FIFA 2026: pares de 16avos que convergen a cada Octavo
-  const r32Order=[73,74,75,76,77,78,79,80, 81,82,83,84,85,86,87,88];
-  const r16Order=[89,90,91,92, 93,94,95,96];
+  const r32Order=[75,78,73,76, 84,83,82,81, 74,77,79,80, 87,86,85,88];
+  const r16Order=[90,89,93,94, 91,92,95,96];
   const qfOrder =[97,98,99,100];
   const sfOrder =[101,102];
   return {
