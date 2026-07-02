@@ -2313,46 +2313,111 @@ function CommentMarquee(){
 }
 
 function RadialBracket({ scores }) {
+  const br = buildBracketFromScores(scores || {});
+  const W = 760, H = 1000;
+  const GOLD = '#E9C24A', GOLD2 = '#F4D97A', DIM = '#7a6a3a';
+  const FR = 20;
+  const fl = (name) => (typeof FLAGS!=='undefined' && FLAGS[name]) || '';
+
+  const r32S = br.r32 || [], r16S = br.r16 || [], qfS = br.qf || [], sfS = br.sf || [];
+
+  const top = 70, gap = (H - top - 70) / 8;
+  const ys8 = Array.from({length:8}, (_,i) => top + gap*(i+0.5));
+  const cL_flag=64, cL_n1=175, cL_n2=262, cL_n3=340;
+  const cR_flag=W-64, cR_n1=W-175, cR_n2=W-262, cR_n3=W-340;
+  const cx = W/2;
+
+  const nodes = [], lines = []; let k=0;
+
+  const Box = (x, y, flag, active) => {
+    const w=FR*1.9, h=FR*1.4, st=active?GOLD:DIM;
+    nodes.push(
+      <g key={`b${k++}`}>
+        <rect x={x-w/2-1.5} y={y-h/2-1.5} width={w+3} height={h+3} rx={4} fill="none" stroke={st} strokeWidth={0.8} opacity={0.85}/>
+        <rect x={x-w/2} y={y-h/2} width={w} height={h} rx={3} fill="#15151b" stroke={st} strokeWidth={0.5}/>
+        {flag && <text x={x} y={y+FR*0.42} textAnchor="middle" fontSize={FR*1.25}>{flag}</text>}
+      </g>
+    );
+  };
+  const elbow = (x1,y1,x2,y2,xmid,active) => {
+    lines.push(<path key={`e${k++}`} d={`M ${x1} ${y1} L ${xmid} ${y1} L ${xmid} ${y2} L ${x2} ${y2}`} fill="none" stroke={active?GOLD:DIM} strokeWidth={active?1.6:1} opacity={active?0.85:0.4} strokeLinejoin="round"/>);
+  };
+
+  const buildSide = (side) => {
+    const isL = side==='L';
+    const base = isL?0:8;      // r32: izq 0-7 (ids 73-80), der 8-15 (ids 81-88)
+    const r16base = isL?0:4;   // r16: izq 0-3 (89-92... no: 89,90,91,92 arriba), der 4-7
+    const qfbase = isL?0:2;
+    const flagX = isL?cL_flag:cR_flag, n1=isL?cL_n1:cR_n1, n2=isL?cL_n2:cR_n2, n3=isL?cL_n3:cR_n3;
+    const off = isL?40:-40, dir = isL?1:-1, edge = isL?(FR+4):-(FR+4);
+
+    // 16avos: home/away del slot + ganador avanza a n1
+    for (let i=0;i<8;i++){
+      const y=ys8[i], s=r32S[base+i]||{};
+      const aWon = !s.winner || s.winner===s.home;
+      const bWon = !s.winner || s.winner===s.away;
+      Box(flagX, y-15, fl(s.home), aWon);
+      Box(flagX, y+15, fl(s.away), bWon);
+      elbow(flagX+edge, y-15, n1, y, flagX+off*0.55, !!s.winner && s.winner===s.home);
+      elbow(flagX+edge, y+15, n1, y, flagX+off*0.55, !!s.winner && s.winner===s.away);
+      Box(n1, y, s.winner ? (s.winnerFl||fl(s.winner)) : '', !!s.winner);
+    }
+    // octavos: pares n1 -> n2 (muestra ganador del octavo del slot r16)
+    const y16 = [];
+    for (let i=0;i<4;i++){
+      const ya=ys8[2*i], yb=ys8[2*i+1], y=(ya+yb)/2; y16.push(y);
+      const s1=r32S[base+2*i]||{}, s2=r32S[base+2*i+1]||{};
+      elbow(n1, ya, n2, y, n1+off*0.9, !!s1.winner);
+      elbow(n1, yb, n2, y, n1+off*0.9, !!s2.winner);
+      const oct=r16S[r16base+i]||{};
+      Box(n2, y, oct.winner ? (oct.winnerFl||fl(oct.winner)) : '', !!oct.winner);
+    }
+    // cuartos: n2 -> n3
+    const yqf=[];
+    for (let i=0;i<2;i++){
+      const ya=y16[2*i], yb=y16[2*i+1], y=(ya+yb)/2; yqf.push(y);
+      const o1=r16S[r16base+2*i]||{}, o2=r16S[r16base+2*i+1]||{};
+      elbow(n2, ya, n3, y, n2+off*0.9, !!o1.winner);
+      elbow(n2, yb, n3, y, n2+off*0.9, !!o2.winner);
+      const q=qfS[qfbase+i]||{};
+      Box(n3, y, q.winner ? (q.winnerFl||fl(q.winner)) : '', !!q.winner);
+    }
+    // semis -> centro
+    const ysf=(yqf[0]+yqf[1])/2;
+    const q1=qfS[qfbase]||{}, q2=qfS[qfbase+1]||{};
+    elbow(n3, yqf[0], cx-95*dir, ysf, n3+off*0.9, !!q1.winner);
+    elbow(n3, yqf[1], cx-95*dir, ysf, n3+off*0.9, !!q2.winner);
+    return ysf;
+  };
+
+  const ysfL = buildSide('L');
+  const ysfR = buildSide('R');
+  const cyC = (ysfL+ysfR)/2;
+
+  lines.push(<line key="fcL" x1={cx-95} y1={ysfL} x2={cx-40} y2={cyC} stroke={DIM} strokeWidth={1} opacity={0.4}/>);
+  lines.push(<line key="fcR" x1={cx+95} y1={ysfR} x2={cx+40} y2={cyC} stroke={DIM} strokeWidth={1} opacity={0.4}/>);
+
   return (
-    <div style={{
-      display:'flex',
-      flexDirection:'column',
-      alignItems:'center',
-      justifyContent:'center',
-      padding:'30px 16px 40px',
-      gap:16
-    }}>
-      <img
-        src="/trofeo2.png"
-        alt="trofeo"
-        style={{
-          width:120,
-          height:'auto',
-          filter:'drop-shadow(0 0 24px rgba(240,165,0,.35))'
-        }}
-      />
-      <div
-        style={{
-          fontFamily:'var(--ff)',
-          fontSize:20,
-          letterSpacing:2,
-          color:'var(--gold)',
-          textTransform:'uppercase'
-        }}
-      >
-        Próximamente
-      </div>
-      <div
-        style={{
-          fontSize:13,
-          color:'var(--muted)',
-          textAlign:'center',
-          maxWidth:280,
-          lineHeight:1.5
-        }}
-      >
-        El bracket de eliminatorias estará disponible muy pronto
-      </div>
+    <div style={{width:'100%',background:'transparent'}}>
+      <div style={{textAlign:'center',padding:'16px 0 8px',fontFamily:'Georgia, serif',fontSize:26,fontWeight:700,color:GOLD2,letterSpacing:2}}>Bracket De Equipos</div>
+      <svg viewBox={`0 0 ${W} ${H}`} style={{width:'100%',display:'block',background:'transparent'}}>
+        <defs>
+          <filter id="tglow" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="10" result="b"/>
+            <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+          <radialGradient id="tg" cx="50%" cy="45%" r="55%">
+            <stop offset="0%" stopColor="#FFE08A" stopOpacity="0.55"/>
+            <stop offset="60%" stopColor="#E9C24A" stopOpacity="0.15"/>
+            <stop offset="100%" stopColor="#E9C24A" stopOpacity="0"/>
+          </radialGradient>
+        </defs>
+        {lines}
+        {nodes}
+        <ellipse cx={cx} cy={cyC-95} rx={105} ry={130} fill="url(#tg)"/>
+        <image href="/trofeo2.png" x={cx-58} y={cyC-185} width={116} height={178} preserveAspectRatio="xMidYMid meet" filter="url(#tglow)"/>
+        {br.final?.winner && <text x={cx} y={cyC-195} textAnchor="middle" fontSize={26}>{br.final.winnerFl}</text>}
+      </svg>
     </div>
   );
 }
@@ -2874,8 +2939,8 @@ const buildBracketFromScores=(sc)=>{
              awayFl: s.away ? (FLAGS[s.away]||'🏳️') : null };
   };
   // Orden explícito bracket FIFA 2026: pares de 16avos que convergen a cada Octavo
-  const r32Order=[73,74, 75,76, 77,78, 79,80, 83,84, 81,82, 85,87, 86,88];
-  const r16Order=[89,90,91,92,93,94,96,95];
+  const r32Order=[73,74,75,76,77,78,79,80, 81,82,83,84,85,86,87,88];
+  const r16Order=[89,90,91,92, 93,94,95,96];
   const qfOrder =[97,98,99,100];
   const sfOrder =[101,102];
   return {
