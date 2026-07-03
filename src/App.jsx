@@ -2314,9 +2314,9 @@ function CommentMarquee(){
 
 function RadialBracket({ scores }) {
   const br = buildBracketFromScores(scores || {});
-  const W = 760, H = 1000;
+  const W = 760, H = 1300;
   const GOLD = '#E9C24A', GOLD2 = '#F4D97A', DIM = '#7a6a3a';
-  const FR = 20;
+  const FR = 30;
   const fl = (name) => (typeof FLAGS!=='undefined' && FLAGS[name]) || '';
 
   const r32S = br.r32 || [], r16S = br.r16 || [], qfS = br.qf || [], sfS = br.sf || [];
@@ -2356,10 +2356,10 @@ function RadialBracket({ scores }) {
       const y=ys8[i], s=r32S[base+i]||{};
       const aWon = !s.winner || s.winner===s.home;
       const bWon = !s.winner || s.winner===s.away;
-      Box(flagX, y-15, fl(s.home), aWon);
-      Box(flagX, y+15, fl(s.away), bWon);
-      elbow(flagX+edge, y-15, n1, y, flagX+off*0.55, !!s.winner && s.winner===s.home);
-      elbow(flagX+edge, y+15, n1, y, flagX+off*0.55, !!s.winner && s.winner===s.away);
+      Box(flagX, y-22, fl(s.home), aWon);
+      Box(flagX, y+22, fl(s.away), bWon);
+      elbow(flagX+edge, y-22, n1, y, flagX+off*0.55, !!s.winner && s.winner===s.home);
+      elbow(flagX+edge, y+22, n1, y, flagX+off*0.55, !!s.winner && s.winner===s.away);
       Box(n1, y, s.winner ? (s.winnerFl||fl(s.winner)) : '', !!s.winner);
     }
     // octavos: pares n1 -> n2. Muestra los 2 equipos del octavo (capturado o ganadores de 16avos)
