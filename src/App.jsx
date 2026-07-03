@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef, createContext, useContext } from "react";
+import { createPortal } from "react-dom";
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
 
 // ── Firebase ACTIVO ─────────────────────────────────────────────
@@ -2380,7 +2381,7 @@ function TeamHistoryModal({ team, scores, onClose }) {
       {items.map(Row)}
     </div>
   );
-  return (
+  return createPortal(
     <div onClick={onClose} style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.75)',zIndex:9999,display:'flex',alignItems:'center',justifyContent:'center',padding:16}}>
       <div onClick={e=>e.stopPropagation()} style={{maxWidth:440,width:'100%',maxHeight:'85vh',background:'#0d0d12',border:`1px solid ${GOLD}`,borderRadius:16,overflow:'hidden',display:'flex',flexDirection:'column',boxShadow:'0 8px 40px rgba(233,194,74,0.15)'}}>
         <div style={{background:'linear-gradient(135deg,#1a1710,#0d0d12)',padding:'18px 20px',borderBottom:'1px solid #2a2a33',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
@@ -2407,7 +2408,8 @@ function TeamHistoryModal({ team, scores, onClose }) {
           {all.length===0 && <div style={{color:'#8a8a92',textAlign:'center',padding:'30px 0'}}>Aún no hay partidos finalizados de {team}.</div>}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 function RadialBracket({ scores }) {
