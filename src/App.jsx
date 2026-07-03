@@ -2312,8 +2312,107 @@ function CommentMarquee(){
   );
 }
 
+const getMatchesForTeam = (teamName, scores) => {
+  const out = [];
+  for (const m of NEXT_MATCHES) {
+    const sc = scores[m.id] || {};
+    const home = sc.home || m.home;
+    const away = sc.away || m.away;
+    if (home !== teamName && away !== teamName) continue;
+    const status = sc.status || ((sc.gh != null && sc.ga != null) ? 'finalizado' : 'proximo');
+    if (status !== 'finalizado' || sc.gh == null || sc.ga == null) continue;
+    out.push({
+      id: m.id, home, away, gh: sc.gh, ga: sc.ga,
+      date: m.date || '', venue: m.venue || '', city: m.city || '',
+      phase: m.phase || '', isGroup: m.id <= 72,
+    });
+  }
+  return out;
+};
+
+function TeamHistoryModal({ team, scores, onClose }) {
+  if (!team) return null;
+  const GOLD = '#E9C24A', GOLD2 = '#F4D97A';
+  const fl = (n) => (FLAGS[n] || '🏳️');
+  const all = getMatchesForTeam(team, scores || {});
+  const groups = all.filter(m => m.isGroup);
+  const elim = all.filter(m => !m.isGroup);
+  let w=0,d=0,l=0,gf=0,gc=0;
+  for (const m of all) {
+    const [my,opp] = m.home===team ? [m.gh,m.ga] : [m.ga,m.gh];
+    gf+=my; gc+=opp;
+    if(my>opp) w++; else if(my===opp) d++; else l++;
+  }
+  const phaseShort = (m) => (m.phase.split('·')[0] || '').trim();
+  const Row = (m,i) => {
+    const [my,opp] = m.home===team ? [m.gh,m.ga] : [m.ga,m.gh];
+    const oppName = m.home===team ? m.away : m.home;
+    const win = my>opp, draw = my===opp;
+    const col = win ? '#4ade80' : draw ? '#fbbf24' : '#f87171';
+    const badge = win ? 'V' : draw ? 'E' : 'D';
+    return (
+      <div key={i} style={{background:'#15151b',border:'1px solid #2a2a33',borderLeft:`3px solid ${GOLD}`,borderRadius:10,padding:'12px 14px',marginBottom:10}}>
+        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+          <div style={{display:'flex',alignItems:'center',gap:8}}>
+            <span style={{fontSize:22}}>{fl(team)}</span>
+            <span style={{color:'#e5e5e5',fontWeight:600,fontSize:15}}>{team}</span>
+          </div>
+          <div>
+            <span style={{color:col,fontWeight:800,fontSize:17}}>{my} - {opp}</span>
+            <span style={{display:'inline-block',width:20,height:20,lineHeight:'20px',textAlign:'center',borderRadius:'50%',background:col,color:'#0d0d12',fontWeight:800,fontSize:12,marginLeft:8}}>{badge}</span>
+          </div>
+          <div style={{display:'flex',alignItems:'center',gap:8}}>
+            <span style={{color:'#e5e5e5',fontWeight:600,fontSize:15}}>{oppName}</span>
+            <span style={{fontSize:22}}>{fl(oppName)}</span>
+          </div>
+        </div>
+        <div style={{color:'#8a8a92',fontSize:12,marginTop:8,display:'flex',alignItems:'center',gap:6,flexWrap:'wrap'}}>
+          <span style={{background:'#2a2410',color:GOLD2,padding:'2px 8px',borderRadius:6,fontWeight:600}}>{phaseShort(m)}</span>
+          <span>{m.date}</span><span>·</span>
+          <span>📍 {m.venue}{m.city?`, ${m.city}`:''}</span>
+        </div>
+      </div>
+    );
+  };
+  const Section = (title, items) => items.length===0 ? null : (
+    <div>
+      <div style={{color:GOLD2,fontFamily:'Georgia, serif',fontSize:14,fontWeight:700,letterSpacing:1,margin:'14px 2px 8px',textTransform:'uppercase'}}>{title}</div>
+      {items.map(Row)}
+    </div>
+  );
+  return (
+    <div onClick={onClose} style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.75)',zIndex:9999,display:'flex',alignItems:'center',justifyContent:'center',padding:16}}>
+      <div onClick={e=>e.stopPropagation()} style={{maxWidth:440,width:'100%',maxHeight:'85vh',background:'#0d0d12',border:`1px solid ${GOLD}`,borderRadius:16,overflow:'hidden',display:'flex',flexDirection:'column',boxShadow:'0 8px 40px rgba(233,194,74,0.15)'}}>
+        <div style={{background:'linear-gradient(135deg,#1a1710,#0d0d12)',padding:'18px 20px',borderBottom:'1px solid #2a2a33',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+          <div style={{display:'flex',alignItems:'center',gap:12}}>
+            <span style={{fontSize:38}}>{fl(team)}</span>
+            <div>
+              <div style={{color:'#fff',fontFamily:'Georgia, serif',fontSize:22,fontWeight:700}}>{team}</div>
+              <div style={{color:'#8a8a92',fontSize:12}}>Enfrentamientos</div>
+            </div>
+          </div>
+          <span onClick={onClose} style={{color:'#8a8a92',fontSize:24,cursor:'pointer'}}>✕</span>
+        </div>
+        {all.length>0 && (
+          <div style={{display:'flex',justifyContent:'space-around',padding:'12px 20px',background:'#111',borderBottom:'1px solid #2a2a33'}}>
+            <div style={{textAlign:'center'}}><div style={{color:GOLD2,fontSize:20,fontWeight:800}}>{w}</div><div style={{color:'#8a8a92',fontSize:10}}>GANÓ</div></div>
+            <div style={{textAlign:'center'}}><div style={{color:GOLD2,fontSize:20,fontWeight:800}}>{d}</div><div style={{color:'#8a8a92',fontSize:10}}>EMPATÓ</div></div>
+            <div style={{textAlign:'center'}}><div style={{color:GOLD2,fontSize:20,fontWeight:800}}>{l}</div><div style={{color:'#8a8a92',fontSize:10}}>PERDIÓ</div></div>
+            <div style={{textAlign:'center'}}><div style={{color:GOLD2,fontSize:20,fontWeight:800}}>{gf}:{gc}</div><div style={{color:'#8a8a92',fontSize:10}}>GOLES</div></div>
+          </div>
+        )}
+        <div style={{padding:'8px 16px 20px',overflowY:'auto'}}>
+          {Section('Fase de Grupos',groups)}
+          {Section('Eliminatorias',elim)}
+          {all.length===0 && <div style={{color:'#8a8a92',textAlign:'center',padding:'30px 0'}}>Aún no hay partidos finalizados de {team}.</div>}
+        </div>
+      </div>
+    </div>
+  );
+}
 function RadialBracket({ scores }) {
   const br = buildBracketFromScores(scores || {});
+  const [histTeam, setHistTeam] = useState(null);
   const W = 760, H = 1300;
   const GOLD = '#E9C24A', GOLD2 = '#F4D97A', DIM = '#7a6a3a';
   const FR = 30;
@@ -2329,10 +2428,11 @@ function RadialBracket({ scores }) {
 
   const nodes = [], lines = []; let k=0;
 
-  const Box = (x, y, flag, active) => {
+  const Box = (x, y, flag, active, teamName) => {
     const w=FR*1.9, h=FR*1.4, st=active?GOLD:DIM;
+    const clickable = !!teamName;
     nodes.push(
-      <g key={`b${k++}`}>
+      <g key={`b${k++}`} onClick={clickable?()=>setHistTeam(teamName):undefined} style={clickable?{cursor:'pointer'}:undefined}>
         <rect x={x-w/2-1.5} y={y-h/2-1.5} width={w+3} height={h+3} rx={4} fill="none" stroke={st} strokeWidth={0.8} opacity={0.85}/>
         <rect x={x-w/2} y={y-h/2} width={w} height={h} rx={3} fill="#15151b" stroke={st} strokeWidth={0.5}/>
         {flag && <text x={x} y={y+FR*0.42} textAnchor="middle" fontSize={FR*1.25}>{flag}</text>}
@@ -2356,11 +2456,11 @@ function RadialBracket({ scores }) {
       const y=ys8[i], s=r32S[base+i]||{};
       const aWon = !s.winner || s.winner===s.home;
       const bWon = !s.winner || s.winner===s.away;
-      Box(flagX, y-22, fl(s.home), aWon);
-      Box(flagX, y+22, fl(s.away), bWon);
+      Box(flagX, y-22, fl(s.home), aWon, s.home);
+      Box(flagX, y+22, fl(s.away), bWon, s.away);
       elbow(flagX+edge, y-22, n1, y, flagX+off*0.55, !!s.winner && s.winner===s.home);
       elbow(flagX+edge, y+22, n1, y, flagX+off*0.55, !!s.winner && s.winner===s.away);
-      Box(n1, y, s.winner ? (s.winnerFl||fl(s.winner)) : '', !!s.winner);
+      Box(n1, y, s.winner ? (s.winnerFl||fl(s.winner)) : '', !!s.winner, s.winner);
     }
     // octavos: pares n1 -> n2. Muestra los 2 equipos del octavo (capturado o ganadores de 16avos)
     const y16 = [];
@@ -2371,7 +2471,7 @@ function RadialBracket({ scores }) {
       elbow(n1, yb, n2, y, n1+off*0.9, !!s2.winner);
       const oct=r16S[r16base+i]||{};
       // solo el GANADOR del octavo; vacío hasta que se capture
-      Box(n2, y, oct.winner ? (oct.winnerFl||fl(oct.winner)) : '', !!oct.winner);
+      Box(n2, y, oct.winner ? (oct.winnerFl||fl(oct.winner)) : '', !!oct.winner, oct.winner);
     }
     // cuartos: n2 -> n3
     const yqf=[];
@@ -2381,7 +2481,7 @@ function RadialBracket({ scores }) {
       elbow(n2, ya, n3, y, n2+off*0.9, !!o1.winner);
       elbow(n2, yb, n3, y, n2+off*0.9, !!o2.winner);
       const q=qfS[qfbase+i]||{};
-      Box(n3, y, q.winner ? (q.winnerFl||fl(q.winner)) : '', !!q.winner);
+      Box(n3, y, q.winner ? (q.winnerFl||fl(q.winner)) : '', !!q.winner, q.winner);
     }
     // semis -> centro
     const ysf=(yqf[0]+yqf[1])/2;
@@ -2419,6 +2519,7 @@ function RadialBracket({ scores }) {
         <image href="/trofeo2.png" x={cx-58} y={cyC-185} width={116} height={178} preserveAspectRatio="xMidYMid meet" filter="url(#tglow)"/>
         {br.final?.winner && <text x={cx} y={cyC-195} textAnchor="middle" fontSize={26}>{br.final.winnerFl}</text>}
       </svg>
+      <TeamHistoryModal team={histTeam} scores={scores} onClose={()=>setHistTeam(null)} />
     </div>
   );
 }
