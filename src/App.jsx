@@ -1159,6 +1159,20 @@ const GRP_WIN=[
   {g:'Grupo L',teams:[{v:'Inglaterra',odds:1.4},{v:'Croacia',odds:4.5},{v:'Ghana',odds:7.5},{v:'Panamá',odds:8.0}]},
 ];
 
+// ══ ESTRUCTURA MULTI-TORNEO (Fase A: andamiaje, no cambia comportamiento) ══
+const TORNEOS = {
+  mundial2026: {
+    id: 'mundial2026',
+    nombre: 'Mundial 2026',
+    formato: 'grupos+bracket',   // activa bracket (id>=73), countdown y GRP_WIN
+    partidos: NEXT_MATCHES,
+    tabla: GROUPS,
+    grpWin: GRP_WIN,
+  },
+  // ligamxAp2026 se agrega en Fase B
+};
+const TORNEO_ACTIVO = 'mundial2026';
+
 
 
 
