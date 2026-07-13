@@ -1622,7 +1622,7 @@ function Splash({done}){
     <div style={{display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',
       height:'100%',gap:16,
       background:'radial-gradient(ellipse at 50% 38%,rgba(240,165,0,.09) 0%,transparent 62%)'}}>
-      <img src="/icon-512.png" alt="Pronósticos Futbol 2026"
+      <img src="/icon-512.png" alt="Pronosticos Futbol"
         style={{width:200,height:200,borderRadius:36,
           boxShadow:'0 0 40px rgba(240,165,0,.45), 0 8px 32px rgba(0,0,0,.6)',
           objectFit:'cover',border:'3px solid rgba(240,165,0,.3)'}}/>
@@ -1779,11 +1779,11 @@ function Auth({onLogin,onLangChange=()=>{},logoutMsg='',onClearMsg=()=>{}}){
   return(
     <div style={{height:'100%',overflowY:'auto',background:'linear-gradient(160deg,#0D1A2E 0%,#040C1E 100%)'}}>
       <div style={{padding:'40px 24px 18px',textAlign:'center'}}>
-        <img src="/icon-512.png" alt="Pronósticos Futbol 2026"
+        <img src="/icon-512.png" alt="Pronosticos Futbol"
           style={{width:90,height:90,borderRadius:20,objectFit:'cover',
             boxShadow:'0 0 24px rgba(240,165,0,.35)',
             border:'2px solid rgba(240,165,0,.3)'}}/>
-        <div style={{fontFamily:'var(--ff)',fontSize:32,letterSpacing:2,color:'var(--gold)',marginTop:10,lineHeight:1}}>PRONÓSTICOS FUTBOL 2026</div>
+        <div style={{fontFamily:'var(--ff)',fontSize:32,letterSpacing:2,color:'var(--gold)',marginTop:10,lineHeight:1}}>PRONOSTICOS FUTBOL</div>
         <div style={{fontSize:13,color:'var(--muted)',marginTop:6}}>
           {mode==='login'?t.login_subtitle:t.register_subtitle}
         </div>
@@ -2608,7 +2608,7 @@ function HomeScreen({onMatch,onGoToCal}){
         padding:'16px 16px 0',borderBottom:'1px solid rgba(255,255,255,.04)'}}>
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',paddingBottom:10}}>
           <div>
-            <div style={{fontFamily:'var(--ff)',fontSize:28,letterSpacing:2,color:'var(--gold)',lineHeight:1}}>PRONÓSTICOS FUTBOL 2026</div>
+            <div style={{fontFamily:'var(--ff)',fontSize:28,letterSpacing:2,color:'var(--gold)',lineHeight:1}}>PRONOSTICOS FUTBOL</div>
             <div style={{fontSize:11,color:'var(--muted)',marginTop:2}}>
               🕐 Actualizado: {upd.toLocaleTimeString('es',{hour:'2-digit',minute:'2-digit'})}
             </div>
@@ -2809,7 +2809,7 @@ function CalScreen(){
       <div style={{padding:'18px 16px 6px'}}>
         <div style={{fontFamily:'var(--ff)',fontSize:28,letterSpacing:2}}>{t.calendar_title}</div>
         <div style={{fontSize:12,color:'var(--muted)'}}>
-          Pronósticos Futbol 2026 · {matches.length} {t.matches_title.toLowerCase()}
+          Pronosticos Futbol · {matches.length} {t.matches_title.toLowerCase()}
         </div>
       </div>
 
@@ -3148,7 +3148,7 @@ function TablaScreen(){
     <div className="scr fin">
       <div style={{padding:'18px 16px 6px'}}>
         <div style={{fontFamily:'var(--ff)',fontSize:28,letterSpacing:2}}>{t.table_title}</div>
-        <div style={{fontSize:12,color:'var(--muted)'}}>{t.group_stage} · Pronósticos Futbol 2026</div>
+        <div style={{fontSize:12,color:'var(--muted)'}}>{t.group_stage} · Pronosticos Futbol</div>
       </div>
       <SponsorBanner margin="2px 0 0"/>
       <div style={{display:'flex',gap:8,padding:'4px 16px 10px',overflowX:'auto'}}>
@@ -3249,7 +3249,7 @@ function TablaScreen(){
       <div style={{padding:'16px 16px 6px'}}>
         <div style={{fontFamily:'var(--ff)',fontSize:24,letterSpacing:2}}>LLAVE ELIMINATORIA</div>
         <div style={{fontSize:11,color:'var(--muted)',marginBottom:12}}>
-          Pronósticos Futbol 2026 · Las banderas aparecen automáticamente conforme avanza el torneo
+          Pronosticos Futbol · Las banderas aparecen automáticamente conforme avanza el torneo
         </div>
       </div>
       <BracketView bracket={bracket}/>
@@ -4047,7 +4047,7 @@ function PerfilScreen({user,onLogout,lang='es'}){
   // ── Share the app ────────────────────────────────
   const shareApp=async()=>{
     const shareData={
-      title:'⚽ Pronósticos Futbol 2026',
+      title:'⚽ Pronosticos Futbol',
       text:'¡Únete a mis pronósticos de futbol! La app más completa para seguir cada partido.',
       url:window.location.href,
     };
@@ -4346,7 +4346,7 @@ function PerfilScreen({user,onLogout,lang='es'}){
               const conv=dbUsers.length?Math.round(conPaq/dbUsers.length*100):0;
 
               const lines=[
-                '=== PRONÓSTICOS FUTBOL 2026 · REPORTE DE USUARIOS ===',
+                '=== PRONOSTICOS FUTBOL · REPORTE DE USUARIOS ===',
                 `Generado:,${new Date().toLocaleString('es')}`,
                 '',
                 '--- RESUMEN ---',
@@ -6933,7 +6933,7 @@ function StatsScreen({bets,noWrapper=false}){
     <div className={noWrapper?'fin':'scr fin'}>
       <div style={{padding:'18px 16px 8px'}}>
         <div style={{fontFamily:'var(--ff)',fontSize:28,letterSpacing:2}}>MIS ESTADÍSTICAS</div>
-        <div style={{fontSize:12,color:'var(--muted)'}}>Historial de predicciones · Pronósticos Futbol 2026</div>
+        <div style={{fontSize:12,color:'var(--muted)'}}>Historial de predicciones · Pronosticos Futbol</div>
       </div>
 
       {/* Stat grid */}
@@ -7084,7 +7084,7 @@ export default function App(){
       if(perm === 'granted') {
         console.log('Push notifications activadas ✓');
         // Notificación de bienvenida
-        new Notification('⚽ Pronósticos Futbol 2026', {
+        new Notification('⚽ Pronosticos Futbol', {
           body: 'Notificaciones activadas. Te avisaremos cuando empiece cada partido.',
           icon: '/icon-192.png',
           badge: '/icon-192.png',
