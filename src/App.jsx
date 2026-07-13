@@ -3042,7 +3042,7 @@ function CalScreen({torneo}){
       <div style={{padding:'18px 16px 6px'}}>
         <div style={{fontFamily:'var(--ff)',fontSize:28,letterSpacing:2}}>{t.calendar_title}</div>
         <div style={{fontSize:12,color:'var(--muted)'}}>
-          Pronosticos Futbol · {matches.length} {t.matches_title.toLowerCase()}
+          {torneo.formato==='grupos+bracket'?'Pronosticos Futbol':torneo.nombre} · {matches.length} {t.matches_title.toLowerCase()}
         </div>
       </div>
 
