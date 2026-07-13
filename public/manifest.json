@@ -1,7 +1,7 @@
 {
-  "name": "Pronósticos Futbol 2026",
-  "short_name": "Pronósticos",
-  "description": "Pronósticos, partidos en vivo y grupos - Torneo de Futbol 2026",
+  "name": "Pronosticos Futbol",
+  "short_name": "Pronosticos",
+  "description": "Pronosticos, partidos en vivo y grupos de amigos",
   "start_url": "/",
   "display": "standalone",
   "orientation": "portrait-primary",
