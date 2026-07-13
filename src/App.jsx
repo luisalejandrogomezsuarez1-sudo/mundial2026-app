@@ -2176,24 +2176,26 @@ function NextCard({m,score}){
           <span style={{fontWeight:700,fontSize:14}}>{awayT}</span>
         </div>
       </div>
+      {(m.wx || m.odds) && (
       <div style={{padding:'8px 14px',background:'rgba(255,255,255,.02)',borderTop:'1px solid rgba(255,255,255,.05)',
         display:'flex',justifyContent:'space-between',alignItems:'center'}}>
         <div style={{display:'flex',alignItems:'center',gap:5,fontSize:12}}>
-          <span style={{fontSize:18}}>{m.wx.ic}</span>
+          <span style={{fontSize:18}}>{m.wx?.ic}</span>
           <div>
-            <div style={{color:'var(--txt)',fontWeight:500}}>{m.wx.t}</div>
-            <div style={{color:'var(--muted)',fontSize:11}}>{m.wx.desc}</div>
+            <div style={{color:'var(--txt)',fontWeight:500}}>{m.wx?.t}</div>
+            <div style={{color:'var(--muted)',fontSize:11}}>{m.wx?.desc}</div>
           </div>
         </div>
         <div style={{display:'flex',gap:12}}>
           {['Local','Empate','Visit.'].map((o,i)=>(
             <div key={o} style={{textAlign:'center'}}>
               <div style={{fontSize:10,color:'var(--muted)'}}>{o}</div>
-              <div style={{fontSize:14,fontWeight:700,color:'var(--gold)'}}>{m.odds[i]}</div>
+              <div style={{fontSize:14,fontWeight:700,color:'var(--gold)'}}>{m.odds?.[i]}</div>
             </div>
           ))}
         </div>
       </div>
+      )}
     </div>
   );
 }
@@ -2899,16 +2901,17 @@ function HomeScreen({onMatch,onGoToCal}){
 }
 
 // ── Calendar Screen ──────────────────────────────
-function CalScreen(){
+function CalScreen({torneo}){
   const t=useLang();
   const [fil,setFil]=useState('todos');
   const tabsRef=useRef(null);
   const didInitDay=useRef(false);
-  const [matches,setMatches]=useState(NEXT_MATCHES);
+  const [matches,setMatches]=useState(torneo.partidos);
   const [scores,setScores]=useState({}); // { matchId: {gh, ga} } desde live/scores
 
   // Marcadores manuales (admin) → mostrar FINALIZADO + resultado
   useEffect(()=>{
+    if(torneo.formato!=='grupos+bracket') return;
     let unsub, mounted=true;
     const cached=getCachedLive('scores');
     if(cached?.scores) setScores(cached.scores);
@@ -2920,10 +2923,11 @@ function CalScreen(){
     };
     trySub();
     return()=>{ mounted=false; if(typeof unsub==='function') unsub(); };
-  },[]);
+  },[torneo.formato]);
 
   // Firestore: fixtures (con cache 30min — horarios no cambian frecuentemente)
   useEffect(()=>{
+    if(torneo.formato!=='grupos+bracket') return;
     const cached=getCachedLive('fixtures');
     if(cached?.fixtures?.length>0){ setMatches(cached.fixtures); return; }
     let unsub, mounted=true;
@@ -2940,7 +2944,7 @@ function CalScreen(){
     };
     trySubscribe();
     return()=>{ mounted=false; if(typeof unsub==='function') unsub(); };
-  },[]);
+  },[torneo.formato]);
 
   // Build dynamic date tabs from match dates
   const today=new Date();
@@ -7981,7 +7985,7 @@ export default function App(){
             </div>
           )}
           {tab==='home'       &&<HomeScreen onMatch={setMatch} onGoToCal={()=>setTab('cal')}/>}
-          {tab==='cal'        &&<CalScreen/>}
+          {tab==='cal'        &&<CalScreen torneo={TORNEOS[torneoActivo]}/>}
           {tab==='tabla'      &&<TablaScreen/>}
           {tab==='goles'      &&<GolesScreen/>}
           {tab==='pronostico' &&<BetsScreen bets={userBets} placeBet={placeBet}
