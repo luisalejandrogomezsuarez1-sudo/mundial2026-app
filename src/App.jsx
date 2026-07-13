@@ -2728,7 +2728,7 @@ function RadialBracket({ scores }) {
     </div>
   );
 }
-function HomeScreen({onMatch,onGoToCal}){
+function HomeScreen({onMatch,onGoToCal,torneo}){
   const t=useLang();
   const [ref,setRef]=useState(false);
   const [upd,setUpd]=useState(new Date());
@@ -2740,6 +2740,7 @@ function HomeScreen({onMatch,onGoToCal}){
 
   // Firestore: marcadores en vivo (con cache para evitar re-leer al volver al tab)
   useEffect(()=>{
+    if(torneo.formato!=='grupos+bracket') return;
     if(new Date()<new Date(Date.UTC(2026,5,11,19,0,0))) return;
     const cached=getCachedLive('matches');
     if(cached?.matches?.length){ setLiveMatches(cached.matches); setApiStatus('live'); return; }
@@ -2762,6 +2763,7 @@ function HomeScreen({onMatch,onGoToCal}){
 
   // Suscripción al partido en vivo manual (live/livemanual), mismo patrón que matches
   useEffect(()=>{
+    if(torneo.formato!=='grupos+bracket')return;
     let unsub,mounted=true;
     const cached=getCachedLive('livemanual');
     if(cached) setLiveManual(cached);
@@ -2778,6 +2780,7 @@ function HomeScreen({onMatch,onGoToCal}){
   // Marcadores/estado de partidos (admin) desde live/scores → badge EN VIVO/FINALIZADO/PRÓXIMO
   const [scores,setScores]=useState({}); // { matchId: {gh, ga, status} } desde live/scores
   useEffect(()=>{
+    if(torneo.formato!=='grupos+bracket')return;
     let unsub, mounted=true;
     const cached=getCachedLive('scores');
     if(cached?.scores) setScores(cached.scores);
@@ -2804,6 +2807,31 @@ function HomeScreen({onMatch,onGoToCal}){
   const partidosHoy = NEXT_MATCHES.filter(m=>m.isoDate===hoyMX);
   const lista = partidosHoy.length>0 ? partidosHoy : NEXT_MATCHES.filter(m=>m.isoDate>hoyMX).slice(0,3);
 
+  if(torneo.formato!=='grupos+bracket'){
+    const ligaHoy = torneo.partidos.filter(m=>m.isoDate===hoyMX);
+    const ligaLista = ligaHoy.length>0 ? ligaHoy : torneo.partidos.filter(m=>m.isoDate>=hoyMX).slice(0,6);
+    return(
+      <div className="scr fin">
+        <div style={{background:'linear-gradient(180deg,rgba(240,165,0,.07) 0%,transparent 100%)',
+          padding:'16px 16px 0',borderBottom:'1px solid rgba(255,255,255,.04)'}}>
+          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',paddingBottom:10}}>
+            <div>
+              <div style={{fontFamily:'var(--ff)',fontSize:28,letterSpacing:2,color:'var(--gold)',lineHeight:1}}>PRONOSTICOS FUTBOL</div>
+              <div style={{fontSize:11,color:'var(--muted)',marginTop:2}}>{torneo.nombre}</div>
+            </div>
+            <img src="/icon-512.png" alt="logo"
+              style={{width:36,height:36,borderRadius:8,objectFit:'cover',
+                boxShadow:'0 0 10px rgba(240,165,0,.3)'}}/>
+          </div>
+        </div>
+        <CommentMarquee/>
+        <SponsorBanner/>
+        <div style={{padding:'6px 0 4px',fontSize:13,fontWeight:700,color:'var(--muted)',
+          textAlign:'center',letterSpacing:.5}}>Próximos partidos</div>
+        {ligaLista.map(m=><NextCard key={m.id} m={m} score={null}/>)}
+      </div>
+    );
+  }
   return(
     <div className="scr fin">
       {/* Top bar */}
@@ -8054,7 +8082,7 @@ export default function App(){
               <MatchDetail m={match} onBack={()=>setMatch(null)}/>
             </div>
           )}
-          {tab==='home'       &&<HomeScreen onMatch={setMatch} onGoToCal={()=>setTab('cal')}/>}
+          {tab==='home'       &&<HomeScreen onMatch={setMatch} onGoToCal={()=>setTab('cal')} torneo={TORNEOS[torneoActivo]}/>}
           {tab==='cal'        &&<CalScreen torneo={TORNEOS[torneoActivo]}/>}
           {tab==='tabla'      &&<TablaScreen torneo={TORNEOS[torneoActivo]}/>}
           {tab==='goles'      &&<GolesScreen torneo={TORNEOS[torneoActivo]}/>}
