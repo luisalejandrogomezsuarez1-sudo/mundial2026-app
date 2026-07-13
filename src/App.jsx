@@ -3463,12 +3463,13 @@ function TablaScreen(){
 }
 
 // ── Scorers Screen ───────────────────────────────
-function GolesScreen(){
+function GolesScreen({torneo}){
   const t=useLang();
   const [sel,setSel]=useState(null);
   const [scorers,setScorers]=useState(SCORERS);
 
   useEffect(()=>{
+    if(torneo.formato!=='grupos+bracket')return;
     const cached=getCachedLive('scorers');
     if(cached?.list?.length){
       setScorers(prev=>cached.list.map(s=>({...(prev.find(p=>p.n===s.n)||{}),...s})));
@@ -3607,6 +3608,28 @@ function GolesScreen(){
     );
   };
 
+  if(torneo.formato!=='grupos+bracket'){
+    return(
+      <div className="scr fin">
+        <div style={{padding:'18px 16px 10px'}}>
+          <div style={{fontFamily:'var(--ff)',fontSize:28,letterSpacing:2}}>{t.goals_title||'GOLEADORES'}</div>
+          <div style={{fontSize:12,color:'var(--muted)'}}>
+            {t.golden_boot||'Candidatos a la Bota de Oro del torneo 2026'}
+          </div>
+        </div>
+        <SponsorBanner margin="0"/>
+        <div style={{padding:'48px 24px',textAlign:'center'}}>
+          <div style={{fontSize:44,marginBottom:12,opacity:.5}}>⚽</div>
+          <div style={{fontSize:15,fontWeight:700,color:'var(--txt)',marginBottom:6}}>
+            {t.scorers_soon||'Goleadores próximamente'}
+          </div>
+          <div style={{fontSize:12,color:'var(--muted)',maxWidth:280,margin:'0 auto',lineHeight:1.5}}>
+            {t.scorers_soon_desc||'La tabla de goleadores estará disponible en una fase posterior del torneo.'}
+          </div>
+        </div>
+      </div>
+    );
+  }
   return(
     <div className="scr fin">
       {/* Header */}
@@ -7988,7 +8011,7 @@ export default function App(){
           {tab==='home'       &&<HomeScreen onMatch={setMatch} onGoToCal={()=>setTab('cal')}/>}
           {tab==='cal'        &&<CalScreen torneo={TORNEOS[torneoActivo]}/>}
           {tab==='tabla'      &&<TablaScreen/>}
-          {tab==='goles'      &&<GolesScreen/>}
+          {tab==='goles'      &&<GolesScreen torneo={TORNEOS[torneoActivo]}/>}
           {tab==='pronostico' &&<BetsScreen bets={userBets} placeBet={placeBet}
                                   credito={credito} creditoLoading={creditoLoading} onPagar={onPagar} onReset={onReset}
                                   betsSaved={betsSaved}
