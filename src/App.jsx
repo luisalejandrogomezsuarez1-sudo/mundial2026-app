@@ -183,7 +183,7 @@ const TRANSLATIONS={
   es:{
     // Nav
     nav_home:'Inicio',nav_matches:'Partidos',nav_table:'Tabla',
-    nav_goals:'Goles',nav_bets:'Pronóstico',nav_groups:'Grupos',nav_profile:'Perfil',
+    nav_goals:'Goles',nav_bets:'Pronóstico',nav_groups:'Grupos',nav_profile:'Perfil',nav_switch:'Cambiar liga',
     // Auth
     login:'Iniciar Sesión',register:'Registrarse',logout:'Cerrar sesión',
     email:'Correo electrónico',password:'Contraseña',name:'Nombre completo',
@@ -267,7 +267,7 @@ const TRANSLATIONS={
   },
   en:{
     nav_home:'Home',nav_matches:'Matches',nav_table:'Table',
-    nav_goals:'Scorers',nav_bets:'Predictions',nav_groups:'Groups',nav_profile:'Profile',
+    nav_goals:'Scorers',nav_bets:'Predictions',nav_groups:'Groups',nav_profile:'Profile',nav_switch:'Switch league',
     login:'Sign In',register:'Sign Up',logout:'Sign Out',
     email:'Email',password:'Password',name:'Full name',
     birthdate:'Date of birth',nationality:'Nationality',gender:'Gender',
@@ -341,7 +341,7 @@ const TRANSLATIONS={
   },
   pt:{
     nav_home:'Início',nav_matches:'Jogos',nav_table:'Tabela',
-    nav_goals:'Artilheiros',nav_bets:'Palpites',nav_groups:'Grupos',nav_profile:'Perfil',
+    nav_goals:'Artilheiros',nav_bets:'Palpites',nav_groups:'Grupos',nav_profile:'Perfil',nav_switch:'Trocar liga',
     login:'Entrar',register:'Cadastrar',logout:'Sair',
     email:'E-mail',password:'Senha',name:'Nome completo',
     birthdate:'Data de nascimento',nationality:'Nacionalidade',gender:'Gênero',
@@ -415,7 +415,7 @@ const TRANSLATIONS={
   },
   zh:{
     nav_home:'首页',nav_matches:'赛程',nav_table:'积分榜',
-    nav_goals:'射手榜',nav_bets:'预测',nav_groups:'小组',nav_profile:'我的',
+    nav_goals:'射手榜',nav_bets:'预测',nav_groups:'小组',nav_profile:'我的',nav_switch:'切换联赛',
     login:'登录',register:'注册',logout:'退出',
     email:'邮箱',password:'密码',name:'全名',
     birthdate:'出生日期',nationality:'国籍',gender:'性别',
@@ -489,7 +489,7 @@ const TRANSLATIONS={
   },
   ko:{
     nav_home:'홈',nav_matches:'경기',nav_table:'순위',
-    nav_goals:'득점왕',nav_bets:'예측',nav_groups:'그룹',nav_profile:'프로필',
+    nav_goals:'득점왕',nav_bets:'예측',nav_groups:'그룹',nav_profile:'프로필',nav_switch:'리그 전환',
     login:'로그인',register:'회원가입',logout:'로그아웃',
     email:'이메일',password:'비밀번호',name:'이름',
     birthdate:'생년월일',nationality:'국적',gender:'성별',
@@ -563,7 +563,7 @@ const TRANSLATIONS={
   },
   fr:{
     nav_home:'Accueil',nav_matches:'Matchs',nav_table:'Classement',
-    nav_goals:'Buteurs',nav_bets:'Pronostics',nav_groups:'Groupes',nav_profile:'Profil',
+    nav_goals:'Buteurs',nav_bets:'Pronostics',nav_groups:'Groupes',nav_profile:'Profil',nav_switch:'Changer de ligue',
     login:'Se connecter',register:"S'inscrire",logout:'Se déconnecter',
     email:'Email',password:'Mot de passe',name:'Nom complet',
     birthdate:'Date de naissance',nationality:'Nationalité',gender:'Genre',
@@ -7857,6 +7857,7 @@ export default function App(){
     ['pronostico','TROPHY',t('nav_bets')],
     ['grupos','CROWN',t('nav_groups')],
     ['perfil','👤',t('nav_profile')],
+    ['selector','🔄',t('nav_switch')],
   ];
 
   return(
@@ -8064,7 +8065,7 @@ export default function App(){
                 </svg>
               );
               return(
-                <div key={id} onClick={()=>setTab(id)}
+                <div key={id} onClick={()=>{if(id==='selector'){setTab('home');setScreen('selector');}else{setTab(id);}}}
                   style={{display:'flex',flexDirection:'column',alignItems:'center',
                     justifyContent:'center',flex:1,cursor:'pointer',gap:2,
                     position:'relative',paddingTop:isPremium?2:0}}>
