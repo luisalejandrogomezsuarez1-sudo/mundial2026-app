@@ -1358,7 +1358,7 @@ const TORNEOS = {
     grpWin: null,
   },
 };
-const TORNEO_ACTIVO = 'mundial2026';
+// TORNEO_ACTIVO ahora es estado (torneoActivo) dentro de App — ver Fase C1
 
 
 
@@ -7219,9 +7219,37 @@ function StatsScreen({bets,noWrapper=false}){
   );
 }
 
+// ── Selector de torneos (Fase C1) ─────────────────
+function SelectorTorneos({onPick}){
+  const tiles=[
+    {id:'euro',   nombre:'EURO CUP', sub:'2026/27', color:'#1E6FE0', activo:false},
+    {id:'ligamxAp2026', nombre:'LIGA MEXICANA', sub:'Apertura 2026', color:'#1EC66C', activo:true},
+    {id:'mundial2026',  nombre:'PRONÓSTICOS FÚTBOL', sub:'2026', color:'#F0A500', activo:true},
+  ];
+  return (
+    <div style={{minHeight:'100dvh',background:'var(--bg)',padding:'20px 16px',overflowY:'auto'}}>
+      <div style={{textAlign:'center',fontFamily:'var(--ff)',fontSize:22,letterSpacing:1,color:'var(--txt)',marginBottom:4}}>PRONÓSTICOS FÚTBOL 2026</div>
+      <div style={{textAlign:'center',fontSize:11,color:'var(--muted)',letterSpacing:2,marginBottom:20}}>VIVE LA PASIÓN</div>
+      {tiles.map(tl=>(
+        <div key={tl.id}
+          onClick={()=>{ if(tl.activo) onPick(tl.id); }}
+          style={{position:'relative',borderRadius:16,marginBottom:14,padding:'28px 20px',
+            cursor:tl.activo?'pointer':'not-allowed',opacity:tl.activo?1:0.55,
+            background:`linear-gradient(135deg, ${tl.color}22, ${tl.color}08)`,
+            border:`1.5px solid ${tl.color}55`, overflow:'hidden'}}>
+          <div style={{fontFamily:'var(--ff)',fontSize:30,letterSpacing:1,color:'var(--txt)',lineHeight:1}}>{tl.nombre}</div>
+          <div style={{fontFamily:'var(--ff)',fontSize:20,color:tl.color,marginTop:4}}>{tl.sub}</div>
+          {!tl.activo&&<div style={{position:'absolute',top:12,right:14,fontSize:10,fontWeight:700,color:tl.color,letterSpacing:1}}>PRÓXIMAMENTE</div>}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 // ── Main App ─────────────────────────────────────
 export default function App(){
   const [screen,setScreen]=useState('splash');
+  const [torneoActivo, setTorneoActivo] = useState('mundial2026');
   const [user,setUser]=useState(null);
   const [lang,setLang]=useState('es');
   const _tr=TRANSLATIONS[lang]||TRANSLATIONS.es;
@@ -7303,7 +7331,7 @@ export default function App(){
       if(u?.fromAuth && authUid && u.id!==authUid) u={...u, id:authUid};
     }catch(_){}
     setUser(u);
-    setScreen('app');
+    setScreen('selector');
     // Restore saved bets from localStorage (survive logout)
     try{
       const saved=localStorage.getItem('wc2026_bets_'+u.id);
@@ -7862,6 +7890,7 @@ export default function App(){
         </svg>
         {screen==='splash'&&<Splash done={()=>setScreen('auth')}/>}
         {screen==='auth'&&<Auth onLogin={login} onLangChange={setLang} logoutMsg={logoutMsg} onClearMsg={()=>setLogoutMsg('')}/>}
+        {screen==='selector'&&<SelectorTorneos onPick={id=>{ setTorneoActivo(id); setScreen('app'); }}/>}
         {screen==='app'&&user&&<>
           {/* ── Pantalla de verificación de pago MP ── */}
           {mpVerify&&(
