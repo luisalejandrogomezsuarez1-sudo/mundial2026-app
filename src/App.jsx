@@ -3263,7 +3263,7 @@ const buildBracketFromScores=(sc)=>{
 };
 
 // ── Standings Screen ─────────────────────────────
-function TablaScreen(){
+function TablaScreen({torneo}){
   const t=useLang();
   const [gi,setGi]=useState(0);
   const [groups,setGroups]=useState(GROUPS);
@@ -3317,6 +3317,7 @@ function TablaScreen(){
 
   // Firestore: clasificación y llave (con cache para evitar re-leer al volver al tab)
   useEffect(()=>{
+    if(torneo.formato!=='grupos+bracket')return;
     const cs=getCachedLive('standings'), cb=getCachedLive('bracket'), csc=getCachedLive('scores');
     if(cs?.groups?.length>0){ setGroups(cs.groups); setApiLoaded(true); }
     if(cb?.r32) setBracket(cb);
@@ -3349,6 +3350,51 @@ function TablaScreen(){
   const sorted=[...grp.teams].sort((a,b)=>
     b.pts!==a.pts?b.pts-a.pts:(b.gf-b.gc)-(a.gf-a.gc)||b.gf-a.gf);
   const hdrs=['PJ','G','E','P','GF','GC','DG','PTS'];
+  if(torneo.formato!=='grupos+bracket'){
+    const ligaTeams=[...(torneo.tabla?.[0]?.teams||[])].sort((a,b)=>
+      b.pts!==a.pts?b.pts-a.pts:(b.gf-b.gc)-(a.gf-a.gc)||b.gf-a.gf);
+    return(
+      <div className="scr fin">
+        <div style={{padding:'18px 16px 6px'}}>
+          <div style={{fontFamily:'var(--ff)',fontSize:28,letterSpacing:2}}>{t.table_title}</div>
+          <div style={{fontSize:12,color:'var(--muted)'}}>{torneo.nombre}</div>
+        </div>
+        <SponsorBanner margin="2px 0 0"/>
+        <div style={{margin:'12px 16px 0'}}>
+          <div style={{background:'var(--surf)',borderRadius:'14px 14px 0 0',border:'1px solid var(--br)',borderBottom:'none',overflow:'hidden'}}>
+            <div style={{display:'grid',gridTemplateColumns:'26px 1fr repeat(8,26px)',gap:0,padding:'9px 12px',
+              fontSize:10,fontWeight:700,color:'var(--muted)',letterSpacing:.5,textTransform:'uppercase',alignItems:'center'}}>
+              <div></div>
+              <div>Equipo</div>
+              {hdrs.map(h=><div key={h} style={{textAlign:'center'}}>{h}</div>)}
+            </div>
+            {ligaTeams.map((tm,i)=>{
+              const vals=[tm.pj,tm.g,tm.e,tm.p,tm.gf,tm.gc,tm.gf-tm.gc,tm.pts];
+              const zoneBg=i<4?'rgba(30,198,108,.06)':i<10?'rgba(240,165,0,.035)':'transparent';
+              const dotBg=i<4?'rgba(30,198,108,.9)':i<10?'rgba(240,165,0,.28)':'rgba(255,255,255,.08)';
+              return(
+                <div key={tm.n} style={{display:'grid',gridTemplateColumns:'26px 1fr repeat(8,26px)',gap:0,
+                  padding:'10px 12px',alignItems:'center',
+                  borderTop:'1px solid rgba(255,255,255,.05)',background:zoneBg}}>
+                  <div style={{width:20,height:20,borderRadius:'50%',background:dotBg,
+                    display:'flex',alignItems:'center',justifyContent:'center',
+                    fontSize:10,fontWeight:800,color:i<4?'#000':'#fff'}}>{i+1}</div>
+                  <div style={{fontSize:12,fontWeight:600,color:'var(--txt)',
+                    whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis',paddingRight:6}}>{tm.n}</div>
+                  {vals.map((v,vi)=><div key={vi} style={{textAlign:'center',fontSize:11,
+                    fontWeight:vi===7?800:500,color:vi===7?'var(--gold)':'var(--txt)'}}>{v}</div>)}
+                </div>
+              );
+            })}
+          </div>
+          <div style={{display:'flex',gap:14,justifyContent:'center',padding:'10px 8px 0',fontSize:9,color:'var(--muted)'}}>
+            <span><span style={{color:'rgba(30,198,108,.9)'}}>●</span> Directo (1-4)</span>
+            <span><span style={{color:'rgba(240,165,0,.7)'}}>●</span> Play-in (5-10)</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
   return(
     <div className="scr fin">
       <div style={{padding:'18px 16px 6px'}}>
@@ -8010,7 +8056,7 @@ export default function App(){
           )}
           {tab==='home'       &&<HomeScreen onMatch={setMatch} onGoToCal={()=>setTab('cal')}/>}
           {tab==='cal'        &&<CalScreen torneo={TORNEOS[torneoActivo]}/>}
-          {tab==='tabla'      &&<TablaScreen/>}
+          {tab==='tabla'      &&<TablaScreen torneo={TORNEOS[torneoActivo]}/>}
           {tab==='goles'      &&<GolesScreen torneo={TORNEOS[torneoActivo]}/>}
           {tab==='pronostico' &&<BetsScreen bets={userBets} placeBet={placeBet}
                                   credito={credito} creditoLoading={creditoLoading} onPagar={onPagar} onReset={onReset}
