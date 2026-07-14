@@ -1996,12 +1996,8 @@ function Auth({onLogin,onLangChange=()=>{},logoutMsg='',onClearMsg=()=>{}}){
 
   const t=useLang();
   return(
-    <div style={{height:'100%',overflowY:'auto',background:'linear-gradient(160deg,#0D1A2E 0%,#040C1E 100%)'}}>
+    <div style={{height:'100%',overflowY:'auto',background:`linear-gradient(180deg, rgba(4,12,30,.55), rgba(4,12,30,.8)), url('/login-bg.jpg') center/cover no-repeat fixed, #040C1E`}}>
       <div style={{padding:'40px 24px 18px',textAlign:'center'}}>
-        <img src="/icon-512.png" alt="Pronosticos Futbol"
-          style={{width:90,height:90,borderRadius:20,objectFit:'cover',
-            boxShadow:'0 0 24px rgba(var(--gold-rgb),.35)',
-            border:'2px solid rgba(var(--gold-rgb),.3)'}}/>
         <div style={{fontFamily:'var(--ff)',fontSize:32,letterSpacing:2,color:'var(--gold)',marginTop:10,lineHeight:1}}>PRONOSTICOS FUTBOL</div>
         <div style={{fontSize:13,color:'var(--muted)',marginTop:6}}>
           {mode==='login'?t.login_subtitle:t.register_subtitle}
