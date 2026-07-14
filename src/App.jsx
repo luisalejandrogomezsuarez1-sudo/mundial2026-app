@@ -1841,10 +1841,6 @@ function Splash({done}){
     <div style={{display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',
       height:'100%',gap:16,
       background:'radial-gradient(ellipse at 50% 38%,rgba(var(--gold-rgb),.09) 0%,transparent 62%)'}}>
-      <img src="/icon-512.png" alt="Pronosticos Futbol"
-        style={{width:200,height:200,borderRadius:36,
-          boxShadow:'0 0 40px rgba(var(--gold-rgb),.45), 0 8px 32px rgba(0,0,0,.6)',
-          objectFit:'cover',border:'3px solid rgba(var(--gold-rgb),.3)'}}/>
       <div style={{textAlign:'center',lineHeight:1,marginTop:4}}>
         <div style={{fontSize:11,color:'var(--muted)',letterSpacing:3,textTransform:'uppercase'}}>
           USA · Canadá · México
@@ -2828,14 +2824,11 @@ function HomeScreen({onMatch,onGoToCal,torneo}){
       <div className="scr fin">
         <div style={{background:'linear-gradient(180deg,rgba(var(--gold-rgb),.07) 0%,transparent 100%)',
           padding:'16px 16px 0',borderBottom:'1px solid rgba(255,255,255,.04)'}}>
-          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',paddingBottom:10}}>
-            <div>
+          <div style={{display:'flex',justifyContent:'center',alignItems:'center',paddingBottom:10}}>
+            <div style={{textAlign:'center'}}>
               <div style={{fontFamily:'var(--ff)',fontSize:28,letterSpacing:2,color:'var(--gold)',lineHeight:1}}>PRONOSTICOS FUTBOL</div>
               <div style={{fontSize:11,color:'var(--muted)',marginTop:2}}>{torneo.nombre}</div>
             </div>
-            <img src="/icon-512.png" alt="logo"
-              style={{width:36,height:36,borderRadius:8,objectFit:'cover',
-                boxShadow:'0 0 10px rgba(var(--gold-rgb),.3)'}}/>
           </div>
         </div>
         <CommentMarquee/>
@@ -2851,22 +2844,12 @@ function HomeScreen({onMatch,onGoToCal,torneo}){
       {/* Top bar */}
       <div style={{background:'linear-gradient(180deg,rgba(var(--gold-rgb),.07) 0%,transparent 100%)',
         padding:'16px 16px 0',borderBottom:'1px solid rgba(255,255,255,.04)'}}>
-        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',paddingBottom:10}}>
-          <div>
+        <div style={{display:'flex',justifyContent:'center',alignItems:'center',paddingBottom:10}}>
+          <div style={{textAlign:'center'}}>
             <div style={{fontFamily:'var(--ff)',fontSize:28,letterSpacing:2,color:'var(--gold)',lineHeight:1}}>PRONOSTICOS FUTBOL</div>
             <div style={{fontSize:11,color:'var(--muted)',marginTop:2}}>
               🕐 Actualizado: {upd.toLocaleTimeString('es',{hour:'2-digit',minute:'2-digit'})}
             </div>
-          </div>
-          <div style={{display:'flex',alignItems:'center',gap:8}}>
-            <img src="/icon-512.png" alt="logo"
-              style={{width:36,height:36,borderRadius:8,objectFit:'cover',
-                boxShadow:'0 0 10px rgba(var(--gold-rgb),.3)'}}/>
-            <button onClick={doRef} style={{background:'rgba(var(--gold-rgb),.1)',border:'1px solid rgba(var(--gold-rgb),.2)',
-              color:'var(--gold)',width:34,height:34,borderRadius:9,cursor:'pointer',fontSize:15,
-              display:'flex',alignItems:'center',justifyContent:'center',
-              animation:ref?'spin .8s linear infinite':'none',transition:'background .2s'}}
-              title="Actualizar">🔄</button>
           </div>
         </div>
         {/* Live banner - solo visible cuando hay partidos en vivo (livemanual) */}
