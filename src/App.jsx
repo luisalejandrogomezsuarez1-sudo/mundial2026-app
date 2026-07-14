@@ -7335,7 +7335,8 @@ function StatsScreen({bets,noWrapper=false}){
 }
 
 // ── Selector de torneos (Fase C1) ─────────────────
-function SelectorTorneos({onPick,onProfile}){
+function SelectorTorneos({onPick,onProfile,user}){
+  const [aviso,setAviso]=useState(false);
   const tiles=[
     {id:'euro',   nombre:'EURO CUP', sub:'2026/27', color:'#1E6FE0', activo:false, img:'/tile-eurocup.jpg'},
     {id:'ligamxAp2026', nombre:'LIGA MEXICANA', sub:'Apertura 2026', color:'#1EC66C', activo:true, img:'/tile-ligamx.jpg'},
@@ -7346,13 +7347,13 @@ function SelectorTorneos({onPick,onProfile}){
       <div style={{position:'relative',textAlign:'center',flex:'none',padding:'4px 0 2px'}}>
         <div style={{fontFamily:'var(--ff)',fontSize:22,letterSpacing:1,color:'var(--txt)',lineHeight:1.15}}>PRONÓSTICOS <span style={{color:'#1EC66C'}}>FÚTBOL 2026</span></div>
         <div style={{fontSize:10,color:'var(--muted)',letterSpacing:3,marginTop:4}}>VIVE LA PASIÓN</div>
-        <div onClick={onProfile} style={{position:'absolute',top:0,right:2,cursor:'pointer',padding:6}}>
+        <div onClick={onProfile} style={{position:'absolute',top:0,right:2,cursor:'pointer',padding:6,borderRadius:'50%',animation:!user?'pulseWhite 1.6s ease-in-out infinite':'none'}}>
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--txt)" strokeWidth="1.6"><circle cx="12" cy="8" r="3.4"/><path d="M4.5 20c1.4-3.4 4.2-5 7.5-5s6.1 1.6 7.5 5"/></svg>
         </div>
       </div>
       {tiles.map(tl=>(
         <div key={tl.id}
-          onClick={()=>{ if(tl.activo) onPick(tl.id); }}
+          onClick={()=>{ if(!tl.activo) return; if(!user){ setAviso(true); return; } onPick(tl.id); }}
           style={{position:'relative',flex:1,borderRadius:16,
             cursor:tl.activo?'pointer':'not-allowed',opacity:tl.activo?1:0.55,
             background:`linear-gradient(180deg, rgba(6,10,24,.15), rgba(6,10,24,.35)), url(${tl.img}) center/cover no-repeat`,
@@ -7360,6 +7361,18 @@ function SelectorTorneos({onPick,onProfile}){
           {!tl.activo&&<div style={{position:'absolute',top:12,right:14,fontSize:10,fontWeight:700,color:tl.color,letterSpacing:1}}>PRÓXIMAMENTE</div>}
         </div>
       ))}
+      {aviso&&(
+        <div onClick={()=>setAviso(false)} style={{position:'fixed',inset:0,zIndex:50,background:'rgba(0,0,0,.6)',display:'flex',alignItems:'center',justifyContent:'center',padding:24}}>
+          <div onClick={e=>e.stopPropagation()} style={{background:'#0D1A2E',border:'1px solid rgba(255,255,255,.15)',borderRadius:16,padding:'26px 22px',textAlign:'center',maxWidth:320,width:'100%'}}>
+            <div style={{fontSize:34,marginBottom:8}}>⚽</div>
+            <div style={{fontFamily:'var(--ff)',fontSize:20,color:'var(--txt)',letterSpacing:1}}>REGÍSTRATE PARA ENTRAR</div>
+            <div style={{fontSize:13,color:'var(--muted)',marginTop:8,lineHeight:1.5}}>Crea tu cuenta o inicia sesión para jugar tus pronósticos.</div>
+            <button onClick={onProfile} style={{marginTop:16,width:'100%',padding:'12px 0',borderRadius:12,border:'none',background:'var(--gold)',color:'#0A0A1E',fontWeight:800,fontSize:14,letterSpacing:1,cursor:'pointer'}}>REGISTRARSE</button>
+            <button onClick={()=>setAviso(false)} style={{marginTop:8,width:'100%',padding:'10px 0',borderRadius:12,border:'1px solid rgba(255,255,255,.2)',background:'none',color:'var(--muted)',fontSize:13,cursor:'pointer'}}>Ahora no</button>
+          </div>
+        </div>
+      )}
+      <style>{`@keyframes pulseWhite{0%,100%{box-shadow:0 0 0 0 rgba(255,255,255,0);}50%{box-shadow:0 0 14px 4px rgba(255,255,255,.55);}}`}</style>
     </div>
   );
 }
@@ -8007,9 +8020,9 @@ export default function App(){
           <circle cx="130" cy="490" r="2" fill="var(--gold)" opacity="0.07"/>
           <circle cx="300" cy="640" r="3" fill="var(--gold)" opacity="0.09"/>
         </svg>
-        {screen==='splash'&&<Splash done={()=>setScreen('auth')}/>}
+        {screen==='splash'&&<Splash done={()=>setScreen('selector')}/>}
         {screen==='auth'&&<Auth onLogin={login} onLangChange={setLang} logoutMsg={logoutMsg} onClearMsg={()=>setLogoutMsg('')}/>}
-        {screen==='selector'&&<SelectorTorneos onProfile={()=>setScreen('auth')} onPick={id=>{ setTorneoActivo(id); setScreen('app'); }}/>}
+        {screen==='selector'&&<SelectorTorneos user={user} onProfile={()=>setScreen('auth')} onPick={id=>{ setTorneoActivo(id); setScreen('app'); }}/>}
         {screen==='app'&&user&&<>
           {/* ── Pantalla de verificación de pago MP ── */}
           {mpVerify&&(
