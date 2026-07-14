@@ -7339,25 +7339,28 @@ function StatsScreen({bets,noWrapper=false}){
 }
 
 // ── Selector de torneos (Fase C1) ─────────────────
-function SelectorTorneos({onPick}){
+function SelectorTorneos({onPick,onProfile}){
   const tiles=[
-    {id:'euro',   nombre:'EURO CUP', sub:'2026/27', color:'#1E6FE0', activo:false},
-    {id:'ligamxAp2026', nombre:'LIGA MEXICANA', sub:'Apertura 2026', color:'#1EC66C', activo:true},
-    {id:'mundial2026',  nombre:'PRONÓSTICOS FÚTBOL', sub:'2026', color:'var(--gold)', activo:true},
+    {id:'euro',   nombre:'EURO CUP', sub:'2026/27', color:'#1E6FE0', activo:false, img:'/tile-eurocup.jpg'},
+    {id:'ligamxAp2026', nombre:'LIGA MEXICANA', sub:'Apertura 2026', color:'#1EC66C', activo:true, img:'/tile-ligamx.jpg'},
+    {id:'mundial2026',  nombre:'PRONÓSTICOS FÚTBOL', sub:'2026', color:'var(--gold)', activo:true, img:'/tile-mundial.jpg'},
   ];
   return (
-    <div style={{minHeight:'100dvh',background:'var(--bg)',padding:'20px 16px',overflowY:'auto'}}>
-      <div style={{textAlign:'center',fontFamily:'var(--ff)',fontSize:22,letterSpacing:1,color:'var(--txt)',marginBottom:4}}>PRONÓSTICOS FÚTBOL 2026</div>
-      <div style={{textAlign:'center',fontSize:11,color:'var(--muted)',letterSpacing:2,marginBottom:20}}>VIVE LA PASIÓN</div>
+    <div style={{height:'100dvh',background:'var(--bg)',display:'flex',flexDirection:'column',gap:12,padding:'12px 14px 18px'}}>
+      <div style={{position:'relative',textAlign:'center',flex:'none',padding:'4px 0 2px'}}>
+        <div style={{fontFamily:'var(--ff)',fontSize:22,letterSpacing:1,color:'var(--txt)',lineHeight:1.15}}>PRONÓSTICOS <span style={{color:'#1EC66C'}}>FÚTBOL 2026</span></div>
+        <div style={{fontSize:10,color:'var(--muted)',letterSpacing:3,marginTop:4}}>VIVE LA PASIÓN</div>
+        <div onClick={onProfile} style={{position:'absolute',top:0,right:2,cursor:'pointer',padding:6}}>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--txt)" strokeWidth="1.6"><circle cx="12" cy="8" r="3.4"/><path d="M4.5 20c1.4-3.4 4.2-5 7.5-5s6.1 1.6 7.5 5"/></svg>
+        </div>
+      </div>
       {tiles.map(tl=>(
         <div key={tl.id}
           onClick={()=>{ if(tl.activo) onPick(tl.id); }}
-          style={{position:'relative',borderRadius:16,marginBottom:14,padding:'28px 20px',
+          style={{position:'relative',flex:1,borderRadius:16,
             cursor:tl.activo?'pointer':'not-allowed',opacity:tl.activo?1:0.55,
-            background:`linear-gradient(135deg, ${tl.color}22, ${tl.color}08)`,
-            border:`1.5px solid ${tl.color}55`, overflow:'hidden'}}>
-          <div style={{fontFamily:'var(--ff)',fontSize:30,letterSpacing:1,color:'var(--txt)',lineHeight:1}}>{tl.nombre}</div>
-          <div style={{fontFamily:'var(--ff)',fontSize:20,color:tl.color,marginTop:4}}>{tl.sub}</div>
+            background:`linear-gradient(180deg, rgba(6,10,24,.15), rgba(6,10,24,.35)), url(${tl.img}) center/cover no-repeat`,
+            overflow:'hidden'}}>
           {!tl.activo&&<div style={{position:'absolute',top:12,right:14,fontSize:10,fontWeight:700,color:tl.color,letterSpacing:1}}>PRÓXIMAMENTE</div>}
         </div>
       ))}
@@ -8010,7 +8013,7 @@ export default function App(){
         </svg>
         {screen==='splash'&&<Splash done={()=>setScreen('auth')}/>}
         {screen==='auth'&&<Auth onLogin={login} onLangChange={setLang} logoutMsg={logoutMsg} onClearMsg={()=>setLogoutMsg('')}/>}
-        {screen==='selector'&&<SelectorTorneos onPick={id=>{ setTorneoActivo(id); setScreen('app'); }}/>}
+        {screen==='selector'&&<SelectorTorneos onProfile={()=>setScreen('auth')} onPick={id=>{ setTorneoActivo(id); setScreen('app'); }}/>}
         {screen==='app'&&user&&<>
           {/* ── Pantalla de verificación de pago MP ── */}
           {mpVerify&&(
