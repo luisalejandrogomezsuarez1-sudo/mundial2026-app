@@ -1358,6 +1358,11 @@ const TORNEOS = {
     grpWin: null,
   },
 };
+
+const THEMES={
+  mundial2026:{},
+  ligamxAp2026:{'--gold':'#1EC66C','--gold2':'#12A356','--gold-rgb':'30,198,108','--gold-dim':'#18A85B','--gold-dim-rgb':'24,168,91','--gold-text-dim':'#128749','--glow':'0 0 24px rgba(30,198,108,.22)'},
+};
 // TORNEO_ACTIVO ahora es estado (torneoActivo) dentro de App — ver Fase C1
 
 
@@ -7961,7 +7966,7 @@ export default function App(){
     <LangCtx.Provider value={t}>
     <div>
       <style>{css}</style>
-      <div className="app">
+      <div className="app" style={screen==='app'?(THEMES[torneoActivo]||{}):{}}>
         {/* Abstract background shapes */}
         <svg style={{position:'absolute',top:0,left:0,width:'100%',height:'100%',pointerEvents:'none',zIndex:-1}} viewBox="0 0 430 900" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
           {/* Canada red — organic blob top-left */}
