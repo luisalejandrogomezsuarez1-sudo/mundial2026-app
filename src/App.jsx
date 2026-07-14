@@ -738,7 +738,7 @@ const css = `
 *{box-sizing:border-box;margin:0;padding:0;}
 :root{
   --bg:#09091a;--surf:#0f0f24;--surf2:#14142e;--surf3:#1a1a38;
-  --gold:#F0A500;--gold-rgb:240,165,0;--gold2:#C88500;--gold-dim:#C48F00;--gold-dim-rgb:196,143,0;--gold-text-dim:#A07830;--acc:#4F8EF7;
+  --gold:#F0A500;--gold-rgb:240,165,0;--gold2:#C88500;--gold-dim:#C48F00;--gold-dim-rgb:196,143,0;--gold-text-dim:#A07830;--blob-a:#C8102E;--blob-b:#006847;--blob-c:#002868;--acc:#4F8EF7;
   --grn:#1EC66C;--red:#c8102e;--ylw:#FFCC00;
   --txt:#F0F4FF;--muted:#6B82AF;--dim:#8A9BC9;
   --br:rgba(255,255,255,0.07);--r:16px;
@@ -754,6 +754,17 @@ body{font-family:var(--fb);background:var(--bg);color:var(--txt);height:100%;ove
     url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='430' height='900'><filter id='b' x='-80%' y='-80%' width='260%' height='260%'><feGaussianBlur stdDeviation='58'/></filter><path d='M-80,950 C40,640 125,665 215,648 C305,665 390,640 510,950Z' fill='%23002868' opacity='.58' filter='url(%23b)'/><path d='M60,648 C120,580 310,580 370,648 C320,700 110,700 60,648Z' fill='%23002868' opacity='.30' filter='url(%23b)'/></svg>"),
     linear-gradient(175deg,#0f0f24 0%,#09091a 50%,#0d060f 100%);
   background-size:100% 100%;background-repeat:no-repeat;}
+.app.theme-liga{
+  background:
+    linear-gradient(180deg,rgba(9,9,26,.82) 0%,rgba(9,9,26,.66) 45%,rgba(6,20,12,.78) 100%),
+    url('/fondo-ligamx.jpg') center top/cover no-repeat,
+    var(--bg);
+}
+.app.theme-liga .bg-shapes{display:none;}
+.app.theme-liga::before{
+  background:linear-gradient(90deg,#006847 0%,#006847 30%,#F0F4FF 50%,#c8102e 70%,#c8102e 100%);}
+.app.theme-liga .ncard{margin:0 30px 11px!important;background:rgba(15,15,36,.45)!important;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);}
+.app.theme-liga .mc{margin:0 30px 12px;background:rgba(15,15,36,.45);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);box-shadow:none;}
 .app::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;
   background:linear-gradient(90deg,#c8102e 0%,#c8102e 28%,var(--gold) 50%,#006847 72%,#002868 100%);
   z-index:200;opacity:.6;}
@@ -1361,7 +1372,7 @@ const TORNEOS = {
 
 const THEMES={
   mundial2026:{},
-  ligamxAp2026:{'--gold':'#1EC66C','--gold2':'#12A356','--gold-rgb':'30,198,108','--gold-dim':'#18A85B','--gold-dim-rgb':'24,168,91','--gold-text-dim':'#128749','--glow':'0 0 24px rgba(30,198,108,.22)'},
+  ligamxAp2026:{'--gold':'#1EC66C','--gold2':'#12A356','--gold-rgb':'30,198,108','--gold-dim':'#18A85B','--gold-dim-rgb':'24,168,91','--gold-text-dim':'#128749','--glow':'0 0 24px rgba(30,198,108,.22)','--blob-a':'#0A7A44','--blob-b':'#1EC66C','--blob-c':'#064D2B'},
 };
 // TORNEO_ACTIVO ahora es estado (torneoActivo) dentro de App — ver Fase C1
 
@@ -2154,7 +2165,7 @@ function NextCard({m,score}){
   const homeT = score?.home || m.home;
   const awayT = score?.away || m.away;
   return(
-    <div style={{margin:'0 16px 11px',background:'var(--surf)',borderRadius:'var(--r)',border:`1px solid ${finished?'rgba(46,204,113,.3)':'var(--br)'}`,overflow:'hidden'}}>
+    <div className="ncard" style={{margin:'0 16px 11px',background:'var(--surf)',borderRadius:'var(--r)',border:`1px solid ${finished?'rgba(46,204,113,.3)':'var(--br)'}`,overflow:'hidden'}}>
       <div style={{padding:'8px 14px 3px',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
         <span style={{fontSize:11,color:'var(--muted)',fontWeight:600}}>{m.phase} · {m.date}</span>
         <div style={{display:'flex',gap:6,alignItems:'center'}}>
@@ -7966,18 +7977,18 @@ export default function App(){
     <LangCtx.Provider value={t}>
     <div>
       <style>{css}</style>
-      <div className="app" style={screen==='app'?(THEMES[torneoActivo]||{}):{}}>
+      <div className={'app'+(screen==='app'&&TORNEOS[torneoActivo]?.formato==='liga'?' theme-liga':'')} style={screen==='app'?(THEMES[torneoActivo]||{}):{}}>
         {/* Abstract background shapes */}
-        <svg style={{position:'absolute',top:0,left:0,width:'100%',height:'100%',pointerEvents:'none',zIndex:-1}} viewBox="0 0 430 900" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+        <svg className="bg-shapes" style={{position:'absolute',top:0,left:0,width:'100%',height:'100%',pointerEvents:'none',zIndex:-1}} viewBox="0 0 430 900" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
           {/* Canada red — organic blob top-left */}
-          <path d="M 0 0 C 55,-18 190,12 232,82 C 268,138 252,208 194,230 C 138,252 56,222 12,164 C -28,112 -18,48 0,0 Z" fill="#C8102E" opacity="0.18"/>
-          <path d="M 192 158 C 224,136 272,152 276,194 C 280,230 248,250 206,238 C 168,226 162,178 192,158 Z" fill="#C8102E" opacity="0.11"/>
+          <path d="M 0 0 C 55,-18 190,12 232,82 C 268,138 252,208 194,230 C 138,252 56,222 12,164 C -28,112 -18,48 0,0 Z" fill="var(--blob-a)" opacity="0.18"/>
+          <path d="M 192 158 C 224,136 272,152 276,194 C 280,230 248,250 206,238 C 168,226 162,178 192,158 Z" fill="var(--blob-a)" opacity="0.11"/>
           {/* Mexico green — tall brushstroke top-right */}
-          <path d="M 430 0 C 414,28 372,65 336,125 C 300,182 312,256 366,278 C 408,295 430,270 430,195 C 430,125 430,52 430,0 Z" fill="#006847" opacity="0.18"/>
-          <path d="M 248 192 C 274,168 326,180 330,220 C 334,254 302,270 266,258 C 234,246 228,214 248,192 Z" fill="#006847" opacity="0.11"/>
+          <path d="M 430 0 C 414,28 372,65 336,125 C 300,182 312,256 366,278 C 408,295 430,270 430,195 C 430,125 430,52 430,0 Z" fill="var(--blob-b)" opacity="0.18"/>
+          <path d="M 248 192 C 274,168 326,180 330,220 C 334,254 302,270 266,258 C 234,246 228,214 248,192 Z" fill="var(--blob-b)" opacity="0.11"/>
           {/* USA blue — wave from bottom */}
-          <path d="M 0 900 L 0 838 C 48,800 106,782 160,788 C 196,792 234,792 270,788 C 324,782 382,800 430,838 L 430 900 Z" fill="#002868" opacity="0.22"/>
-          <path d="M 148 762 C 174,740 254,736 284,758 C 308,776 294,804 256,808 C 218,810 158,802 144,782 C 136,768 142,762 148,762 Z" fill="#002868" opacity="0.14"/>
+          <path d="M 0 900 L 0 838 C 48,800 106,782 160,788 C 196,792 234,792 270,788 C 324,782 382,800 430,838 L 430 900 Z" fill="var(--blob-c)" opacity="0.22"/>
+          <path d="M 148 762 C 174,740 254,736 284,758 C 308,776 294,804 256,808 C 218,810 158,802 144,782 C 136,768 142,762 148,762 Z" fill="var(--blob-c)" opacity="0.14"/>
           {/* Gold destellos — scattered sparkles */}
           <circle cx="64" cy="344" r="5" fill="var(--gold)" opacity="0.14"/>
           <circle cx="64" cy="344" r="11" fill="var(--gold)" opacity="0.05"/>
