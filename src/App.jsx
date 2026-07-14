@@ -3500,7 +3500,7 @@ function TablaScreen({torneo}){
             </div>
           )}
         </div>
-        <div style={{background:'var(--surf)',borderRadius:'0 0 14px 14px',border:'1px solid var(--br)',
+        <div className="glass" style={{background:'var(--surf)',borderRadius:'0 0 14px 14px',border:'1px solid var(--br)',
           borderTop:'none',padding:'9px 14px'}}>
           <div style={{display:'flex',gap:16,fontSize:12,color:'var(--muted)',flexWrap:'wrap'}}>
             <span><span style={{color:'var(--gold)'}}>■</span> 1° {t.leader}</span>
