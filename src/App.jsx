@@ -765,6 +765,8 @@ body{font-family:var(--fb);background:var(--bg);color:var(--txt);height:100%;ove
   background:linear-gradient(90deg,#006847 0%,#006847 30%,#F0F4FF 50%,#c8102e 70%,#c8102e 100%);}
 .app.theme-liga .ncard{margin:0 30px 11px!important;background:rgba(15,15,36,.35)!important;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);}
 .app.theme-liga .mc{margin:0 30px 12px;background:rgba(15,15,36,.35);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);box-shadow:none;}
+.app.theme-liga .bnav{background:rgba(6,14,28,.55);}
+.app.theme-liga .glass{background:rgba(15,15,36,.35)!important;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);}
 .app::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;
   background:linear-gradient(90deg,#c8102e 0%,#c8102e 28%,var(--gold) 50%,#006847 72%,#002868 100%);
   z-index:200;opacity:.6;}
@@ -3405,7 +3407,7 @@ function TablaScreen({torneo}){
         </div>
         <SponsorBanner margin="2px 0 0"/>
         <div style={{margin:'12px 16px 0'}}>
-          <div style={{background:'var(--surf)',borderRadius:'14px 14px 0 0',border:'1px solid var(--br)',borderBottom:'none',overflow:'hidden'}}>
+          <div className="glass" style={{background:'var(--surf)',borderRadius:'14px 14px 0 0',border:'1px solid var(--br)',borderBottom:'none',overflow:'hidden'}}>
             <div style={{display:'grid',gridTemplateColumns:'26px 1fr repeat(8,26px)',gap:0,padding:'9px 12px',
               fontSize:10,fontWeight:700,color:'var(--muted)',letterSpacing:.5,textTransform:'uppercase',alignItems:'center'}}>
               <div></div>
