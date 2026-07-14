@@ -738,13 +738,13 @@ const css = `
 *{box-sizing:border-box;margin:0;padding:0;}
 :root{
   --bg:#09091a;--surf:#0f0f24;--surf2:#14142e;--surf3:#1a1a38;
-  --gold:#F0A500;--gold2:#C88500;--acc:#4F8EF7;
+  --gold:#F0A500;--gold-rgb:240,165,0;--gold2:#C88500;--gold-dim:#C48F00;--gold-dim-rgb:196,143,0;--gold-text-dim:#A07830;--acc:#4F8EF7;
   --grn:#1EC66C;--red:#c8102e;--ylw:#FFCC00;
   --txt:#F0F4FF;--muted:#6B82AF;--dim:#8A9BC9;
   --br:rgba(255,255,255,0.07);--r:16px;
   --ff:'Bebas Neue',sans-serif;--fb:'DM Sans',sans-serif;
   --shadow:0 4px 24px rgba(0,0,0,.5);
-  --glow:0 0 24px rgba(240,165,0,.22);
+  --glow:0 0 24px rgba(var(--gold-rgb),.22);
 }
 body{font-family:var(--fb);background:var(--bg);color:var(--txt);height:100%;overflow:hidden;}
 .app{max-width:430px;margin:0 auto;height:100dvh;overflow:hidden;display:flex;flex-direction:column;position:relative;isolation:isolate;
@@ -755,18 +755,18 @@ body{font-family:var(--fb);background:var(--bg);color:var(--txt);height:100%;ove
     linear-gradient(175deg,#0f0f24 0%,#09091a 50%,#0d060f 100%);
   background-size:100% 100%;background-repeat:no-repeat;}
 .app::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;
-  background:linear-gradient(90deg,#c8102e 0%,#c8102e 28%,#F0A500 50%,#006847 72%,#002868 100%);
+  background:linear-gradient(90deg,#c8102e 0%,#c8102e 28%,var(--gold) 50%,#006847 72%,#002868 100%);
   z-index:200;opacity:.6;}
 .scr{flex:1;overflow-y:auto;overflow-x:hidden;padding-bottom:calc(84px + env(safe-area-inset-bottom));}
 .scr::-webkit-scrollbar{display:none;}
 .bnav{position:absolute;bottom:0;left:0;right:0;height:76px;
-  background:rgba(6,14,28,0.97);border-top:1px solid rgba(240,165,0,0.12);
+  background:rgba(6,14,28,0.97);border-top:1px solid rgba(var(--gold-rgb),0.12);
   display:flex;align-items:center;justify-content:space-around;
   padding:0 4px calc(6px + env(safe-area-inset-bottom));z-index:100;backdrop-filter:blur(28px);
   box-shadow:0 -6px 24px rgba(0,0,0,.4);}
 .nitem{display:flex;flex-direction:column;align-items:center;gap:2px;
   padding:6px 2px;border-radius:12px;cursor:pointer;transition:all .25s;flex:1;}
-.nitem.on{background:rgba(240,165,0,0.08);}
+.nitem.on{background:rgba(var(--gold-rgb),0.08);}
 .nicon{font-size:20px;transition:transform .25s;}
 .nitem.on .nicon{transform:scale(1.12);}
 .nlbl{font-size:9px;font-weight:700;letter-spacing:.3px;text-transform:uppercase;color:var(--muted);}
@@ -783,31 +783,31 @@ body{font-family:var(--fb);background:var(--bg);color:var(--txt);height:100%;ove
 @keyframes slidein{from{transform:translateX(30px);opacity:0}to{transform:translateX(0);opacity:1}}
 @keyframes popbadge{0%{transform:scale(0)}80%{transform:scale(1.2)}100%{transform:scale(1)}}
 @keyframes slide{0%{transform:translateX(-100%)}100%{transform:translateX(350%)}}
-@keyframes pulse{0%,100%{box-shadow:var(--glow)}50%{box-shadow:0 0 32px rgba(240,165,0,.3)}}
+@keyframes pulse{0%,100%{box-shadow:var(--glow)}50%{box-shadow:0 0 32px rgba(var(--gold-rgb),.3)}}
 @keyframes marquee{0%{transform:translateX(100%)}100%{transform:translateX(-100%)}}
-@keyframes elimGlow{0%,100%{box-shadow:0 0 6px rgba(240,165,0,.5);border-color:rgba(240,165,0,.6)}50%{box-shadow:0 0 18px rgba(240,165,0,.95),0 0 28px rgba(240,165,0,.5);border-color:rgba(240,165,0,1)}}
+@keyframes elimGlow{0%,100%{box-shadow:0 0 6px rgba(var(--gold-rgb),.5);border-color:rgba(var(--gold-rgb),.6)}50%{box-shadow:0 0 18px rgba(var(--gold-rgb),.95),0 0 28px rgba(var(--gold-rgb),.5);border-color:rgba(var(--gold-rgb),1)}}
 .leader-glow{animation:elimGlow 1.8s ease-in-out infinite}
 .score-live{animation:elimGlow 1.2s ease-in-out infinite;padding:1px 6px;border-radius:8px;color:var(--gold)!important}
-.marquee-wrap{overflow:hidden;white-space:nowrap;background:linear-gradient(90deg,rgba(200,16,46,.12),rgba(240,165,0,.08));border-top:1px solid rgba(240,165,0,.2);border-bottom:1px solid rgba(240,165,0,.2);padding:8px 0;}
+.marquee-wrap{overflow:hidden;white-space:nowrap;background:linear-gradient(90deg,rgba(200,16,46,.12),rgba(var(--gold-rgb),.08));border-top:1px solid rgba(var(--gold-rgb),.2);border-bottom:1px solid rgba(var(--gold-rgb),.2);padding:8px 0;}
 .marquee-text{display:inline-block;padding-left:100%;font-size:13px;font-weight:700;color:var(--gold);animation-name:marquee;animation-timing-function:linear;animation-iteration-count:infinite;}
 .marquee-text:hover{animation-play-state:paused;}
 .fin{animation:fin .35s ease forwards;}
 .inp{width:100%;background:var(--surf2);border:1.5px solid var(--br);
   border-radius:12px;padding:14px 16px;color:var(--txt);font-family:var(--fb);
   font-size:15px;outline:none;transition:border-color .2s,box-shadow .2s;}
-.inp:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(240,165,0,.1);}
+.inp:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(var(--gold-rgb),.1);}
 .inp::placeholder{color:var(--muted);}
-.btn{width:100%;background:linear-gradient(135deg,#F0A500,#C88500);
+.btn{width:100%;background:linear-gradient(135deg,var(--gold),var(--gold2));
   color:#000;border:none;border-radius:14px;padding:15px;
   font-family:var(--ff);font-size:20px;letter-spacing:1px;cursor:pointer;
   transition:all .18s;font-weight:400;
-  box-shadow:0 4px 18px rgba(240,165,0,.35);}
-.btn:hover{opacity:.92;transform:translateY(-1px);box-shadow:0 6px 24px rgba(240,165,0,.45);}
+  box-shadow:0 4px 18px rgba(var(--gold-rgb),.35);}
+.btn:hover{opacity:.92;transform:translateY(-1px);box-shadow:0 6px 24px rgba(var(--gold-rgb),.45);}
 .btn:active{transform:scale(.98) translateY(0);}
 .btng{width:100%;background:var(--surf2);color:var(--txt);border:1.5px solid var(--br);border-radius:12px;padding:14px;font-family:var(--fb);font-size:15px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;transition:all .2s;}
 .btng:hover{border-color:var(--gold);background:var(--surf3);}
 .tpill{flex-shrink:0;padding:7px 16px;border-radius:20px;font-size:13px;font-weight:600;cursor:pointer;background:var(--surf2);color:var(--muted);border:1.5px solid transparent;transition:all .2s;font-family:var(--fb);}
-.tpill.on{background:rgba(240,165,0,.12);color:var(--gold);border-color:rgba(240,165,0,.4);}
+.tpill.on{background:rgba(var(--gold-rgb),.12);color:var(--gold);border-color:rgba(var(--gold-rgb),.4);}
 .tpill.elim-glow{animation:elimGlow 1.6s ease-in-out infinite;color:var(--gold)!important;font-weight:700;}
 .mc{margin:0 16px 12px;border-radius:var(--r);border:1px solid rgba(255,255,255,0.08);overflow:hidden;cursor:pointer;transition:transform .15s,border-color .2s,box-shadow .2s;
   background:
@@ -815,7 +815,7 @@ body{font-family:var(--fb);background:var(--bg);color:var(--txt);height:100%;ove
     radial-gradient(ellipse 90% 65% at 100% 0%, rgba(200,16,46,0.14) 0%,transparent 50%),
     var(--surf);
   box-shadow:0 1px 0 rgba(200,16,46,0.08) inset,0 -1px 0 rgba(0,104,71,0.08) inset;}
-.mc:hover{transform:scale(1.015);border-color:rgba(240,165,0,.4);
+.mc:hover{transform:scale(1.015);border-color:rgba(var(--gold-rgb),.4);
   box-shadow:
     0 6px 32px rgba(0,0,0,.45),
     0 0 28px rgba(200,16,46,.15),
@@ -1484,7 +1484,7 @@ const dbRevokeGift=async email=>{
 function Trophy({sz=80}){
   return(
     <svg width={sz} height={sz*1.25} viewBox="0 0 80 100" fill="none"
-      style={{filter:'drop-shadow(0 0 18px rgba(240,165,0,.55))'}}>
+      style={{filter:'drop-shadow(0 0 18px rgba(var(--gold-rgb),.55))'}}>
       <defs>
         <linearGradient id="tg" x1="0" y1="0" x2="1" y2="1">
           <stop offset="0%" stopColor="#FFE97A"/>
@@ -1822,11 +1822,11 @@ function Splash({done}){
   return(
     <div style={{display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',
       height:'100%',gap:16,
-      background:'radial-gradient(ellipse at 50% 38%,rgba(240,165,0,.09) 0%,transparent 62%)'}}>
+      background:'radial-gradient(ellipse at 50% 38%,rgba(var(--gold-rgb),.09) 0%,transparent 62%)'}}>
       <img src="/icon-512.png" alt="Pronosticos Futbol"
         style={{width:200,height:200,borderRadius:36,
-          boxShadow:'0 0 40px rgba(240,165,0,.45), 0 8px 32px rgba(0,0,0,.6)',
-          objectFit:'cover',border:'3px solid rgba(240,165,0,.3)'}}/>
+          boxShadow:'0 0 40px rgba(var(--gold-rgb),.45), 0 8px 32px rgba(0,0,0,.6)',
+          objectFit:'cover',border:'3px solid rgba(var(--gold-rgb),.3)'}}/>
       <div style={{textAlign:'center',lineHeight:1,marginTop:4}}>
         <div style={{fontSize:11,color:'var(--muted)',letterSpacing:3,textTransform:'uppercase'}}>
           USA · Canadá · México
@@ -1982,8 +1982,8 @@ function Auth({onLogin,onLangChange=()=>{},logoutMsg='',onClearMsg=()=>{}}){
       <div style={{padding:'40px 24px 18px',textAlign:'center'}}>
         <img src="/icon-512.png" alt="Pronosticos Futbol"
           style={{width:90,height:90,borderRadius:20,objectFit:'cover',
-            boxShadow:'0 0 24px rgba(240,165,0,.35)',
-            border:'2px solid rgba(240,165,0,.3)'}}/>
+            boxShadow:'0 0 24px rgba(var(--gold-rgb),.35)',
+            border:'2px solid rgba(var(--gold-rgb),.3)'}}/>
         <div style={{fontFamily:'var(--ff)',fontSize:32,letterSpacing:2,color:'var(--gold)',marginTop:10,lineHeight:1}}>PRONOSTICOS FUTBOL</div>
         <div style={{fontSize:13,color:'var(--muted)',marginTop:6}}>
           {mode==='login'?t.login_subtitle:t.register_subtitle}
@@ -1991,8 +1991,8 @@ function Auth({onLogin,onLangChange=()=>{},logoutMsg='',onClearMsg=()=>{}}){
       </div>
 
       {logoutMsg&&(
-        <div style={{margin:'0 24px 4px',background:'rgba(240,165,0,.1)',
-          border:'1px solid rgba(240,165,0,.35)',borderRadius:12,
+        <div style={{margin:'0 24px 4px',background:'rgba(var(--gold-rgb),.1)',
+          border:'1px solid rgba(var(--gold-rgb),.35)',borderRadius:12,
           padding:'12px 14px',display:'flex',alignItems:'flex-start',gap:10}}>
           <span style={{fontSize:20,flexShrink:0}}>📱</span>
           <div style={{flex:1,fontSize:13,color:'var(--gold)',lineHeight:1.5}}>{logoutMsg}</div>
@@ -2305,7 +2305,7 @@ function MatchDetail({m,onBack}){
             <div style={{fontSize:12,fontWeight:700}}>{m.home}</div>
           </div>
           <div style={{fontFamily:'var(--ff)',fontSize:58,letterSpacing:6,color:'var(--gold)',lineHeight:1,
-            textShadow:'0 0 20px rgba(240,165,0,.3)'}}>{m.hs} - {m.as}</div>
+            textShadow:'0 0 20px rgba(var(--gold-rgb),.3)'}}>{m.hs} - {m.as}</div>
           <div style={{textAlign:'center'}}>
             <div style={{fontSize:34}}>{FLAGS[m.away]}</div>
             <div style={{fontSize:12,fontWeight:700}}>{m.away}</div>
@@ -2380,7 +2380,7 @@ function MatchDetail({m,onBack}){
                   </div>
                 </div>
                 <div style={{fontSize:14,color:'#C8D8F0',fontStyle:'italic',lineHeight:1.6,
-                  paddingLeft:12,borderLeft:'3px solid var(--gold)',background:'rgba(240,165,0,.03)',
+                  paddingLeft:12,borderLeft:'3px solid var(--gold)',background:'rgba(var(--gold-rgb),.03)',
                   padding:'10px 12px',borderRadius:'0 8px 8px 0'}}>
                   "{q.q}"
                 </div>
@@ -2422,8 +2422,8 @@ function Countdown(){
   const pad=n=>String(n).padStart(2,'0');
   return(
     <div style={{margin:'10px 16px 14px',borderRadius:14,overflow:'hidden',
-      border:'1px solid rgba(240,165,0,.25)',
-      background:'linear-gradient(135deg,rgba(240,165,0,.07) 0%,rgba(240,165,0,.02) 100%)'}}>
+      border:'1px solid rgba(var(--gold-rgb),.25)',
+      background:'linear-gradient(135deg,rgba(var(--gold-rgb),.07) 0%,rgba(var(--gold-rgb),.02) 100%)'}}>
       <div style={{padding:'12px 14px 10px',textAlign:'center'}}>
         <div style={{fontSize:10,fontWeight:700,color:'var(--muted)',letterSpacing:1.2,
           textTransform:'uppercase',marginBottom:4}}>
@@ -2436,7 +2436,7 @@ function Countdown(){
           {[['DÍAS',t.d],['HRS',t.h],['MIN',t.m],['SEG',t.s]].map(([label,val])=>(
             <div key={label} style={{textAlign:'center',flex:1,maxWidth:70,
               background:'var(--surf)',borderRadius:10,padding:'10px 4px',
-              border:'1px solid rgba(240,165,0,.2)'}}>
+              border:'1px solid rgba(var(--gold-rgb),.2)'}}>
               <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:32,
                 color:'var(--gold)',lineHeight:1}}>{pad(val)}</div>
               <div style={{fontSize:9,color:'var(--muted)',fontWeight:700,
@@ -2812,7 +2812,7 @@ function HomeScreen({onMatch,onGoToCal,torneo}){
     const ligaLista = ligaHoy.length>0 ? ligaHoy : torneo.partidos.filter(m=>m.isoDate>=hoyMX).slice(0,6);
     return(
       <div className="scr fin">
-        <div style={{background:'linear-gradient(180deg,rgba(240,165,0,.07) 0%,transparent 100%)',
+        <div style={{background:'linear-gradient(180deg,rgba(var(--gold-rgb),.07) 0%,transparent 100%)',
           padding:'16px 16px 0',borderBottom:'1px solid rgba(255,255,255,.04)'}}>
           <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',paddingBottom:10}}>
             <div>
@@ -2821,7 +2821,7 @@ function HomeScreen({onMatch,onGoToCal,torneo}){
             </div>
             <img src="/icon-512.png" alt="logo"
               style={{width:36,height:36,borderRadius:8,objectFit:'cover',
-                boxShadow:'0 0 10px rgba(240,165,0,.3)'}}/>
+                boxShadow:'0 0 10px rgba(var(--gold-rgb),.3)'}}/>
           </div>
         </div>
         <CommentMarquee/>
@@ -2835,7 +2835,7 @@ function HomeScreen({onMatch,onGoToCal,torneo}){
   return(
     <div className="scr fin">
       {/* Top bar */}
-      <div style={{background:'linear-gradient(180deg,rgba(240,165,0,.07) 0%,transparent 100%)',
+      <div style={{background:'linear-gradient(180deg,rgba(var(--gold-rgb),.07) 0%,transparent 100%)',
         padding:'16px 16px 0',borderBottom:'1px solid rgba(255,255,255,.04)'}}>
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',paddingBottom:10}}>
           <div>
@@ -2847,8 +2847,8 @@ function HomeScreen({onMatch,onGoToCal,torneo}){
           <div style={{display:'flex',alignItems:'center',gap:8}}>
             <img src="/icon-512.png" alt="logo"
               style={{width:36,height:36,borderRadius:8,objectFit:'cover',
-                boxShadow:'0 0 10px rgba(240,165,0,.3)'}}/>
-            <button onClick={doRef} style={{background:'rgba(240,165,0,.1)',border:'1px solid rgba(240,165,0,.2)',
+                boxShadow:'0 0 10px rgba(var(--gold-rgb),.3)'}}/>
+            <button onClick={doRef} style={{background:'rgba(var(--gold-rgb),.1)',border:'1px solid rgba(var(--gold-rgb),.2)',
               color:'var(--gold)',width:34,height:34,borderRadius:9,cursor:'pointer',fontSize:15,
               display:'flex',alignItems:'center',justifyContent:'center',
               animation:ref?'spin .8s linear infinite':'none',transition:'background .2s'}}
@@ -2909,8 +2909,8 @@ function HomeScreen({onMatch,onGoToCal,torneo}){
 
       {/* Countdown message before WC starts */}
       {new Date()<new Date(Date.UTC(2026,5,11,19,0,0))&&(
-        <div style={{margin:'0 16px 14px',background:'rgba(240,165,0,.04)',
-          borderRadius:14,border:'1px dashed rgba(240,165,0,.2)',padding:'14px 16px',
+        <div style={{margin:'0 16px 14px',background:'rgba(var(--gold-rgb),.04)',
+          borderRadius:14,border:'1px dashed rgba(var(--gold-rgb),.2)',padding:'14px 16px',
           textAlign:'center'}}>
           <div style={{fontSize:13,color:'var(--gold)',fontWeight:700,marginBottom:4}}>
             ⏳ {t.live_soon}
@@ -3136,7 +3136,7 @@ function CalScreen({torneo}){
               <div style={{fontSize:12,color:'var(--muted)'}}>{v.c} · Cap. {v.cap}</div>
             </div>
             <div style={{fontSize:10,background:
-              v.phase==='Final'?'rgba(240,165,0,.15)':
+              v.phase==='Final'?'rgba(var(--gold-rgb),.15)':
               v.phase==='Semifinal'?'rgba(79,142,247,.15)':'rgba(30,198,108,.1)',
               color:v.phase==='Final'?'var(--gold)':v.phase==='Semifinal'?'var(--acc)':'var(--grn)',
               padding:'3px 10px',borderRadius:20,fontWeight:700}}>
@@ -3157,10 +3157,10 @@ function BracketSlot({slot,highlight=false}){
   const hasTeams = slot?.home||slot?.away;
   const isWon    = !!slot?.winner;
   return(
-    <div style={{background:highlight?'rgba(240,165,0,.08)':'var(--surf2)',
-      borderRadius:10,border:`1px solid ${highlight?'rgba(240,165,0,.3)':'var(--br)'}`,
+    <div style={{background:highlight?'rgba(var(--gold-rgb),.08)':'var(--surf2)',
+      borderRadius:10,border:`1px solid ${highlight?'rgba(var(--gold-rgb),.3)':'var(--br)'}`,
       padding:'8px 10px',minWidth:148,flexShrink:0,
-      boxShadow:highlight?'0 0 12px rgba(240,165,0,.15)':'none'}}>
+      boxShadow:highlight?'0 0 12px rgba(var(--gold-rgb),.15)':'none'}}>
       {/* Team home */}
       <div style={{display:'flex',alignItems:'center',gap:6,marginBottom:5,
         opacity:isWon&&slot.winner!==slot.home?0.4:1}}>
@@ -3235,7 +3235,7 @@ function BracketView({bracket}){
   return(
     <div style={{paddingBottom:20}}>
       {winner&&(
-        <div style={{margin:'0 16px 16px',background:'linear-gradient(135deg,rgba(240,165,0,.2),rgba(240,165,0,.05))',
+        <div style={{margin:'0 16px 16px',background:'linear-gradient(135deg,rgba(var(--gold-rgb),.2),rgba(var(--gold-rgb),.05))',
           borderRadius:14,border:'2px solid var(--gold)',padding:'16px',textAlign:'center',
           animation:'pulse 2s infinite'}}>
           <div style={{fontSize:32,marginBottom:4}}>🏆</div>
@@ -3398,8 +3398,8 @@ function TablaScreen({torneo}){
             </div>
             {ligaTeams.map((tm,i)=>{
               const vals=[tm.pj,tm.g,tm.e,tm.p,tm.gf,tm.gc,tm.gf-tm.gc,tm.pts];
-              const zoneBg=i<4?'rgba(30,198,108,.06)':i<10?'rgba(240,165,0,.035)':'transparent';
-              const dotBg=i<4?'rgba(30,198,108,.9)':i<10?'rgba(240,165,0,.28)':'rgba(255,255,255,.08)';
+              const zoneBg=i<4?'rgba(30,198,108,.06)':i<10?'rgba(var(--gold-rgb),.035)':'transparent';
+              const dotBg=i<4?'rgba(30,198,108,.9)':i<10?'rgba(var(--gold-rgb),.28)':'rgba(255,255,255,.08)';
               return(
                 <div key={tm.n} style={{display:'grid',gridTemplateColumns:'26px 1fr repeat(8,26px)',gap:0,
                   padding:'10px 12px',alignItems:'center',
@@ -3417,7 +3417,7 @@ function TablaScreen({torneo}){
           </div>
           <div style={{display:'flex',gap:14,justifyContent:'center',padding:'10px 8px 0',fontSize:9,color:'var(--muted)'}}>
             <span><span style={{color:'rgba(30,198,108,.9)'}}>●</span> Directo (1-4)</span>
-            <span><span style={{color:'rgba(240,165,0,.7)'}}>●</span> Play-in (5-10)</span>
+            <span><span style={{color:'rgba(var(--gold-rgb),.7)'}}>●</span> Play-in (5-10)</span>
           </div>
         </div>
       </div>
@@ -3449,11 +3449,11 @@ function TablaScreen({torneo}){
               <div key={t.n} style={{display:'grid',gridTemplateColumns:'24px 30px repeat(8,1fr)',gap:0,
                 padding:'10px 12px',alignItems:'center',
                 borderTop:'1px solid rgba(255,255,255,.05)',
-                background:i===0?'rgba(240,165,0,.04)':i===1?'rgba(30,198,108,.03)':'transparent',
+                background:i===0?'rgba(var(--gold-rgb),.04)':i===1?'rgba(30,198,108,.03)':'transparent',
                 transition:'background .15s'}}>
                 {/* Posición */}
                 <div style={{width:20,height:20,borderRadius:'50%',
-                  background:i===0?'var(--gold)':i===1?'rgba(240,165,0,.22)':'rgba(255,255,255,.08)',
+                  background:i===0?'var(--gold)':i===1?'rgba(var(--gold-rgb),.22)':'rgba(255,255,255,.08)',
                   display:'flex',alignItems:'center',justifyContent:'center',
                   fontSize:10,fontWeight:800,color:i===0?'#000':'#fff'}}>{i+1}</div>
                 {/* Solo bandera — clic muestra el nombre */}
@@ -3475,7 +3475,7 @@ function TablaScreen({torneo}){
           {/* Nombre del equipo al hacer clic en su bandera */}
           {showName&&(
             <div style={{padding:'8px 14px',borderTop:'1px solid rgba(255,255,255,.05)',
-              background:'rgba(240,165,0,.06)',fontSize:12,color:'var(--gold)',fontWeight:600,
+              background:'rgba(var(--gold-rgb),.06)',fontSize:12,color:'var(--gold)',fontWeight:600,
               display:'flex',alignItems:'center',gap:8}}>
               <span style={{fontSize:18}}>{FLAGS[showName]||'🏳️'}</span>
               <span>{showName}</span>
@@ -3651,7 +3651,7 @@ function GolesScreen({torneo}){
     return(
       <div onClick={()=>setSel(active?null:p.n)}
         style={{display:'flex',alignItems:'center',gap:12,
-          background:active?'rgba(240,165,0,.08)':'var(--surf)',
+          background:active?'rgba(var(--gold-rgb),.08)':'var(--surf)',
           border:`1px solid ${active?'var(--gold)':'var(--br)'}`,
           borderRadius:12,padding:'10px 14px',cursor:'pointer',
           transition:'background .15s,border-color .15s'}}>
@@ -3719,8 +3719,8 @@ function GolesScreen({torneo}){
       <div style={{padding:'0 12px 24px'}}>
         {!anyGoals&&(
           <div style={{fontSize:11,color:'var(--muted)',textAlign:'center',
-            marginBottom:12,padding:'8px',background:'rgba(240,165,0,.05)',
-            borderRadius:8,border:'1px solid rgba(240,165,0,.12)'}}>
+            marginBottom:12,padding:'8px',background:'rgba(var(--gold-rgb),.05)',
+            borderRadius:8,border:'1px solid rgba(var(--gold-rgb),.12)'}}>
             ⏳ El ranking se actualizará conforme anoten goles
           </div>
         )}
@@ -3759,7 +3759,7 @@ function GolesScreen({torneo}){
               borderRadius:'16px 16px 12px 12px',border:'1px solid var(--br)',
               overflow:'hidden',boxShadow:'0 -8px 40px rgba(0,0,0,.6)'}}>
             {/* Header bio */}
-            <div style={{padding:'14px 16px 12px',background:'rgba(240,165,0,.07)',
+            <div style={{padding:'14px 16px 12px',background:'rgba(var(--gold-rgb),.07)',
               borderBottom:'1px solid var(--br)',display:'flex',alignItems:'center',gap:10}}>
               <span style={{fontSize:40,lineHeight:1}}>{FLAGS[selPlayer.team]||'🏳️'}</span>
               <div style={{flex:1}}>
@@ -3859,7 +3859,7 @@ function AdminDialog({dlg,onClose}){
                 color:'var(--txt)',borderRadius:10,padding:12,fontSize:13,
                 fontWeight:600,cursor:'pointer',fontFamily:'var(--fb)'}}>Cancelar</button>
             <button onClick={handleOk} disabled={busy}
-              style={{flex:1,background:'rgba(240,165,0,.15)',border:'1px solid rgba(240,165,0,.4)',
+              style={{flex:1,background:'rgba(var(--gold-rgb),.15)',border:'1px solid rgba(var(--gold-rgb),.4)',
                 color:'var(--gold)',borderRadius:10,padding:12,fontSize:13,
                 fontWeight:700,cursor:'pointer',fontFamily:'var(--fb)'}}>
               {busy?'…':'🎁 Regalar'}
@@ -4373,20 +4373,20 @@ function PerfilScreen({user,onLogout,lang='es'}){
   return(
     <div className="scr fin">
       <div style={{padding:'28px 16px 20px',
-        background:`linear-gradient(180deg,${user.isAdmin?'rgba(240,165,0,.14)':'rgba(240,165,0,.07)'} 0%,transparent 100%)`,
+        background:`linear-gradient(180deg,${user.isAdmin?'rgba(var(--gold-rgb),.14)':'rgba(var(--gold-rgb),.07)'} 0%,transparent 100%)`,
         textAlign:'center',borderBottom:'1px solid rgba(255,255,255,.05)'}}>
         <div style={{width:78,height:78,borderRadius:'50%',
-          background:user.isAdmin?'linear-gradient(135deg,#F0A500,#FF8C00)':'linear-gradient(135deg,var(--gold),var(--gold2))',
+          background:user.isAdmin?'linear-gradient(135deg,var(--gold),#FF8C00)':'linear-gradient(135deg,var(--gold),var(--gold2))',
           margin:'0 auto 12px',display:'flex',alignItems:'center',justifyContent:'center',
           fontFamily:'var(--ff)',fontSize:user.isAdmin?34:36,color:'#000',
-          boxShadow:`0 0 0 4px rgba(240,165,0,${user.isAdmin?.35:.15})`}}>
+          boxShadow:`0 0 0 4px rgba(var(--gold-rgb),${user.isAdmin?.35:.15})`}}>
           {user.isAdmin?'👑':ini}
         </div>
         <div style={{fontFamily:'var(--ff)',fontSize:24,letterSpacing:1}}>{user.name||user.email}</div>
         {user.isAdmin?(
           <div style={{display:'inline-flex',alignItems:'center',gap:7,marginTop:8,
-            background:'rgba(240,165,0,.12)',borderRadius:20,padding:'5px 16px',
-            border:'1px solid rgba(240,165,0,.35)'}}>
+            background:'rgba(var(--gold-rgb),.12)',borderRadius:20,padding:'5px 16px',
+            border:'1px solid rgba(var(--gold-rgb),.35)'}}>
             <span style={{fontSize:14}}>👑</span>
             <span style={{fontSize:12,color:'var(--gold)',fontWeight:700,letterSpacing:.5}}>ADMINISTRADOR GENERAL</span>
           </div>
@@ -4411,7 +4411,7 @@ function PerfilScreen({user,onLogout,lang='es'}){
               style={{width:'100%',background:'linear-gradient(135deg,var(--gold),var(--gold2))',
                 border:'none',color:'#000',borderRadius:12,padding:'13px',
                 fontFamily:'var(--ff)',fontSize:15,letterSpacing:.5,fontWeight:800,
-                cursor:'pointer',marginBottom:14,boxShadow:'0 3px 14px rgba(240,165,0,.3)'}}>
+                cursor:'pointer',marginBottom:14,boxShadow:'0 3px 14px rgba(var(--gold-rgb),.3)'}}>
               ⚙️ RESULTADOS · Tabla · Goles · Puntos
             </button>
             {showResultados&&<AdminResultados onClose={()=>setShowResultados(false)}/>}
@@ -4527,12 +4527,12 @@ function PerfilScreen({user,onLogout,lang='es'}){
               {dbLoaded&&dbUsers.map((u,i)=>(
                 <div key={u.id||i} style={{
                   padding:'5px 14px',borderBottom:'1px solid rgba(255,255,255,.04)',
-                  background:u.paquetes>0?'rgba(240,165,0,.02)':'transparent'}}>
+                  background:u.paquetes>0?'rgba(var(--gold-rgb),.02)':'transparent'}}>
                   {/* Fila 1: avatar + nombre + correo (ancho completo) */}
                   <div style={{display:'flex',alignItems:'center',gap:7,marginBottom:3}}>
                     <div style={{width:24,height:24,borderRadius:'50%',flexShrink:0,
-                      background:u.paquetes>0?'rgba(240,165,0,.15)':'rgba(79,142,247,.12)',
-                      border:`1.5px solid ${u.paquetes>0?'rgba(240,165,0,.3)':'rgba(79,142,247,.25)'}`,
+                      background:u.paquetes>0?'rgba(var(--gold-rgb),.15)':'rgba(79,142,247,.12)',
+                      border:`1.5px solid ${u.paquetes>0?'rgba(var(--gold-rgb),.3)':'rgba(79,142,247,.25)'}`,
                       display:'flex',alignItems:'center',justifyContent:'center',
                       fontSize:10,fontWeight:700,color:'#fff'}}>
                       {(u.name||u.email||'?')[0].toUpperCase()}
@@ -4540,7 +4540,7 @@ function PerfilScreen({user,onLogout,lang='es'}){
                     <div style={{flex:1,minWidth:0}}>
                       <div style={{fontSize:11,fontWeight:700,color:'var(--txt)',lineHeight:1.2}}>
                         {u.name||'Sin nombre'}
-                        {u.gifted&&<span style={{marginLeft:4,fontSize:8,background:'rgba(240,165,0,.2)',
+                        {u.gifted&&<span style={{marginLeft:4,fontSize:8,background:'rgba(var(--gold-rgb),.2)',
                           color:'var(--gold)',padding:'1px 4px',borderRadius:4,fontWeight:700}}>🎁GRATIS</span>}
                       </div>
                       <div style={{fontSize:9,color:'var(--acc)',
@@ -4622,8 +4622,8 @@ function PerfilScreen({user,onLogout,lang='es'}){
                       }}
                       title={u.gifted?`Quitar monedas (tiene ${u.giftedCoins||1000}🪙)`:'Regalar monedas'}
                       style={{width:28,flexShrink:0,
-                        background:u.gifted?'rgba(30,198,108,.15)':'rgba(240,165,0,.12)',
-                        border:`1px solid ${u.gifted?'rgba(30,198,108,.3)':'rgba(240,165,0,.3)'}`,
+                        background:u.gifted?'rgba(30,198,108,.15)':'rgba(var(--gold-rgb),.12)',
+                        border:`1px solid ${u.gifted?'rgba(30,198,108,.3)':'rgba(var(--gold-rgb),.3)'}`,
                         color:u.gifted?'var(--grn)':'var(--gold)',
                         borderRadius:5,padding:'3px 4px',
                         fontSize:11,cursor:'pointer',fontFamily:'var(--fb)'}}>
@@ -4807,7 +4807,7 @@ function PerfilScreen({user,onLogout,lang='es'}){
               <br/>2. Crea cuenta gratis (100 peticiones/día)
               <br/>3. Copia tu API Key
               <br/>4. Pégala en <code style={{background:'rgba(255,255,255,.08)',padding:'1px 5px',borderRadius:4}}>App.jsx</code> línea 1:<br/>
-              <code style={{background:'rgba(240,165,0,.1)',padding:'3px 8px',borderRadius:4,
+              <code style={{background:'rgba(var(--gold-rgb),.1)',padding:'3px 8px',borderRadius:4,
                 fontSize:11,display:'block',marginTop:4}}>const AF_KEY = 'TU_KEY_AQUI';</code>
             </div>
           )}
@@ -4949,8 +4949,8 @@ function GruposScreen({user,userBets,credito,creditoLoading,onPagar,onRecheckAcc
         <br/><br/>
         <strong style={{color:'var(--txt)'}}>Requiere el paquete de pronósticos</strong> para acceder.
       </div>
-      <div style={{background:'rgba(240,165,0,.08)',borderRadius:16,
-        border:'1px solid rgba(240,165,0,.25)',padding:'16px 20px',marginBottom:20,width:'100%',maxWidth:300}}>
+      <div style={{background:'rgba(var(--gold-rgb),.08)',borderRadius:16,
+        border:'1px solid rgba(var(--gold-rgb),.25)',padding:'16px 20px',marginBottom:20,width:'100%',maxWidth:300}}>
         <div style={{fontFamily:'var(--ff)',fontSize:22,color:'var(--gold)',marginBottom:4}}>
           🪙 1,000 MONEDAS
         </div>
@@ -5080,7 +5080,7 @@ function GruposScreen({user,userBets,credito,creditoLoading,onPagar,onRecheckAcc
     created:Date.now()-86400000*15,
     ownerId:'dm1',
     members:[
-      {id:'dm1', name:'Carlos García',    ini:'C', col:'#F0A500', pts:247, locked:true, lockedAt:Date.now()-86400000*8, bets:[], correct:62, total:72},
+      {id:'dm1', name:'Carlos García',    ini:'C', col:'var(--gold)', pts:247, locked:true, lockedAt:Date.now()-86400000*8, bets:[], correct:62, total:72},
       {id:'dm2', name:'María Rodríguez',  ini:'M', col:'#FF6B6B', pts:231, locked:true, lockedAt:Date.now()-86400000*8, bets:[], correct:58, total:72},
       {id:'dm3', name:'Javier López',     ini:'J', col:'#4ECDC4', pts:218, locked:true, lockedAt:Date.now()-86400000*7, bets:[], correct:55, total:72},
       {id:'dm4', name:'Diana Torres',     ini:'D', col:'#A855F7', pts:203, locked:true, lockedAt:Date.now()-86400000*7, bets:[], correct:51, total:72},
@@ -5269,7 +5269,7 @@ function GruposScreen({user,userBets,credito,creditoLoading,onPagar,onRecheckAcc
                 style={{padding:'10px 12px',display:'flex',alignItems:'center',gap:10,cursor:'pointer'}}>
                 {/* Icono/inicial del grupo */}
                 <div style={{width:40,height:40,borderRadius:10,flexShrink:0,
-                  background:'rgba(240,165,0,.12)',border:'1px solid rgba(240,165,0,.2)',
+                  background:'rgba(var(--gold-rgb),.12)',border:'1px solid rgba(var(--gold-rgb),.2)',
                   display:'flex',alignItems:'center',justifyContent:'center',
                   fontFamily:'var(--ff)',fontSize:18,color:'var(--gold)'}}>
                   {(g.name||'G')[0].toUpperCase()}
@@ -5370,7 +5370,7 @@ function GruposScreen({user,userBets,credito,creditoLoading,onPagar,onRecheckAcc
               {membersModal.allM.map((m,i)=>(
                 <div key={m.id} style={{display:'flex',alignItems:'center',gap:10,
                   padding:'10px 16px',borderBottom:'1px solid rgba(255,255,255,.05)',
-                  background:m.id==='user'?'rgba(240,165,0,.03)':'transparent'}}>
+                  background:m.id==='user'?'rgba(var(--gold-rgb),.03)':'transparent'}}>
                   {/* Posición */}
                   <div style={{width:22,flexShrink:0,textAlign:'center',fontSize:11,
                     color:i===0?'var(--gold)':i===1?'#C0C0C0':i===2?'#CD7F32':'var(--muted)',fontWeight:700}}>
@@ -5389,7 +5389,7 @@ function GruposScreen({user,userBets,credito,creditoLoading,onPagar,onRecheckAcc
                     <div style={{fontSize:13,fontWeight:700,overflow:'hidden',
                       textOverflow:'ellipsis',whiteSpace:'nowrap',display:'flex',alignItems:'center',gap:5}}>
                       {m.name}
-                      {m.id==='user'&&<span style={{fontSize:8,background:'rgba(240,165,0,.15)',
+                      {m.id==='user'&&<span style={{fontSize:8,background:'rgba(var(--gold-rgb),.15)',
                         color:'var(--gold)',padding:'1px 5px',borderRadius:8,fontWeight:700,flexShrink:0}}>TÚ</span>}
                     </div>
                     <div style={{fontSize:10,color:'var(--muted)',marginTop:1}}>
@@ -5598,11 +5598,11 @@ function GruposScreen({user,userBets,credito,creditoLoading,onPagar,onRecheckAcc
                 const acc=m.correct!=null&&m.total?Math.round((m.correct/m.total)*100):null;
                 return(
                 <div key={m.id} className={i===0?'leader-glow':''} style={{padding:'10px 16px',borderBottom:'1px solid rgba(255,255,255,.04)',
-                  background:m.id==='user'?'rgba(240,165,0,.04)':'transparent'}}>
+                  background:m.id==='user'?'rgba(var(--gold-rgb),.04)':'transparent'}}>
                   <div style={{display:'flex',alignItems:'center',gap:10}}>
                     {/* Posición */}
                     <div style={{width:28,height:28,borderRadius:'50%',flexShrink:0,
-                      background:i===0?'rgba(240,165,0,.3)':i===1?'rgba(192,192,192,.2)':i===2?'rgba(205,127,50,.2)':'rgba(255,255,255,.07)',
+                      background:i===0?'rgba(var(--gold-rgb),.3)':i===1?'rgba(192,192,192,.2)':i===2?'rgba(205,127,50,.2)':'rgba(255,255,255,.07)',
                       display:'flex',alignItems:'center',justifyContent:'center',fontSize:i<3?14:11,fontWeight:800,color:i===0?'var(--gold)':'#fff'}}>
                       {i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1}
                     </div>
@@ -5622,7 +5622,7 @@ function GruposScreen({user,userBets,credito,creditoLoading,onPagar,onRecheckAcc
                     <div style={{flex:1,minWidth:0}}>
                       <div style={{fontWeight:700,fontSize:13,display:'flex',alignItems:'center',gap:5,marginBottom:2}}>
                         <span style={{overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{m.name}</span>
-                        {m.id==='user'&&<span style={{fontSize:8,background:'rgba(240,165,0,.15)',
+                        {m.id==='user'&&<span style={{fontSize:8,background:'rgba(var(--gold-rgb),.15)',
                           color:'var(--gold)',padding:'1px 5px',borderRadius:8,fontWeight:700,flexShrink:0}}>{t.you}</span>}
                       </div>
                       {/* Barra de progreso relativa al 1° */}
@@ -5681,7 +5681,7 @@ function GruposScreen({user,userBets,credito,creditoLoading,onPagar,onRecheckAcc
                 </div>
               ):(
                 <div>
-                  <div style={{background:'rgba(240,165,0,.07)',border:'1px solid rgba(240,165,0,.2)',
+                  <div style={{background:'rgba(var(--gold-rgb),.07)',border:'1px solid rgba(var(--gold-rgb),.2)',
                     borderRadius:12,padding:12,marginBottom:12}}>
                     <div style={{fontSize:13,fontWeight:700,color:'var(--gold)',marginBottom:4}}>⚠️ Antes de guardar</div>
                     <div style={{fontSize:12,color:'var(--dim)',lineHeight:1.65}}>
@@ -5759,10 +5759,10 @@ function GruposScreen({user,userBets,credito,creditoLoading,onPagar,onRecheckAcc
               </div>
               {allM.map((m,rank)=>(
                 <div key={m.id} style={{margin:'8px 16px',background:'var(--surf)',borderRadius:14,
-                  border:`1.5px solid ${m.id==='user'?'rgba(240,165,0,.3)':'var(--br)'}`,overflow:'hidden'}}>
+                  border:`1.5px solid ${m.id==='user'?'rgba(var(--gold-rgb),.3)':'var(--br)'}`,overflow:'hidden'}}>
                   <div style={{padding:'10px 14px',borderBottom:'1px solid var(--br)',
                     display:'flex',alignItems:'center',gap:10,
-                    background:m.id==='user'?'rgba(240,165,0,.04)':'rgba(255,255,255,.015)'}}>
+                    background:m.id==='user'?'rgba(var(--gold-rgb),.04)':'rgba(255,255,255,.015)'}}>
                     <span style={{fontSize:16}}>{rank===0?'🥇':rank===1?'🥈':rank===2?'🥉':'#'+(rank+1)}</span>
                     <div style={{width:36,height:36,borderRadius:'50%',background:m.col+'22',
                       border:`2px solid ${m.col}44`,display:'flex',alignItems:'center',
@@ -5822,7 +5822,7 @@ function GruposScreen({user,userBets,credito,creditoLoading,onPagar,onRecheckAcc
                       return(
                         <div key={m.id} style={{display:'flex',alignItems:'center',gap:9,
                           padding:'7px 14px',borderBottom:'1px solid rgba(255,255,255,.03)',
-                          background:isUser?'rgba(240,165,0,.025)':'transparent'}}>
+                          background:isUser?'rgba(var(--gold-rgb),.025)':'transparent'}}>
                           <div style={{width:26,height:26,borderRadius:'50%',background:m.col+'22',
                             border:`1.5px solid ${m.col}44`,display:'flex',alignItems:'center',
                             justifyContent:'center',fontSize:10,color:'#fff',fontWeight:700,flexShrink:0}}>{m.ini}</div>
@@ -5865,7 +5865,7 @@ function GruposScreen({user,userBets,credito,creditoLoading,onPagar,onRecheckAcc
                   ['5','El Reporte muestra quién acertó cada pronóstico']].map(([n,t])=>(
                   <div key={n} style={{display:'flex',gap:10,padding:'8px 0',
                     borderBottom:'1px solid rgba(255,255,255,.04)',alignItems:'flex-start'}}>
-                    <div style={{width:22,height:22,borderRadius:'50%',background:'rgba(240,165,0,.15)',
+                    <div style={{width:22,height:22,borderRadius:'50%',background:'rgba(var(--gold-rgb),.15)',
                       display:'flex',alignItems:'center',justifyContent:'center',
                       fontSize:11,fontWeight:700,color:'var(--gold)',flexShrink:0}}>{n}</div>
                     <div style={{fontSize:12,color:'var(--dim)',lineHeight:1.5}}>{t}</div>
@@ -6072,8 +6072,8 @@ function PagoScreen({onExito,onCancelar,esReset=false,onRecheckAccess,user,onRec
       <div style={{fontFamily:'var(--ff)',fontSize:32,letterSpacing:2,color:'var(--grn)'}}>
         ¡PAGO EXITOSO!
       </div>
-      <div style={{background:'rgba(240,165,0,.1)',borderRadius:14,padding:'14px 24px',
-        border:'1px solid rgba(240,165,0,.25)'}}>
+      <div style={{background:'rgba(var(--gold-rgb),.1)',borderRadius:14,padding:'14px 24px',
+        border:'1px solid rgba(var(--gold-rgb),.25)'}}>
         <div style={{fontFamily:'var(--ff)',fontSize:44,color:'var(--gold)',lineHeight:1}}>
           🪙 1,000
         </div>
@@ -6093,7 +6093,7 @@ function PagoScreen({onExito,onCancelar,esReset=false,onRecheckAccess,user,onRec
     <div className="scr fin">
       {/* Header */}
       <div style={{padding:'18px 16px 14px',
-        background:'linear-gradient(180deg,rgba(240,165,0,.07) 0%,transparent 100%)',
+        background:'linear-gradient(180deg,rgba(var(--gold-rgb),.07) 0%,transparent 100%)',
         borderBottom:'1px solid rgba(255,255,255,.04)'}}>
         <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:12}}>
           {onCancelar&&(
@@ -6112,7 +6112,7 @@ function PagoScreen({onExito,onCancelar,esReset=false,onRecheckAccess,user,onRec
         </div>
         {/* Amount card */}
         <div style={{background:'var(--surf)',borderRadius:14,padding:'16px',
-          border:'1.5px solid rgba(240,165,0,.3)',display:'flex',justifyContent:'space-between',
+          border:'1.5px solid rgba(var(--gold-rgb),.3)',display:'flex',justifyContent:'space-between',
           alignItems:'center'}}>
           <div>
             <div style={{fontSize:11,color:'var(--muted)',fontWeight:700,letterSpacing:.5}}>
@@ -6166,7 +6166,7 @@ function PagoScreen({onExito,onCancelar,esReset=false,onRecheckAccess,user,onRec
         {/* Payment method: Google Play en TWA, MercadoPago en web */}
         {esTWA ? (
           <div style={{background:'var(--surf)',borderRadius:12,padding:16,
-            border:'1px solid rgba(240,165,0,.2)',textAlign:'center'}}>
+            border:'1px solid rgba(var(--gold-rgb),.2)',textAlign:'center'}}>
             <div style={{fontSize:32,marginBottom:8}}>🛡️</div>
             <div style={{fontSize:14,fontWeight:700,marginBottom:6,color:'var(--gold)'}}>
               Pago seguro vía Google Play
@@ -6186,8 +6186,8 @@ function PagoScreen({onExito,onCancelar,esReset=false,onRecheckAccess,user,onRec
                 {[['card','💳','Tarjeta'],['oxxo','🏪','OXXO']].map(([m,ic,lb])=>(
                   <button key={m} onClick={()=>setMetodo(m)}
                     style={{flex:1,padding:'10px 4px',
-                      background:metodo===m?'rgba(240,165,0,.12)':'var(--surf)',
-                      border:`1.5px solid ${metodo===m?'rgba(240,165,0,.4)':'var(--br)'}`,
+                      background:metodo===m?'rgba(var(--gold-rgb),.12)':'var(--surf)',
+                      border:`1.5px solid ${metodo===m?'rgba(var(--gold-rgb),.4)':'var(--br)'}`,
                       borderRadius:11,cursor:'pointer',transition:'all .15s',fontFamily:'var(--fb)'}}>
                     <div style={{fontSize:20}}>{ic}</div>
                     <div style={{fontSize:10,color:metodo===m?'var(--gold)':'var(--muted)',
@@ -6199,7 +6199,7 @@ function PagoScreen({onExito,onCancelar,esReset=false,onRecheckAccess,user,onRec
               {/* Card form — vía MercadoPago Checkout */}
               {metodo==='card'&&(
                 <div style={{background:'var(--surf)',borderRadius:12,padding:16,
-                  border:'1px solid rgba(240,165,0,.2)',textAlign:'center'}}>
+                  border:'1px solid rgba(var(--gold-rgb),.2)',textAlign:'center'}}>
                   <div style={{fontSize:32,marginBottom:8}}>💳</div>
                   <div style={{fontSize:14,fontWeight:700,marginBottom:6,color:'var(--gold)'}}>
                     Pago Seguro con Tarjeta
@@ -6228,7 +6228,7 @@ function PagoScreen({onExito,onCancelar,esReset=false,onRecheckAccess,user,onRec
                     Válida 24 horas en cualquier tienda OXXO del país.
                   </div>
                   <div style={{marginTop:10,fontSize:11,color:'var(--dim)',
-                    background:'rgba(240,165,0,.05)',borderRadius:8,padding:'8px'}}>
+                    background:'rgba(var(--gold-rgb),.05)',borderRadius:8,padding:'8px'}}>
                     💡 Comisión OXXO: $13 MXN adicionales (total $33 MXN)
                   </div>
                 </div>
@@ -6469,7 +6469,7 @@ function ElimScreen({credito,creditoLoading,onPagar,currentUser,onRecheckAccess,
                         return(
                           <button type="button" key={val}
                             onClick={matchLocked(id)?undefined:e=>{e.preventDefault();placeElim(id,val,odds);}}
-                            style={{background:sel?'rgba(240,165,0,.18)':'var(--surf2)',
+                            style={{background:sel?'rgba(var(--gold-rgb),.18)':'var(--surf2)',
                               border:`1.5px solid ${sel?'var(--gold)':'var(--br)'}`,
                               borderRadius:10,padding:'7px 4px',
                               cursor:matchLocked(id)?'default':'pointer',
@@ -6521,8 +6521,8 @@ function ElimScreen({credito,creditoLoading,onPagar,currentUser,onRecheckAccess,
 
                   {/* Marcador exacto — solo Final */}
                   {isFinal&&!matchLocked(104)&&!bloqueada&&(
-                    <div style={{padding:'11px 14px',background:'rgba(240,165,0,.04)',
-                      borderTop:'1px solid rgba(240,165,0,.15)'}}>
+                    <div style={{padding:'11px 14px',background:'rgba(var(--gold-rgb),.04)',
+                      borderTop:'1px solid rgba(var(--gold-rgb),.15)'}}>
                       <div style={{fontSize:10,color:'var(--gold)',fontWeight:700,marginBottom:8,letterSpacing:.8}}>
                         🎯 MARCADOR EXACTO · +100 pts bonus
                       </div>
@@ -6531,7 +6531,7 @@ function ElimScreen({credito,creditoLoading,onPagar,currentUser,onRecheckAccess,
                           onChange={e=>setExacto(p=>({...p,h:e.target.value.replace(/[^0-9]/g,'').slice(-1)}))}
                           onFocus={e=>e.target.select()}
                           style={{width:48,padding:'8px 4px',background:'var(--surf2)',
-                            border:'1.5px solid rgba(240,165,0,.4)',borderRadius:10,
+                            border:'1.5px solid rgba(var(--gold-rgb),.4)',borderRadius:10,
                             color:'var(--txt)',fontSize:22,fontFamily:'var(--ff)',
                             textAlign:'center',outline:'none'}}/>
                         <span style={{fontFamily:'var(--ff)',fontSize:22,color:'var(--muted)'}}>–</span>
@@ -6539,7 +6539,7 @@ function ElimScreen({credito,creditoLoading,onPagar,currentUser,onRecheckAccess,
                           onChange={e=>setExacto(p=>({...p,a:e.target.value.replace(/[^0-9]/g,'').slice(-1)}))}
                           onFocus={e=>e.target.select()}
                           style={{width:48,padding:'8px 4px',background:'var(--surf2)',
-                            border:'1.5px solid rgba(240,165,0,.4)',borderRadius:10,
+                            border:'1.5px solid rgba(var(--gold-rgb),.4)',borderRadius:10,
                             color:'var(--txt)',fontSize:22,fontFamily:'var(--ff)',
                             textAlign:'center',outline:'none'}}/>
                         <span style={{fontSize:11,color:exacto.h!==''&&exacto.a!==''?'var(--grn)':'var(--muted)'}}>
@@ -6549,8 +6549,8 @@ function ElimScreen({credito,creditoLoading,onPagar,currentUser,onRecheckAccess,
                     </div>
                   )}
                   {isFinal&&(matchLocked(104)||bloqueada)&&bet.exacto&&(
-                    <div style={{padding:'8px 14px',background:'rgba(240,165,0,.04)',
-                      borderTop:'1px solid rgba(240,165,0,.15)',fontSize:11,color:'var(--gold)'}}>
+                    <div style={{padding:'8px 14px',background:'rgba(var(--gold-rgb),.04)',
+                      borderTop:'1px solid rgba(var(--gold-rgb),.15)',fontSize:11,color:'var(--gold)'}}>
                       🎯 Tu marcador: <strong>{bet.exacto.gh}–{bet.exacto.ga}</strong>
                     </div>
                   )}
@@ -6565,7 +6565,7 @@ function ElimScreen({credito,creditoLoading,onPagar,currentUser,onRecheckAccess,
                   style={{width:'100%',background:'linear-gradient(135deg,var(--gold),var(--gold2))',
                     border:'none',color:'#000',borderRadius:10,padding:'11px',fontSize:13,
                     fontWeight:700,cursor:saving?'wait':'pointer',fontFamily:'var(--ff)',
-                    letterSpacing:.5,boxShadow:'0 3px 12px rgba(240,165,0,.3)'}}>
+                    letterSpacing:.5,boxShadow:'0 3px 12px rgba(var(--gold-rgb),.3)'}}>
                   {saving?'Guardando…':`💾 Guardar ${label}`}
                 </button>
               </div>
@@ -6645,7 +6645,7 @@ function BetsScreen({bets,placeBet,credito,creditoLoading,onPagar,onReset,betsSa
     return(
       <button type="button"
         onClick={betsSaved?undefined:e=>{e.preventDefault();place(id,category,val,odds);}}
-        style={{background:sel?'rgba(240,165,0,.18)':'var(--surf2)',
+        style={{background:sel?'rgba(var(--gold-rgb),.18)':'var(--surf2)',
           border:`1.5px solid ${sel?'var(--gold)':'var(--br)'}`,
           borderRadius:10,padding:'6px 6px 5px',cursor:betsSaved?'default':'pointer',
           transition:'background .15s,border-color .15s,color .15s',
@@ -6673,7 +6673,7 @@ function BetsScreen({bets,placeBet,credito,creditoLoading,onPagar,onReset,betsSa
     const b=getBet(betId);
     if(!b) return null;
     return(
-      <div style={{margin:'6px 0 0',padding:'7px 10px',background:'rgba(240,165,0,.05)',borderRadius:8,fontSize:12,color:'var(--dim)',display:'flex',justifyContent:'space-between'}}>
+      <div style={{margin:'6px 0 0',padding:'7px 10px',background:'rgba(var(--gold-rgb),.05)',borderRadius:8,fontSize:12,color:'var(--dim)',display:'flex',justifyContent:'space-between'}}>
         <span>Tu apuesta: <strong style={{color:'var(--gold)'}}>{b.selection}</strong></span>
         <strong style={{color:'var(--gold)'}}>{b.odds}x</strong>
       </div>
@@ -6686,7 +6686,7 @@ function BetsScreen({bets,placeBet,credito,creditoLoading,onPagar,onReset,betsSa
     return(
       <button type="button"
         onClick={betsSaved?undefined:e=>{e.preventDefault();place(id,category,val,odds);}}
-        style={{background:sel?'rgba(240,165,0,.18)':'var(--surf2)',
+        style={{background:sel?'rgba(var(--gold-rgb),.18)':'var(--surf2)',
           border:`1.5px solid ${sel?'var(--gold)':'var(--br)'}`,
           borderRadius:8,padding:'4px 7px 3px',cursor:betsSaved?'default':'pointer',
           transition:'background .15s,border-color .15s,color .15s',
@@ -6828,9 +6828,9 @@ function BetsScreen({bets,placeBet,credito,creditoLoading,onPagar,onReset,betsSa
     <div>
       {/* ── MEJORES GOLEADORES DEL TORNEO — 3 × 8 = 24 monedas ── */}
       <div style={{margin:'0 16px 16px',background:'var(--surf)',borderRadius:14,
-        border:'2px solid rgba(240,165,0,.3)',overflow:'hidden'}}>
-        <div style={{padding:'11px 14px',background:'rgba(240,165,0,.06)',
-          borderBottom:'1px solid rgba(240,165,0,.2)',display:'flex',alignItems:'center',gap:8}}>
+        border:'2px solid rgba(var(--gold-rgb),.3)',overflow:'hidden'}}>
+        <div style={{padding:'11px 14px',background:'rgba(var(--gold-rgb),.06)',
+          borderBottom:'1px solid rgba(var(--gold-rgb),.2)',display:'flex',alignItems:'center',gap:8}}>
           <span style={{fontSize:20}}>🥇</span>
           <div>
             <div style={{fontFamily:'var(--ff)',fontSize:16,letterSpacing:1,color:'var(--gold)'}}>
@@ -6861,7 +6861,7 @@ function BetsScreen({bets,placeBet,credito,creditoLoading,onPagar,onReset,betsSa
                   return(
                     <button type="button" key={p.n}
                       onClick={betsSaved?undefined:e=>{e.preventDefault();place(key,`Goleador ${rank}°`,p.n,32);}}
-                      style={{background:sel?'rgba(240,165,0,.18)':'var(--surf2)',
+                      style={{background:sel?'rgba(var(--gold-rgb),.18)':'var(--surf2)',
                         border:`1.5px solid ${sel?'var(--gold)':'var(--br)'}`,
                         borderRadius:8,padding:'5px 9px',cursor:betsSaved?'default':'pointer',
                         display:'flex',alignItems:'center',gap:5,
@@ -6925,7 +6925,7 @@ function BetsScreen({bets,placeBet,credito,creditoLoading,onPagar,onReset,betsSa
                     if(ex.h===''||ex.a==='') return;
                     place(exKey,'Marcador Exacto',`${m.home} ${ex.h}-${ex.a} ${m.away}`,8.5);
                   }}
-                  style={{flex:1,background:'rgba(240,165,0,.1)',border:'1px solid rgba(240,165,0,.3)',
+                  style={{flex:1,background:'rgba(var(--gold-rgb),.1)',border:'1px solid rgba(var(--gold-rgb),.3)',
                     color:'var(--gold)',borderRadius:10,padding:'10px 8px',fontSize:12,
                     fontWeight:700,cursor:'pointer',fontFamily:'var(--fb)'}}>
                   Registrar Marcador
@@ -6944,7 +6944,7 @@ function BetsScreen({bets,placeBet,credito,creditoLoading,onPagar,onReset,betsSa
                   return(
                     <button type="button" key={team}
                       onClick={e=>{e.preventDefault();place(jugKey,'Quién Anotará Primero',team,1.8);}}
-                      style={{background:sel?'rgba(240,165,0,.18)':'var(--surf2)',
+                      style={{background:sel?'rgba(var(--gold-rgb),.18)':'var(--surf2)',
                         border:`1.5px solid ${sel?'var(--gold)':'var(--br)'}`,
                         borderRadius:10,padding:'10px 6px',cursor:'pointer',
                         display:'flex',flexDirection:'column',alignItems:'center',gap:3,
@@ -7006,7 +7006,7 @@ function BetsScreen({bets,placeBet,credito,creditoLoading,onPagar,onReset,betsSa
         </div>
         {/* Coin balance */}
         <div style={{background:'var(--surf)',borderRadius:12,padding:'11px 13px',
-          border:`1px solid ${isAdminUser?'rgba(240,165,0,.4)':'var(--br)'}`}}>
+          border:`1px solid ${isAdminUser?'rgba(var(--gold-rgb),.4)':'var(--br)'}`}}>
           {isAdminUser?(
             <div style={{display:'flex',alignItems:'center',gap:10}}>
               <span style={{fontSize:22}}>👑</span>
@@ -7090,7 +7090,7 @@ function BetsScreen({bets,placeBet,credito,creditoLoading,onPagar,onReset,betsSa
               fontFamily:'var(--ff)',fontSize:13,letterSpacing:.5,fontWeight:800,
               cursor:totalCoins<COINS_PER_PAGO?'not-allowed':'pointer',whiteSpace:'nowrap',
               opacity:totalCoins<COINS_PER_PAGO?0.5:1,
-              boxShadow:totalCoins<COINS_PER_PAGO?'none':'0 3px 12px rgba(240,165,0,.3)'}}>
+              boxShadow:totalCoins<COINS_PER_PAGO?'none':'0 3px 12px rgba(var(--gold-rgb),.3)'}}>
             ✏️ Modificar
           </button>
         </div>
@@ -7113,7 +7113,7 @@ function BetsScreen({bets,placeBet,credito,creditoLoading,onPagar,onReset,betsSa
       {/* ── BOTÓN GUARDAR PRONÓSTICO ── (también visible para admin) */}
       {(
         <div style={{margin:'8px 16px 24px',padding:'16px',background:'var(--surf)',
-          borderRadius:16,border:`2px solid ${betsSaved?'var(--grn)':coinsLeft<=0?'rgba(240,165,0,.5)':'var(--br)'}`,
+          borderRadius:16,border:`2px solid ${betsSaved?'var(--grn)':coinsLeft<=0?'rgba(var(--gold-rgb),.5)':'var(--br)'}`,
           textAlign:'center'}}>
 
           {betsSaved?(
@@ -7133,18 +7133,18 @@ function BetsScreen({bets,placeBet,credito,creditoLoading,onPagar,onReset,betsSa
                   fontFamily:'var(--ff)',fontSize:16,letterSpacing:1,fontWeight:800,
                   cursor:totalCoins<COINS_PER_PAGO?'not-allowed':'pointer',marginBottom:12,
                   opacity:totalCoins<COINS_PER_PAGO?0.5:1,
-                  boxShadow:totalCoins<COINS_PER_PAGO?'none':'0 4px 16px rgba(240,165,0,.35)'}}>
+                  boxShadow:totalCoins<COINS_PER_PAGO?'none':'0 4px 16px rgba(var(--gold-rgb),.35)'}}>
                 {totalCoins<COINS_PER_PAGO?'🔒 Compra un paquete para modificar':'✏️ Modificar pronósticos'}
               </button>
-              <div style={{background:'rgba(240,165,0,.06)',borderRadius:12,
-                border:'1px solid rgba(240,165,0,.18)',padding:'10px 12px',marginBottom:12}}>
+              <div style={{background:'rgba(var(--gold-rgb),.06)',borderRadius:12,
+                border:'1px solid rgba(var(--gold-rgb),.18)',padding:'10px 12px',marginBottom:12}}>
                 <div style={{fontSize:11,color:'var(--dim)',lineHeight:1.5}}>
                   ¿Quieres más monedas? Compra otro paquete de <strong style={{color:'var(--gold)'}}>$30 MXN</strong> y recibirás 1,000🪙 nuevas.
                 </div>
               </div>
               <button onClick={()=>setShowAddPackage(true)}
-                style={{width:'100%',background:'rgba(240,165,0,.1)',
-                  border:'1px solid rgba(240,165,0,.3)',color:'var(--gold)',
+                style={{width:'100%',background:'rgba(var(--gold-rgb),.1)',
+                  border:'1px solid rgba(var(--gold-rgb),.3)',color:'var(--gold)',
                   borderRadius:10,padding:'11px',fontSize:13,fontWeight:700,
                   cursor:'pointer',fontFamily:'var(--fb)'}}>
                 💳 Comprar otro paquete ($30 MXN) · conserva pronóstico
@@ -7186,7 +7186,7 @@ function BetsScreen({bets,placeBet,credito,creditoLoading,onPagar,onReset,betsSa
                   borderRadius:12,padding:'14px',fontSize:15,fontWeight:800,
                   cursor:canSave&&bets.length>0?'pointer':'not-allowed',
                   fontFamily:'var(--ff)',letterSpacing:1,
-                  boxShadow:canSave&&bets.length>0?'0 4px 20px rgba(240,165,0,.4)':'none',
+                  boxShadow:canSave&&bets.length>0?'0 4px 20px rgba(var(--gold-rgb),.4)':'none',
                   transition:'all .3s',marginBottom:10}}>
                 💾 {t.save_prediction}
               </button>
@@ -7278,7 +7278,7 @@ function StatsScreen({bets,noWrapper=false}){
               <span style={{flex:1,fontSize:13,fontWeight:600}}>{cat}</span>
               <span style={{fontSize:13,color:'var(--gold)',fontWeight:800}}>{data.n}</span>
               {data.win>0&&<span style={{fontSize:10,background:'rgba(30,198,108,.12)',color:'var(--grn)',padding:'2px 7px',borderRadius:20}}>✓ {data.win}</span>}
-              {data.pend>0&&<span style={{fontSize:10,background:'rgba(240,165,0,.1)',color:'var(--gold)',padding:'2px 7px',borderRadius:20}}>⏳ {data.pend}</span>}
+              {data.pend>0&&<span style={{fontSize:10,background:'rgba(var(--gold-rgb),.1)',color:'var(--gold)',padding:'2px 7px',borderRadius:20}}>⏳ {data.pend}</span>}
             </div>
           ))}
         </div>
@@ -7325,7 +7325,7 @@ function SelectorTorneos({onPick}){
   const tiles=[
     {id:'euro',   nombre:'EURO CUP', sub:'2026/27', color:'#1E6FE0', activo:false},
     {id:'ligamxAp2026', nombre:'LIGA MEXICANA', sub:'Apertura 2026', color:'#1EC66C', activo:true},
-    {id:'mundial2026',  nombre:'PRONÓSTICOS FÚTBOL', sub:'2026', color:'#F0A500', activo:true},
+    {id:'mundial2026',  nombre:'PRONÓSTICOS FÚTBOL', sub:'2026', color:'var(--gold)', activo:true},
   ];
   return (
     <div style={{minHeight:'100dvh',background:'var(--bg)',padding:'20px 16px',overflowY:'auto'}}>
@@ -7974,21 +7974,21 @@ export default function App(){
           <path d="M 0 900 L 0 838 C 48,800 106,782 160,788 C 196,792 234,792 270,788 C 324,782 382,800 430,838 L 430 900 Z" fill="#002868" opacity="0.22"/>
           <path d="M 148 762 C 174,740 254,736 284,758 C 308,776 294,804 256,808 C 218,810 158,802 144,782 C 136,768 142,762 148,762 Z" fill="#002868" opacity="0.14"/>
           {/* Gold destellos — scattered sparkles */}
-          <circle cx="64" cy="344" r="5" fill="#F0A500" opacity="0.14"/>
-          <circle cx="64" cy="344" r="11" fill="#F0A500" opacity="0.05"/>
-          <circle cx="158" cy="296" r="3.5" fill="#F0A500" opacity="0.11"/>
-          <circle cx="332" cy="418" r="5" fill="#F0A500" opacity="0.12"/>
-          <circle cx="332" cy="418" r="10" fill="#F0A500" opacity="0.05"/>
-          <circle cx="272" cy="528" r="3" fill="#F0A500" opacity="0.10"/>
-          <circle cx="88" cy="594" r="4.5" fill="#F0A500" opacity="0.11"/>
-          <circle cx="385" cy="464" r="3.5" fill="#F0A500" opacity="0.10"/>
-          <circle cx="385" cy="464" r="8" fill="#F0A500" opacity="0.04"/>
-          <circle cx="214" cy="658" r="2.5" fill="#F0A500" opacity="0.09"/>
-          <circle cx="46" cy="720" r="3" fill="#F0A500" opacity="0.08"/>
-          <circle cx="394" cy="314" r="3.5" fill="#F0A500" opacity="0.10"/>
-          <circle cx="180" cy="726" r="2.5" fill="#F0A500" opacity="0.08"/>
-          <circle cx="130" cy="490" r="2" fill="#F0A500" opacity="0.07"/>
-          <circle cx="300" cy="640" r="3" fill="#F0A500" opacity="0.09"/>
+          <circle cx="64" cy="344" r="5" fill="var(--gold)" opacity="0.14"/>
+          <circle cx="64" cy="344" r="11" fill="var(--gold)" opacity="0.05"/>
+          <circle cx="158" cy="296" r="3.5" fill="var(--gold)" opacity="0.11"/>
+          <circle cx="332" cy="418" r="5" fill="var(--gold)" opacity="0.12"/>
+          <circle cx="332" cy="418" r="10" fill="var(--gold)" opacity="0.05"/>
+          <circle cx="272" cy="528" r="3" fill="var(--gold)" opacity="0.10"/>
+          <circle cx="88" cy="594" r="4.5" fill="var(--gold)" opacity="0.11"/>
+          <circle cx="385" cy="464" r="3.5" fill="var(--gold)" opacity="0.10"/>
+          <circle cx="385" cy="464" r="8" fill="var(--gold)" opacity="0.04"/>
+          <circle cx="214" cy="658" r="2.5" fill="var(--gold)" opacity="0.09"/>
+          <circle cx="46" cy="720" r="3" fill="var(--gold)" opacity="0.08"/>
+          <circle cx="394" cy="314" r="3.5" fill="var(--gold)" opacity="0.10"/>
+          <circle cx="180" cy="726" r="2.5" fill="var(--gold)" opacity="0.08"/>
+          <circle cx="130" cy="490" r="2" fill="var(--gold)" opacity="0.07"/>
+          <circle cx="300" cy="640" r="3" fill="var(--gold)" opacity="0.09"/>
         </svg>
         {screen==='splash'&&<Splash done={()=>setScreen('auth')}/>}
         {screen==='auth'&&<Auth onLogin={login} onLangChange={setLang} logoutMsg={logoutMsg} onClearMsg={()=>setLogoutMsg('')}/>}
@@ -8144,21 +8144,21 @@ export default function App(){
               const svgIcon=id==='pronostico'?(
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
                   <path d="M8 21h8M12 17v4M5 3H3v3c0 2.21 1.79 4 4 4M19 3h2v3c0 2.21-1.79 4-4 4"
-                    stroke={isActive?'#F0A500':'#C48F00'} strokeWidth="2" strokeLinecap="round"/>
+                    stroke={isActive?'var(--gold)':'var(--gold-dim)'} strokeWidth="2" strokeLinecap="round"/>
                   <path d="M12 17c-3.87 0-7-3.13-7-7V3h14v7c0 3.87-3.13 7-7 7z"
-                    fill={isActive?'rgba(240,165,0,.25)':'rgba(196,143,0,.12)'}
-                    stroke={isActive?'#F0A500':'#C48F00'} strokeWidth="2"/>
-                  <circle cx="12" cy="8" r="2" fill={isActive?'#F0A500':'#C48F00'}/>
+                    fill={isActive?'rgba(var(--gold-rgb),.25)':'rgba(var(--gold-dim-rgb),.12)'}
+                    stroke={isActive?'var(--gold)':'var(--gold-dim)'} strokeWidth="2"/>
+                  <circle cx="12" cy="8" r="2" fill={isActive?'var(--gold)':'var(--gold-dim)'}/>
                 </svg>
               ):(
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
                   <path d="M3 18h18M5 18L3 8l4.5 4L12 4l4.5 8L21 8l-2 10H5z"
-                    fill={isActive?'rgba(240,165,0,.25)':'rgba(196,143,0,.12)'}
-                    stroke={isActive?'#F0A500':'#C48F00'} strokeWidth="2"
+                    fill={isActive?'rgba(var(--gold-rgb),.25)':'rgba(var(--gold-dim-rgb),.12)'}
+                    stroke={isActive?'var(--gold)':'var(--gold-dim)'} strokeWidth="2"
                     strokeLinecap="round" strokeLinejoin="round"/>
-                  <circle cx="12" cy="4" r="1.5" fill={isActive?'#F0A500':'#C48F00'}/>
-                  <circle cx="3" cy="8" r="1.5" fill={isActive?'#F0A500':'#C48F00'}/>
-                  <circle cx="21" cy="8" r="1.5" fill={isActive?'#F0A500':'#C48F00'}/>
+                  <circle cx="12" cy="4" r="1.5" fill={isActive?'var(--gold)':'var(--gold-dim)'}/>
+                  <circle cx="3" cy="8" r="1.5" fill={isActive?'var(--gold)':'var(--gold-dim)'}/>
+                  <circle cx="21" cy="8" r="1.5" fill={isActive?'var(--gold)':'var(--gold-dim)'}/>
                 </svg>
               );
               return(
@@ -8168,10 +8168,10 @@ export default function App(){
                     position:'relative',paddingTop:isPremium?2:0}}>
                   {isPremium&&(
                     <div style={{position:'absolute',top:-1,left:'50%',transform:'translateX(-50%)',
-                      background:credito?'linear-gradient(90deg,#F0A500,#C88500)':'rgba(100,100,100,.8)',
+                      background:credito?'linear-gradient(90deg,var(--gold),var(--gold2))':'rgba(100,100,100,.8)',
                       borderRadius:'0 0 8px 8px',padding:'1px 10px',
                       fontSize:8,fontWeight:800,letterSpacing:.5,color:credito?'#000':'#fff',
-                      boxShadow:credito?'0 2px 8px rgba(240,165,0,.4)':'none'}}>
+                      boxShadow:credito?'0 2px 8px rgba(var(--gold-rgb),.4)':'none'}}>
                       {credito?'VIP':'🔒'}
                     </div>
                   )}
@@ -8180,13 +8180,13 @@ export default function App(){
                     width:isPremium?38:28, height:isPremium?38:28,
                     borderRadius:isPremium?12:8,
                     background:isPremium
-                      ?(isActive?'rgba(240,165,0,.18)':'rgba(196,143,0,.08)')
+                      ?(isActive?'rgba(var(--gold-rgb),.18)':'rgba(var(--gold-dim-rgb),.08)')
                       :'transparent',
                     border:isPremium
-                      ?`1.5px solid ${isActive?'rgba(240,165,0,.6)':'rgba(196,143,0,.3)'}`
+                      ?`1.5px solid ${isActive?'rgba(var(--gold-rgb),.6)':'rgba(var(--gold-dim-rgb),.3)'}`
                       :'none',
                     transition:'all .2s',
-                    boxShadow:isPremium&&isActive?'0 0 12px rgba(240,165,0,.35)':'none',
+                    boxShadow:isPremium&&isActive?'0 0 12px rgba(var(--gold-rgb),.35)':'none',
                   }}>
                     {isPremium ? svgIcon
                       : <div style={{fontSize:18,filter:isActive?'none':'grayscale(.3)'}}>{ic}</div>}
@@ -8194,7 +8194,7 @@ export default function App(){
                   <div style={{
                     fontSize:9,
                     fontWeight:isPremium?800:600,
-                    color:isPremium?(isActive?'#F0A500':'#A07830'):(isActive?'var(--gold)':'var(--muted)'),
+                    color:isPremium?(isActive?'var(--gold)':'var(--gold-text-dim)'):(isActive?'var(--gold)':'var(--muted)'),
                     letterSpacing:isPremium?.5:0,
                     marginTop:1,
                   }}>{lb}</div>
