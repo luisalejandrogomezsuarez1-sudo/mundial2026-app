@@ -763,8 +763,8 @@ body{font-family:var(--fb);background:var(--bg);color:var(--txt);height:100%;ove
 .app.theme-liga .bg-shapes{display:none;}
 .app.theme-liga::before{
   background:linear-gradient(90deg,#006847 0%,#006847 30%,#F0F4FF 50%,#c8102e 70%,#c8102e 100%);}
-.app.theme-liga .ncard{margin:0 30px 11px!important;background:rgba(15,15,36,.45)!important;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);}
-.app.theme-liga .mc{margin:0 30px 12px;background:rgba(15,15,36,.45);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);box-shadow:none;}
+.app.theme-liga .ncard{margin:0 30px 11px!important;background:rgba(15,15,36,.35)!important;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);}
+.app.theme-liga .mc{margin:0 30px 12px;background:rgba(15,15,36,.35);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);box-shadow:none;}
 .app::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;
   background:linear-gradient(90deg,#c8102e 0%,#c8102e 28%,var(--gold) 50%,#006847 72%,#002868 100%);
   z-index:200;opacity:.6;}
