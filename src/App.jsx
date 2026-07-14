@@ -7364,9 +7364,8 @@ function SelectorTorneos({onPick,onProfile,user}){
       {aviso&&(
         <div onClick={()=>setAviso(false)} style={{position:'fixed',inset:0,zIndex:50,background:'rgba(0,0,0,.6)',display:'flex',alignItems:'center',justifyContent:'center',padding:24}}>
           <div onClick={e=>e.stopPropagation()} style={{background:'#0D1A2E',border:'1px solid rgba(255,255,255,.15)',borderRadius:16,padding:'26px 22px',textAlign:'center',maxWidth:320,width:'100%'}}>
-            <div style={{fontSize:34,marginBottom:8}}>⚽</div>
             <div style={{fontFamily:'var(--ff)',fontSize:20,color:'var(--txt)',letterSpacing:1}}>REGÍSTRATE PARA ENTRAR</div>
-            <div style={{fontSize:13,color:'var(--muted)',marginTop:8,lineHeight:1.5}}>Crea tu cuenta o inicia sesión para jugar tus pronósticos.</div>
+            <div style={{fontSize:13,color:'var(--muted)',marginTop:8,lineHeight:1.5}}>Regístrate o Inicia Sesión para entrar.</div>
             <button onClick={onProfile} style={{marginTop:16,width:'100%',padding:'12px 0',borderRadius:12,border:'none',background:'var(--gold)',color:'#0A0A1E',fontWeight:800,fontSize:14,letterSpacing:1,cursor:'pointer'}}>REGISTRARSE</button>
             <button onClick={()=>setAviso(false)} style={{marginTop:8,width:'100%',padding:'10px 0',borderRadius:12,border:'1px solid rgba(255,255,255,.2)',background:'none',color:'var(--muted)',fontSize:13,cursor:'pointer'}}>Ahora no</button>
           </div>
