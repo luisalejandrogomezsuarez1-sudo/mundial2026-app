@@ -1351,6 +1351,27 @@ const LIGAMX_TABLA=[
   ]}
 ];
 
+const ESCUDOS={
+  'América':'/escudos/america.jpg',
+  'Atl. San Luis':'/escudos/san_luis.jpg',
+  'Atlante':'/escudos/atlante.jpg',
+  'Atlas':'/escudos/atlas.jpg',
+  'Chivas':'/escudos/chivas.jpg',
+  'Cruz Azul':'/escudos/cruz_azul.jpg',
+  'FC Juárez':'/escudos/juarez.jpg',
+  'León':'/escudos/leon.jpg',
+  'Monterrey':'/escudos/monterrey.jpg',
+  'Necaxa':'/escudos/necaxa.jpg',
+  'Pachuca':'/escudos/pachuca.jpg',
+  'Puebla':'/escudos/puebla.jpg',
+  'Pumas':'/escudos/pumas.jpg',
+  'Querétaro':'/escudos/queretaro.jpg',
+  'Santos Laguna':'/escudos/santos.jpg',
+  'Tigres':'/escudos/tigres.jpg',
+  'Tijuana':'/escudos/tijuana.jpg',
+  'Toluca':'/escudos/toluca.jpg',
+};
+
 // ══ ESTRUCTURA MULTI-TORNEO (Fase A: andamiaje, no cambia comportamiento) ══
 const TORNEOS = {
   mundial2026: {
@@ -2171,7 +2192,9 @@ function NextCard({m,score}){
       </div>
       <div style={{padding:'6px 14px 10px',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
         <div style={{flex:1,display:'flex',flexDirection:'column',gap:5}}>
-          <span style={{fontSize:28}}>{FLAGS[homeT]||'🏴'}</span>
+          {ESCUDOS[homeT]
+            ? <img src={ESCUDOS[homeT]} alt={homeT} style={{width:34,height:34,borderRadius:8,objectFit:'cover'}}/>
+            : <span style={{fontSize:28}}>{FLAGS[homeT]||'🏴'}</span>}
           <span style={{fontWeight:700,fontSize:14}}>{homeT}</span>
         </div>
         <div style={{textAlign:'center',minWidth:82}}>
@@ -2182,7 +2205,9 @@ function NextCard({m,score}){
           <div style={{fontSize:10,color:'var(--muted)'}}>🏟 {m.venue}</div>
         </div>
         <div style={{flex:1,display:'flex',flexDirection:'column',alignItems:'flex-end',gap:5}}>
-          <span style={{fontSize:28}}>{FLAGS[awayT]||'🏴'}</span>
+          {ESCUDOS[awayT]
+            ? <img src={ESCUDOS[awayT]} alt={awayT} style={{width:34,height:34,borderRadius:8,objectFit:'cover'}}/>
+            : <span style={{fontSize:28}}>{FLAGS[awayT]||'🏴'}</span>}
           <span style={{fontWeight:700,fontSize:14}}>{awayT}</span>
         </div>
       </div>
