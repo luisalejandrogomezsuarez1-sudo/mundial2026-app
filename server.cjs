@@ -50,7 +50,7 @@ function afFetch(endpoint){
 // ── Datos en vivo: whitelist de documentos y copia en memoria ────
 // liveCache guarda la última versión de cada doc para servirla por HTTP
 // (GET /api/live/:docId) sin que cada usuario abra un onSnapshot a Firestore.
-const LIVE_DOCS    = ['matches','standings','scorers','fixtures','bracket','banner','livemanual','scores'];
+const LIVE_DOCS    = ['matches','standings','scorers','fixtures','bracket','banner','livemanual','scores','scores_ligamxAp2026'];
 // Docs editados a mano (no vienen del polling de API-Football). Antes se leían
 // de Firestore en CADA request (caro: escalaba con usuarios). Ahora se cachean
 // en memoria con TTL por doc: solo se relee Firestore al vencer el TTL.
@@ -1380,6 +1380,23 @@ app.post('/api/admin/puntos', async (req,res)=>{
 // Evita que cada usuario lea Firestore: el servidor mantiene los datos en
 // memoria (vía save() durante el polling) y aquí los entrega por HTTP.
 // DEBE ir ANTES del catch-all app.get('*') o lo interceptaría el index.html.
+// ── Marcadores por torneo (captura manual admin) ──
+// Body: { key, torneoId, scores:{ matchId:{gh,ga,status} } }
+// Guarda live/scores_<torneoId>. Genérico: sirve para Liga MX, Champions, etc.
+const TORNEOS_SCORES_OK = ['ligamxAp2026'];  // añadir aquí nuevos torneos (p.ej. 'championsLeague')
+app.post('/api/admin/scores-torneo', async (req,res)=>{
+  if(!ADMIN_KEY || req.body.key !== ADMIN_KEY)
+    return res.status(403).json({error:'Forbidden'});
+  const torneoId = req.body.torneoId;
+  if(!TORNEOS_SCORES_OK.includes(torneoId))
+    return res.status(400).json({error:'torneoId no permitido'});
+  const scores = (req.body.scores && typeof req.body.scores==='object') ? req.body.scores : {};
+  try{
+    await save('scores_'+torneoId, { scores });
+    res.json({ ok:true, count:Object.keys(scores).length });
+  }catch(e){ console.warn('admin/scores-torneo error:', e.message); res.status(500).json({error:e.message}); }
+});
+
 app.get('/api/live/:docId', async (req,res)=>{
   const { docId } = req.params;
   if(!LIVE_DOCS.includes(docId)) return res.status(404).json({ error:'not found' });

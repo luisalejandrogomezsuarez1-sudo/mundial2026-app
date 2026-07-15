@@ -2829,6 +2829,24 @@ function HomeScreen({onMatch,onGoToCal,torneo}){
     return()=>{ mounted=false; if(typeof unsub==='function') unsub(); };
   },[]);
 
+  // Marcadores Liga MX (admin) desde live/scores_<id> — paralelo al del Mundial
+  const [ligaScores,setLigaScores]=useState({});
+  useEffect(()=>{
+    if(torneo.formato==='grupos+bracket')return;   // gate inverso: solo torneos no-Mundial
+    const doc='scores_'+torneo.id;                  // genérico: sirve p/ Champions, etc.
+    let unsub, mounted=true;
+    const cached=getCachedLive(doc);
+    if(cached?.scores) setLigaScores(cached.scores);
+    const trySub=()=>{
+      if(!mounted) return;
+      const fn=window._fbSubscribeLive;
+      if(!fn){ setTimeout(trySub,800); return; }
+      try{ unsub=fn(doc,data=>{ setCachedLive(doc,data); if(data?.scores) setLigaScores(data.scores); }); }catch(e){}
+    };
+    trySub();
+    return()=>{ mounted=false; if(typeof unsub==='function') unsub(); };
+  },[torneo.id]);
+
   const doRef=useCallback(()=>{
     setRef(true);setTimeout(()=>{setRef(false);setUpd(new Date());},900);
   },[]);
@@ -2860,7 +2878,7 @@ function HomeScreen({onMatch,onGoToCal,torneo}){
         <SponsorBanner/>
         <div style={{padding:'6px 0 4px',fontSize:13,fontWeight:700,color:'var(--muted)',
           textAlign:'center',letterSpacing:.5}}>Próximos partidos</div>
-        {ligaLista.map(m=><NextCard key={m.id} m={m} score={null}/>)}
+        {ligaLista.map(m=><NextCard key={m.id} m={m} score={ligaScores[m.id]||null}/>)}
       </div>
     );
   }
@@ -3904,6 +3922,20 @@ function AdminResultados({onClose}){
   const [keyGuardada,setKeyGuardada]=useState(()=>{ try{return !!localStorage.getItem('wc2026_admin_key');}catch{return false;} });
   const [keyMsg,setKeyMsg]=useState('');
   const [sec,setSec]=useState('tabla'); // tabla | goles | puntos
+  // ── Captura Liga MX (torneo no-Mundial) ──
+  const [ligaAdmin,setLigaAdmin]=useState({});     // { matchId:{gh,ga,status} }
+  const [jornadaSel,setJornadaSel]=useState(1);
+  useEffect(()=>{
+    fetch('/api/live/scores_ligamxAp2026')
+      .then(r=>r.json())
+      .then(d=>{ if(d?.scores) setLigaAdmin(d.scores); })
+      .catch(()=>{});
+  },[]);
+  const jornadaDe=m=>{ const mt=(m.phase||'').match(/J(\d+)/); return mt?Number(mt[1]):0; };
+  const guardarLigaMX=async()=>{
+    const d=await post('/api/admin/scores-torneo',{torneoId:'ligamxAp2026',scores:ligaAdmin});
+    if(d?.ok) setMsg(`✅ Liga MX guardada (${d.count} partidos)`);
+  };
   const [busy,setBusy]=useState(false);
   const [msg,setMsg]=useState('');
 
@@ -4071,7 +4103,7 @@ function AdminResultados({onClose}){
 
         {/* Tabs de sección */}
         <div style={{display:'flex',gap:7,marginBottom:14}}>
-          {[['tabla','📊 Tabla'],['goles','⚽ Goles'],['puntos','🏆 Puntos'],['llave','🏆 Llave']].map(([k,l])=>(
+          {[['tabla','📊 Tabla'],['goles','⚽ Goles'],['puntos','🏆 Puntos'],['llave','🏆 Llave'],['ligamx','🇲🇽 Liga MX']].map(([k,l])=>(
             <button key={k} onClick={()=>{setSec(k);setMsg('');}}
               style={{flex:1,background:sec===k?'var(--gold)':'var(--surf)',
                 color:sec===k?'#000':'var(--muted)',border:`1px solid ${sec===k?'var(--gold)':'var(--br)'}`,
@@ -4264,6 +4296,59 @@ function AdminResultados({onClose}){
                 ))}
               </div>
             )}
+          </div>
+        )}
+
+        {sec==='ligamx'&&(
+          <div>
+            <div style={{fontSize:11,color:'var(--muted)',marginBottom:10,lineHeight:1.5}}>
+              Selecciona la jornada, mete el marcador final y marca <strong>FIN</strong>. Pulsa <strong>Guardar Liga MX</strong>.
+            </div>
+            <div style={{display:'flex',flexWrap:'wrap',gap:5,marginBottom:12}}>
+              {Array.from({length:17},(_,i)=>i+1).map(j=>(
+                <button key={j} onClick={()=>setJornadaSel(j)}
+                  style={{background:jornadaSel===j?'var(--gold)':'var(--surf)',
+                    color:jornadaSel===j?'#000':'var(--muted)',border:`1px solid ${jornadaSel===j?'var(--gold)':'var(--br)'}`,
+                    borderRadius:7,padding:'5px 9px',fontSize:11,fontWeight:700,cursor:'pointer'}}>
+                  J{j}
+                </button>
+              ))}
+            </div>
+            <div style={{display:'flex',flexDirection:'column',gap:6,marginBottom:14}}>
+              {LIGAMX_MATCHES.filter(m=>jornadaDe(m)===jornadaSel).map(m=>{
+                const s=ligaAdmin[m.id]||{gh:'',ga:''};
+                return(
+                  <div key={m.id} style={{display:'flex',alignItems:'center',gap:6,
+                    background:'var(--surf)',borderRadius:9,padding:'7px 9px',border:'1px solid var(--br)'}}>
+                    <div style={{flex:1,minWidth:0,fontSize:11,color:'var(--txt)'}}>
+                      <div style={{fontSize:9,color:'var(--muted)'}}>{m.date}</div>
+                      <div style={{whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{m.home} vs {m.away}</div>
+                    </div>
+                    <input type="number" inputMode="numeric" value={s.gh} placeholder="-"
+                      onChange={e=>setLigaAdmin({...ligaAdmin,[m.id]:{...s,gh:e.target.value}})}
+                      style={{...inp,width:42,textAlign:'center',padding:'6px 2px'}}/>
+                    <span style={{color:'var(--muted)',fontSize:12}}>-</span>
+                    <input type="number" inputMode="numeric" value={s.ga} placeholder="-"
+                      onChange={e=>setLigaAdmin({...ligaAdmin,[m.id]:{...s,ga:e.target.value}})}
+                      style={{...inp,width:42,textAlign:'center',padding:'6px 2px'}}/>
+                    <button onClick={()=>{
+                      const estados=['proximo','en_vivo','finalizado'];
+                      const actual=(ligaAdmin[m.id]?.status)||'proximo';
+                      const siguiente=estados[(estados.indexOf(actual)+1)%3];
+                      setLigaAdmin({...ligaAdmin,[m.id]:{...ligaAdmin[m.id],status:siguiente}});
+                    }} style={{marginLeft:8,padding:'4px 10px',borderRadius:6,border:'none',cursor:'pointer',
+                      background:(ligaAdmin[m.id]?.status||'proximo')==='en_vivo'?'#dc2626':(ligaAdmin[m.id]?.status)==='finalizado'?'#16a34a':'#2563eb',
+                      color:'#fff',fontSize:11,fontWeight:600}}>
+                      {(ligaAdmin[m.id]?.status||'proximo')==='en_vivo'?'🔴 EN VIVO':(ligaAdmin[m.id]?.status)==='finalizado'?'✓ FIN':'PRÓXIMO'}
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+            <button disabled={busy} onClick={guardarLigaMX}
+              style={btn(busy?'var(--surf2)':'linear-gradient(135deg,var(--gold),var(--gold2))')}>
+              {busy?'Procesando…':'💾 Guardar Liga MX'}
+            </button>
           </div>
         )}
         <div style={{height:30}}/>
