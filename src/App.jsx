@@ -802,7 +802,7 @@ body{font-family:var(--fb);background:var(--bg);color:var(--txt);height:100%;ove
 .leader-glow{animation:elimGlow 1.8s ease-in-out infinite}
 .score-live{animation:elimGlow 1.2s ease-in-out infinite;padding:1px 6px;border-radius:8px;color:var(--gold)!important}
 .marquee-wrap{overflow:hidden;white-space:nowrap;background:linear-gradient(90deg,rgba(200,16,46,.12),rgba(var(--gold-rgb),.08));border-top:1px solid rgba(var(--gold-rgb),.2);border-bottom:1px solid rgba(var(--gold-rgb),.2);padding:8px 0;}
-.marquee-text{display:inline-block;padding-left:100%;font-size:13px;font-weight:700;color:var(--gold);animation-name:marquee;animation-timing-function:linear;animation-iteration-count:infinite;}
+.marquee-text{display:inline-block;padding-left:100%;font-size:14px;font-weight:700;color:var(--gold);animation-name:marquee;animation-timing-function:linear;animation-iteration-count:infinite;}
 .marquee-text:hover{animation-play-state:paused;}
 .fin{animation:fin .35s ease forwards;}
 .inp{width:100%;background:var(--surf2);border:1.5px solid var(--br);
@@ -2503,30 +2503,46 @@ function SponsorBanner({margin='0 0 14px'}){
 }
 
 // ── Home Screen ──────────────────────────────────
-// ── Marquesina de comentarios (texto desde Firestore live/banner) ──
-function CommentMarquee(){
-  const [texto,setTexto]=useState('');
+// ── Mensajes por torneo e idioma (default si Firestore no tiene el doc) ──
+const MARQUEE_MSGS={
+  mundial2026:{
+    es:'📢 ¡Bienvenido al Mundial 2026! Haz tus pronósticos y compite por el ranking.',
+    en:'📢 Welcome to the 2026 World Cup! Make your predictions and compete for the ranking.',
+  },
+  ligamxAp2026:{
+    es:'📢 ¡Apertura 2026 en marcha! Pronostica cada jornada y escala en la tabla.',
+    en:'📢 Apertura 2026 is on! Predict every matchday and climb the table.',
+  },
+};
+
+// ── Marquesina de comentarios (texto desde Firestore banner_<torneo> por idioma) ──
+function CommentMarquee({torneo}){
+  const t=useLang();
+  const lang=t._lang==='en'?'en':'es';
+  const [data,setData]=useState(null);
   const [dur,setDur]=useState(30);
   const textRef=useRef(null);
-
+  const doc='banner_'+torneo.id;
   useEffect(()=>{
     let unsub, mounted=true;
-    const cached=getCachedLive('banner');
-    if(cached?.texto){ setTexto(cached.texto); }
+    const cached=getCachedLive(doc);
+    if(cached) setData(cached);
     const trySub=()=>{
       if(!mounted) return;
       const fn=window._fbSubscribeLive;
       if(!fn){ setTimeout(trySub,800); return; }
       try{
-        unsub=fn('banner',data=>{
-          setCachedLive('banner',data);
-          if(data?.texto) setTexto(data.texto);
-        });
+        unsub=fn(doc,d=>{ setCachedLive(doc,d); if(d) setData(d); });
       }catch(e){}
     };
     trySub();
     return()=>{ mounted=false; if(typeof unsub==='function') unsub(); };
-  },[]);
+  },[doc]);
+
+  // Texto por defecto si Firestore aún no tiene nada
+  const fromFs = data && (lang==='en' ? data.texto_en : data.texto_es);
+  const fallback = (MARQUEE_MSGS[torneo.id]||{})[lang] || (MARQUEE_MSGS[torneo.id]||{}).es || '';
+  const display = fromFs || fallback;
 
   // Velocidad constante: recalcula la duración cuando cambia el texto
   useEffect(()=>{
@@ -2536,10 +2552,7 @@ function CommentMarquee(){
     const SPEED=40; // píxeles por segundo (más bajo = más lento). Ajustable.
     const duration=textWidth/SPEED;
     setDur(Math.max(duration,15)); // mínimo 15s para textos muy cortos
-  },[texto]);
-
-  // Texto por defecto si Firestore aún no tiene nada
-  const display = texto || '📢 ¡Bienvenido a Pronósticos Futbol 2026! Haz tus pronósticos y compite con tus amigos · ⚽ El torneo comienza el 11 de Junio';
+  },[display]);
 
   return(
     <div className="marquee-wrap" style={{margin:'0 0 14px'}}>
@@ -2874,7 +2887,7 @@ function HomeScreen({onMatch,onGoToCal,torneo}){
             </div>
           </div>
         </div>
-        <CommentMarquee/>
+        <CommentMarquee torneo={torneo}/>
         <SponsorBanner/>
         <div style={{padding:'6px 0 4px',fontSize:13,fontWeight:700,color:'var(--muted)',
           textAlign:'center',letterSpacing:.5}}>Próximos partidos</div>
@@ -2914,7 +2927,7 @@ function HomeScreen({onMatch,onGoToCal,torneo}){
       {new Date()<new Date(Date.UTC(2026,5,11,19,0,0))&&<Countdown/>}
 
       {/* ── Marquesina de comentarios (siempre visible) ── */}
-      <CommentMarquee/>
+      <CommentMarquee torneo={torneo}/>
       <SponsorBanner/>
 
       {/* ── LIVE matches manuales (Firestore live/livemanual) ── */}

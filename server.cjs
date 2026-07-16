@@ -50,7 +50,7 @@ function afFetch(endpoint){
 // ── Datos en vivo: whitelist de documentos y copia en memoria ────
 // liveCache guarda la última versión de cada doc para servirla por HTTP
 // (GET /api/live/:docId) sin que cada usuario abra un onSnapshot a Firestore.
-const LIVE_DOCS    = ['matches','standings','scorers','fixtures','bracket','banner','livemanual','scores','scores_ligamxAp2026'];
+const LIVE_DOCS    = ['matches','standings','scorers','fixtures','bracket','banner','livemanual','scores','scores_ligamxAp2026','banner_mundial2026','banner_ligamxAp2026'];
 // Docs editados a mano (no vienen del polling de API-Football). Antes se leían
 // de Firestore en CADA request (caro: escalaba con usuarios). Ahora se cachean
 // en memoria con TTL por doc: solo se relee Firestore al vencer el TTL.
