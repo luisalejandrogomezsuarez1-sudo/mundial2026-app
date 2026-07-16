@@ -3452,7 +3452,7 @@ function TablaScreen({torneo}){
             <div style={{display:'grid',gridTemplateColumns:'26px 1fr repeat(8,26px)',gap:0,padding:'9px 12px',
               fontSize:10,fontWeight:700,color:'var(--muted)',letterSpacing:.5,textTransform:'uppercase',alignItems:'center'}}>
               <div></div>
-              <div>Equipo</div>
+              <div>{t.team_col}</div>
               {hdrs.map(h=><div key={h} style={{textAlign:'center'}}>{h}</div>)}
             </div>
             {ligaTeams.map((tm,i)=>{
