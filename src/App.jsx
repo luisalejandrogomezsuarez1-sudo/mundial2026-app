@@ -2896,7 +2896,7 @@ function HomeScreen({onMatch,onGoToCal,torneo}){
         <CommentMarquee torneo={torneo}/>
         <SponsorBanner/>
         <div style={{padding:'6px 0 4px',fontSize:13,fontWeight:700,color:'var(--muted)',
-          textAlign:'center',letterSpacing:.5}}>Próximos partidos</div>
+          textAlign:'center',letterSpacing:.5}}>{t.next_matches}</div>
         {ligaLista.map(m=><NextCard key={m.id} m={m} score={ligaScores[m.id]||null}/>)}
       </div>
     );
