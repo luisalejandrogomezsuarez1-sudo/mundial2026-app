@@ -261,6 +261,7 @@ const TRANSLATIONS={
     gift_coins:'Monedas regalo',no_package:'Sin paquete',
     income:'Ingresos',share_link:'Compartir enlace',
     active_session:'Sesión activa',my_account:'MI CUENTA',
+    pf_name:'Nombre',pf_email:'Correo electrónico',pf_birth:'Fecha de nacimiento',pf_nat:'Nacionalidad',pf_gender:'Género',pf_db_title:'BASE DE DATOS',pf_db_desc:'Tus datos están almacenados de forma segura. Puedes solicitar su eliminación en cualquier momento.',
     // Common
     loading:'Cargando...', error:'Error', retry:'Reintentar',
     tbd:'Por definir',active:'Activo',
@@ -336,6 +337,7 @@ const TRANSLATIONS={
     admin_panel:'ADMIN PANEL',registered:'Registered',with_package:'With package',
     gift_coins:'Gift coins',no_package:'No package',income:'Income',share_link:'Share link',
     active_session:'Active session',my_account:'MY ACCOUNT',
+    pf_name:'Name',pf_email:'Email',pf_birth:'Date of birth',pf_nat:'Nationality',pf_gender:'Gender',pf_db_title:'DATABASE',pf_db_desc:'Your data is stored securely. You can request its deletion at any time.',
     loading:'Loading...',error:'Error',retry:'Retry',
     tbd:'TBD',active:'Active',
   },
@@ -410,6 +412,7 @@ const TRANSLATIONS={
     admin_panel:'PAINEL ADMIN',registered:'Cadastrados',with_package:'Com pacote',
     gift_coins:'Moedas presente',no_package:'Sem pacote',income:'Receita',share_link:'Compartilhar link',
     active_session:'Sessão ativa',my_account:'MINHA CONTA',
+    pf_name:'Nome',pf_email:'E-mail',pf_birth:'Data de nascimento',pf_nat:'Nacionalidade',pf_gender:'Gênero',pf_db_title:'BANCO DE DADOS',pf_db_desc:'Seus dados são armazenados com segurança. Você pode solicitar sua exclusão a qualquer momento.',
     loading:'Carregando...',error:'Erro',retry:'Tentar novamente',
     tbd:'A definir',active:'Ativo',
   },
@@ -484,6 +487,7 @@ const TRANSLATIONS={
     admin_panel:'管理面板',registered:'已注册',with_package:'有套餐',
     gift_coins:'赠送金币',no_package:'无套餐',income:'收入',share_link:'分享链接',
     active_session:'会话活跃',my_account:'我的账户',
+    pf_name:'姓名',pf_email:'电子邮箱',pf_birth:'出生日期',pf_nat:'国籍',pf_gender:'性别',pf_db_title:'数据库',pf_db_desc:'您的数据已安全存储。您可以随时请求删除。',
     loading:'加载中...',error:'错误',retry:'重试',
     tbd:'待定',active:'活跃',
   },
@@ -558,6 +562,7 @@ const TRANSLATIONS={
     admin_panel:'관리자 패널',registered:'등록됨',with_package:'패키지 보유',
     gift_coins:'코인 선물',no_package:'패키지 없음',income:'수입',share_link:'링크 공유',
     active_session:'세션 활성',my_account:'내 계정',
+    pf_name:'이름',pf_email:'이메일',pf_birth:'생년월일',pf_nat:'국적',pf_gender:'성별',pf_db_title:'데이터베이스',pf_db_desc:'귀하의 데이터는 안전하게 저장됩니다. 언제든지 삭제를 요청할 수 있습니다.',
     loading:'로딩 중...',error:'오류',retry:'다시 시도',
     tbd:'미정',active:'활성',
   },
@@ -632,6 +637,7 @@ const TRANSLATIONS={
     admin_panel:'PANNEAU ADMIN',registered:'Inscrits',with_package:'Avec forfait',
     gift_coins:'Pièces offertes',no_package:'Sans forfait',income:'Revenus',share_link:'Partager le lien',
     active_session:'Session active',my_account:'MON COMPTE',
+    pf_name:'Nom',pf_email:'E-mail',pf_birth:'Date de naissance',pf_nat:'Nationalité',pf_gender:'Genre',pf_db_title:'BASE DE DONNÉES',pf_db_desc:'Vos données sont stockées en toute sécurité. Vous pouvez demander leur suppression à tout moment.',
     loading:'Chargement...',error:'Erreur',retry:'Réessayer',
     tbd:'À déterminer',active:'Actif',
   },
@@ -4832,8 +4838,8 @@ function PerfilScreen({user,onLogout,lang='es'}){
         )}
 
         <div style={{fontFamily:'var(--ff)',fontSize:16,letterSpacing:1,color:'var(--muted)',marginBottom:10}}>{t.my_account}</div>
-        {[['👤','Nombre',user.name||'—'],['📧','Correo electrónico',user.email],
-          ['🎂','Fecha de nacimiento',user.bd||'—'],['🌎','Nacionalidad',user.nat||'—'],['⚧','Género',user.gen||'—']].map(([ic,lb,vl])=>(
+        {[['👤',t.pf_name,user.name||'—'],['📧',t.pf_email,user.email],
+          ['🎂',t.pf_birth,user.bd||'—'],['🌎',t.pf_nat,user.nat||'—'],['⚧',t.pf_gender,user.gen||'—']].map(([ic,lb,vl])=>(
           <div key={lb} style={{display:'flex',alignItems:'center',gap:12,padding:'11px 14px',
             background:'var(--surf)',borderRadius:12,marginBottom:8,border:'1px solid var(--br)'}}>
             <span style={{fontSize:18,flexShrink:0}}>{ic}</span>
@@ -4847,11 +4853,11 @@ function PerfilScreen({user,onLogout,lang='es'}){
           <div style={{marginTop:8,background:'var(--surf)',borderRadius:12,padding:13,border:'1px solid var(--br)'}}>
             <div style={{display:'flex',alignItems:'center',gap:7,marginBottom:6}}>
               <span style={{fontSize:15}}>🗃️</span>
-              <span style={{fontSize:11,color:'var(--muted)',fontWeight:700}}>BASE DE DATOS</span>
+              <span style={{fontSize:11,color:'var(--muted)',fontWeight:700}}>{t.pf_db_title}</span>
               <span style={{marginLeft:'auto',width:7,height:7,borderRadius:'50%',background:'var(--grn)',display:'inline-block'}}/>
             </div>
             <div style={{fontSize:12,color:'#8A9BC9',lineHeight:1.55}}>
-              Tus datos están almacenados de forma segura. Puedes solicitar su eliminación en cualquier momento.
+              {t.pf_db_desc}
             </div>
           </div>
         )}
