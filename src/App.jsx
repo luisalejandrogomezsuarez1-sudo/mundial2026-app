@@ -218,8 +218,10 @@ const TRANSLATIONS={
     bracket_title:'LLAVE ELIMINATORIA',auto_flags:'Las banderas aparecen conforme avanza el torneo',
     champion:'CAMPEÓN DEL MUNDO',
     team_col:'Equipo',advancing:'ADV',top_2_qualify:'Top 2 clasifican a octavos',
+    pg_activate:'ACTIVAR MI PRONÓSTICO',pg_activate_sub:'Acceso completo · $30 MXN una sola vez',pg_reset:'CAMBIAR PRONÓSTICOS',pg_reset_sub:'Paga $30 · reinicia todo y vuelve a apostar',pg_access_price:'PRECIO DE ACCESO',pg_reset_cost:'COSTO DE REINICIO',pg_pesos:'pesos mexicanos',pg_virtual_coins:'MONEDAS VIRTUALES',pg_covers_all:'✓ Cubren TODO',pg_reset_warning:'Se borrarán TODOS tus pronósticos actuales y no se pueden recuperar',pg_secure_play:'Pago seguro vía Google Play',pg_secure_play_desc:'Se abrirá la ventana de Google Play para completar tu compra de forma segura.',pg_method:'MÉTODO DE PAGO',pg_card:'Tarjeta',pg_oxxo:'OXXO',
     grp_verifying:'Verificando acceso…',grp_private:'GRUPOS PRIVADOS',grp_desc:'Crea o únete a grupos de amigos, comparte tus pronósticos y compite en el ranking.',grp_requires:'Requiere el paquete de pronósticos',grp_to_access:'para acceder.',grp_coins:'1,000 MONEDAS',grp_full_access:'Acceso completo a Grupos + Pronósticos',grp_recheck:'Ya tengo regalo · Verificar acceso',grp_pay_access:'PAGAR Y ACCEDER',grp_one_time:'Pago único · Acceso a todo el torneo 2026',
     scorers_soon:'Goleadores próximamente',scorers_soon_desc:'La tabla de goleadores estará disponible en una fase posterior del torneo.',
+    bets_soon:'Pronósticos próximamente',bets_soon_desc:'Los pronósticos para esta liga estarán disponibles muy pronto.',
     round_32:'RONDA DE 32',round_16:'OCTAVOS',quarterfinals:'CUARTOS',semifinals:'SEMIFINALES',
     // Goals
     goals_title:'GOLEADORES',golden_boot:'Candidatos a la Bota de Oro del torneo 2026',
@@ -301,8 +303,10 @@ const TRANSLATIONS={
     bracket_title:'KNOCKOUT BRACKET',auto_flags:'Flags update automatically as teams advance',
     champion:'WORLD CHAMPION',
     team_col:'Team',advancing:'ADV',top_2_qualify:'Top 2 qualify to round of 16',
+    pg_activate:'ACTIVATE MY PREDICTION',pg_activate_sub:'Full access · $30 MXN one-time',pg_reset:'CHANGE PREDICTIONS',pg_reset_sub:'Pay $30 · reset everything and bet again',pg_access_price:'ACCESS PRICE',pg_reset_cost:'RESET COST',pg_pesos:'Mexican pesos',pg_virtual_coins:'VIRTUAL COINS',pg_covers_all:'✓ Covers EVERYTHING',pg_reset_warning:'ALL your current predictions will be deleted and cannot be recovered',pg_secure_play:'Secure payment via Google Play',pg_secure_play_desc:'The Google Play window will open to complete your purchase securely.',pg_method:'PAYMENT METHOD',pg_card:'Card',pg_oxxo:'OXXO',
     grp_verifying:'Verifying access…',grp_private:'PRIVATE GROUPS',grp_desc:'Create or join groups of friends, share your predictions and compete in the ranking.',grp_requires:'Requires the predictions package',grp_to_access:'to access.',grp_coins:'1,000 COINS',grp_full_access:'Full access to Groups + Predictions',grp_recheck:'I already have a gift · Verify access',grp_pay_access:'PAY & ACCESS',grp_one_time:'One-time payment · Access to the entire 2026 tournament',
     scorers_soon:'Scorers coming soon',scorers_soon_desc:'The scorers table will be available in a later stage of the tournament.',
+    bets_soon:'Predictions coming soon',bets_soon_desc:'Predictions for this league will be available very soon.',
     round_32:'ROUND OF 32',round_16:'ROUND OF 16',quarterfinals:'QUARTERFINALS',semifinals:'SEMIFINALS',
     goals_title:'SCORERS',golden_boot:'Golden Boot Candidates',
     fourth_onwards:'4th ONWARDS',
@@ -378,8 +382,10 @@ const TRANSLATIONS={
     bracket_title:'CHAVES ELIMINATÓRIAS',auto_flags:'As bandeiras aparecem conforme o torneio avança',
     champion:'CAMPEÃO',
     team_col:'Equipe',advancing:'CLF',top_2_qualify:'Top 2 classificam para oitavas',
+    pg_activate:'ATIVAR MEU PALPITE',pg_activate_sub:'Acesso completo · $30 MXN uma vez',pg_reset:'ALTERAR PALPITES',pg_reset_sub:'Pague $30 · reinicie tudo e aposte novamente',pg_access_price:'PREÇO DE ACESSO',pg_reset_cost:'CUSTO DE REINÍCIO',pg_pesos:'pesos mexicanos',pg_virtual_coins:'MOEDAS VIRTUAIS',pg_covers_all:'✓ Cobrem TUDO',pg_reset_warning:'TODOS os seus palpites atuais serão apagados e não podem ser recuperados',pg_secure_play:'Pagamento seguro via Google Play',pg_secure_play_desc:'A janela do Google Play será aberta para concluir sua compra com segurança.',pg_method:'MÉTODO DE PAGAMENTO',pg_card:'Cartão',pg_oxxo:'OXXO',
     grp_verifying:'Verificando acesso…',grp_private:'GRUPOS PRIVADOS',grp_desc:'Crie ou entre em grupos de amigos, compartilhe seus palpites e compita no ranking.',grp_requires:'Requer o pacote de palpites',grp_to_access:'para acessar.',grp_coins:'1.000 MOEDAS',grp_full_access:'Acesso completo a Grupos + Palpites',grp_recheck:'Já tenho presente · Verificar acesso',grp_pay_access:'PAGAR E ACESSAR',grp_one_time:'Pagamento único · Acesso a todo o torneio 2026',
     scorers_soon:'Artilheiros em breve',scorers_soon_desc:'A tabela de artilheiros estará disponível em uma fase posterior do torneio.',
+    bets_soon:'Palpites em breve',bets_soon_desc:'Os palpites para esta liga estarão disponíveis em breve.',
     round_32:'RODADA DE 32',round_16:'OITAVAS',quarterfinals:'QUARTAS',semifinals:'SEMIFINAIS',
     goals_title:'ARTILHEIROS',golden_boot:'Candidatos à Chuteira de Ouro da Copa 2026',
     fourth_onwards:'4° EM DIANTE',
@@ -455,8 +461,10 @@ const TRANSLATIONS={
     bracket_title:'淘汰赛对阵',auto_flags:'随着赛事推进自动显示国旗',
     champion:'世界冠军',
     team_col:'球队',advancing:'晋级',top_2_qualify:'前2名晋级16强',
+    pg_activate:'激活我的预测',pg_activate_sub:'完整访问 · $30 MXN 一次性',pg_reset:'更改预测',pg_reset_sub:'支付$30 · 重置全部并重新投注',pg_access_price:'访问价格',pg_reset_cost:'重置费用',pg_pesos:'墨西哥比索',pg_virtual_coins:'虚拟金币',pg_covers_all:'✓ 涵盖全部',pg_reset_warning:'您当前所有的预测将被删除且无法恢复',pg_secure_play:'通过 Google Play 安全付款',pg_secure_play_desc:'将打开 Google Play 窗口以安全完成购买。',pg_method:'支付方式',pg_card:'银行卡',pg_oxxo:'OXXO',
     grp_verifying:'正在验证访问权限…',grp_private:'私人小组',grp_desc:'创建或加入好友小组，分享你的预测并在排行榜上竞争。',grp_requires:'需要预测套餐',grp_to_access:'才能访问。',grp_coins:'1,000 金币',grp_full_access:'完整访问小组 + 预测',grp_recheck:'我已有礼物 · 验证访问',grp_pay_access:'支付并访问',grp_one_time:'一次性付款 · 访问整个2026赛事',
     scorers_soon:'射手榜即将推出',scorers_soon_desc:'射手榜将在赛事后续阶段公布。',
+    bets_soon:'预测即将推出',bets_soon_desc:'本联赛的预测即将推出。',
     round_32:'32强',round_16:'16强',quarterfinals:'四分之一决赛',semifinals:'半决赛',
     goals_title:'射手榜',golden_boot:'2026世界杯金靴奖候选人',
     fourth_onwards:'第4名及以后',
@@ -532,8 +540,10 @@ const TRANSLATIONS={
     bracket_title:'토너먼트 대진표',auto_flags:'경기 진행에 따라 국기가 자동으로 표시됩니다',
     champion:'월드컵 우승팀',
     team_col:'팀',advancing:'진출',top_2_qualify:'상위 2팀이 16강 진출',
+    pg_activate:'내 예측 활성화',pg_activate_sub:'전체 이용 · $30 MXN 일회성',pg_reset:'예측 변경',pg_reset_sub:'$30 결제 · 전체 초기화 후 다시 베팅',pg_access_price:'이용 가격',pg_reset_cost:'초기화 비용',pg_pesos:'멕시코 페소',pg_virtual_coins:'가상 코인',pg_covers_all:'✓ 전부 포함',pg_reset_warning:'현재 모든 예측이 삭제되며 복구할 수 없습니다',pg_secure_play:'Google Play를 통한 안전한 결제',pg_secure_play_desc:'Google Play 창이 열려 안전하게 구매를 완료합니다.',pg_method:'결제 수단',pg_card:'카드',pg_oxxo:'OXXO',
     grp_verifying:'접근 확인 중…',grp_private:'비공개 그룹',grp_desc:'친구 그룹을 만들거나 참여하고, 예측을 공유하며 순위에서 경쟁하세요.',grp_requires:'예측 패키지가 필요합니다',grp_to_access:'이용하려면.',grp_coins:'1,000 코인',grp_full_access:'그룹 + 예측 전체 이용',grp_recheck:'이미 선물 있음 · 접근 확인',grp_pay_access:'결제하고 이용하기',grp_one_time:'일회성 결제 · 2026 대회 전체 이용',
     scorers_soon:'득점왕 곧 공개',scorers_soon_desc:'득점 순위표는 대회 후반 단계에서 제공됩니다.',
+    bets_soon:'예측 곧 공개',bets_soon_desc:'이 리그의 예측은 곧 제공됩니다.',
     round_32:'32강',round_16:'16강',quarterfinals:'8강',semifinals:'4강',
     goals_title:'득점왕',golden_boot:'2026 월드컵 골든 부트 후보',
     fourth_onwards:'4위 이후',
@@ -609,8 +619,10 @@ const TRANSLATIONS={
     bracket_title:'TABLEAU ÉLIMINATOIRE',auto_flags:'Les drapeaux se mettent à jour automatiquement',
     champion:'CHAMPION DU MONDE',
     team_col:'Équipe',advancing:'QUAL',top_2_qualify:'Les 2 premiers se qualifient',
+    pg_activate:'ACTIVER MON PRONOSTIC',pg_activate_sub:'Accès complet · $30 MXN une seule fois',pg_reset:'MODIFIER LES PRONOSTICS',pg_reset_sub:'Payez $30 · réinitialisez tout et pariez à nouveau',pg_access_price:'PRIX D\'ACCÈS',pg_reset_cost:'COÛT DE RÉINITIALISATION',pg_pesos:'pesos mexicains',pg_virtual_coins:'PIÈCES VIRTUELLES',pg_covers_all:'✓ Couvrent TOUT',pg_reset_warning:'TOUS vos pronostics actuels seront supprimés et ne pourront pas être récupérés',pg_secure_play:'Paiement sécurisé via Google Play',pg_secure_play_desc:'La fenêtre Google Play s\'ouvrira pour finaliser votre achat en toute sécurité.',pg_method:'MODE DE PAIEMENT',pg_card:'Carte',pg_oxxo:'OXXO',
     grp_verifying:'Vérification de l\'accès…',grp_private:'GROUPES PRIVÉS',grp_desc:'Créez ou rejoignez des groupes d\'amis, partagez vos pronostics et affrontez-les au classement.',grp_requires:'Nécessite le pack de pronostics',grp_to_access:'pour accéder.',grp_coins:'1 000 PIÈCES',grp_full_access:'Accès complet aux Groupes + Pronostics',grp_recheck:'J\'ai déjà un cadeau · Vérifier l\'accès',grp_pay_access:'PAYER ET ACCÉDER',grp_one_time:'Paiement unique · Accès à tout le tournoi 2026',
     scorers_soon:'Buteurs à venir',scorers_soon_desc:'Le classement des buteurs sera disponible à une phase ultérieure du tournoi.',
+    bets_soon:'Pronostics à venir',bets_soon_desc:'Les pronostics pour cette ligue seront bientôt disponibles.',
     round_32:'TOUR DE 32',round_16:'HUITIÈMES',quarterfinals:'QUARTS',semifinals:'DEMIS',
     goals_title:'BUTEURS',golden_boot:"Candidats au Soulier d'Or de la Coupe 2026",
     fourth_onwards:'4e ET PLUS',
@@ -6241,10 +6253,10 @@ function PagoScreen({onExito,onCancelar,esReset=false,onRecheckAccess,user,onRec
           )}
           <div>
             <div style={{fontFamily:'var(--ff)',fontSize:22,letterSpacing:1,color:'var(--gold)'}}>
-              {esReset?'CAMBIAR PRONÓSTICOS':'ACTIVAR MI PRONÓSTICO'}
+              {esReset?t.pg_reset:t.pg_activate}
             </div>
             <div style={{fontSize:12,color:'var(--muted)'}}>
-              {esReset?'Paga $30 · reinicia todo y vuelve a apostar':'Acceso completo · $30 MXN una sola vez'}
+              {esReset?t.pg_reset_sub:t.pg_activate_sub}
             </div>
           </div>
         </div>
@@ -6254,18 +6266,18 @@ function PagoScreen({onExito,onCancelar,esReset=false,onRecheckAccess,user,onRec
           alignItems:'center'}}>
           <div>
             <div style={{fontSize:11,color:'var(--muted)',fontWeight:700,letterSpacing:.5}}>
-              {esReset?'COSTO DE REINICIO':'PRECIO DE ACCESO'}
+              {esReset?t.pg_reset_cost:t.pg_access_price}
             </div>
             <div style={{fontFamily:'var(--ff)',fontSize:48,color:'var(--gold)',lineHeight:1,marginTop:2}}>
               $30
 </div>
-            <div style={{fontSize:12,color:'var(--dim)'}}>pesos mexicanos</div>
+            <div style={{fontSize:12,color:'var(--dim)'}}>{t.pg_pesos}</div>
           </div>
           <div style={{textAlign:'center'}}>
             <div style={{fontFamily:'var(--ff)',fontSize:32,color:'var(--gold)'}}>🪙1,000</div>
-            <div style={{fontSize:10,color:'var(--dim)',marginTop:2}}>MONEDAS VIRTUALES</div>
+            <div style={{fontSize:10,color:'var(--dim)',marginTop:2}}>{t.pg_virtual_coins}</div>
             <div style={{fontSize:10,color:'var(--grn)',fontWeight:700,marginTop:2}}>
-              ✓ Cubren TODO
+              {t.pg_covers_all}
             </div>
           </div>
         </div>
@@ -6273,7 +6285,7 @@ function PagoScreen({onExito,onCancelar,esReset=false,onRecheckAccess,user,onRec
           <div style={{marginTop:10,padding:'9px 12px',background:'rgba(200,16,46,.08)',
             borderRadius:9,border:'1px solid rgba(200,16,46,.2)',fontSize:12,color:'#FC8181',
             fontWeight:600,textAlign:'center'}}>
-            ⚠️ Se borrarán TODOS tus pronósticos actuales y no se pueden recuperar
+            ⚠️ {t.pg_reset_warning}
           </div>
         )}
       </div>
@@ -6307,10 +6319,10 @@ function PagoScreen({onExito,onCancelar,esReset=false,onRecheckAccess,user,onRec
             border:'1px solid rgba(var(--gold-rgb),.2)',textAlign:'center'}}>
             <div style={{fontSize:32,marginBottom:8}}>🛡️</div>
             <div style={{fontSize:14,fontWeight:700,marginBottom:6,color:'var(--gold)'}}>
-              Pago seguro vía Google Play
+              {t.pg_secure_play}
             </div>
             <div style={{fontSize:12,color:'var(--muted)',lineHeight:1.6}}>
-              Se abrirá la ventana de Google Play para completar tu compra de forma segura.
+              {t.pg_secure_play_desc}
             </div>
           </div>
         ) : (
@@ -6318,10 +6330,10 @@ function PagoScreen({onExito,onCancelar,esReset=false,onRecheckAccess,user,onRec
             {/* Payment method selector */}
             <div>
               <div style={{fontSize:11,fontWeight:700,color:'var(--muted)',marginBottom:8,letterSpacing:.5}}>
-                MÉTODO DE PAGO
+                {t.pg_method}
               </div>
               <div style={{display:'flex',gap:8,marginBottom:12}}>
-                {[['card','💳','Tarjeta'],['oxxo','🏪','OXXO']].map(([m,ic,lb])=>(
+                {[['card','💳',t.pg_card],['oxxo','🏪',t.pg_oxxo]].map(([m,ic,lb])=>(
                   <button key={m} onClick={()=>setMetodo(m)}
                     style={{flex:1,padding:'10px 4px',
                       background:metodo===m?'rgba(var(--gold-rgb),.12)':'var(--surf)',
@@ -6725,13 +6737,27 @@ function ElimScreen({credito,creditoLoading,onPagar,currentUser,onRecheckAccess,
 }
 
 // ── Bets Screen ───────────────────────────────────
-function BetsScreen({bets,placeBet,credito,creditoLoading,onPagar,onReset,betsSaved=false,onSave,onEditPredictions,currentUser,onRecheckAccess,onRecover,elimBets={},setElimBets=()=>{}}){
+function BetsScreen({torneo,bets,placeBet,credito,creditoLoading,onPagar,onReset,betsSaved=false,onSave,onEditPredictions,currentUser,onRecheckAccess,onRecover,elimBets={},setElimBets=()=>{}}){
   const t=useLang();
   const [tab,setTab]=useState('elim');
   const [exact,setExact]=useState({});
   const [showReset,setShowReset]=useState(false);
   const [confirmReset,setConfirmReset]=useState(false);
   const [showAddPackage,setShowAddPackage]=useState(false);
+
+  // Liga MX y otros torneos no-Mundial: pronósticos aún no disponibles
+  if(torneo && torneo.formato!=='grupos+bracket') return(
+    <div className="scr fin" style={{display:'flex',flexDirection:'column',alignItems:'center',
+      justifyContent:'center',padding:'40px 28px',textAlign:'center',minHeight:'60vh'}}>
+      <div style={{fontSize:52,marginBottom:16}}>⚽</div>
+      <div style={{fontFamily:'var(--ff)',fontSize:22,color:'var(--gold)',marginBottom:10}}>
+        {t.bets_soon||'Pronósticos próximamente'}
+      </div>
+      <div style={{fontSize:13,color:'var(--muted)',lineHeight:1.7,maxWidth:300}}>
+        {t.bets_soon_desc||'Los pronósticos para esta liga estarán disponibles muy pronto.'}
+      </div>
+    </div>
+  );
 
   // ── Payment gates ──
   if(!credito&&creditoLoading) return(
@@ -8239,7 +8265,7 @@ export default function App(){
           {tab==='cal'        &&<CalScreen torneo={TORNEOS[torneoActivo]}/>}
           {tab==='tabla'      &&<TablaScreen torneo={TORNEOS[torneoActivo]}/>}
           {tab==='goles'      &&<GolesScreen torneo={TORNEOS[torneoActivo]}/>}
-          {tab==='pronostico' &&<BetsScreen bets={userBets} placeBet={placeBet}
+          {tab==='pronostico' &&<BetsScreen torneo={TORNEOS[torneoActivo]} bets={userBets} placeBet={placeBet}
                                   credito={credito} creditoLoading={creditoLoading} onPagar={onPagar} onReset={onReset}
                                   betsSaved={betsSaved}
                                   elimBets={elimBets} setElimBets={setElimBets}
