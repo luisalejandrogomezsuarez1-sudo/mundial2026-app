@@ -218,6 +218,7 @@ const TRANSLATIONS={
     bracket_title:'LLAVE ELIMINATORIA',auto_flags:'Las banderas aparecen conforme avanza el torneo',
     champion:'CAMPEÓN DEL MUNDO',
     team_col:'Equipo',advancing:'ADV',top_2_qualify:'Top 2 clasifican a octavos',
+    grp_verifying:'Verificando acceso…',grp_private:'GRUPOS PRIVADOS',grp_desc:'Crea o únete a grupos de amigos, comparte tus pronósticos y compite en el ranking.',grp_requires:'Requiere el paquete de pronósticos',grp_to_access:'para acceder.',grp_coins:'1,000 MONEDAS',grp_full_access:'Acceso completo a Grupos + Pronósticos',grp_recheck:'Ya tengo regalo · Verificar acceso',grp_pay_access:'PAGAR Y ACCEDER',grp_one_time:'Pago único · Acceso a todo el torneo 2026',
     scorers_soon:'Goleadores próximamente',scorers_soon_desc:'La tabla de goleadores estará disponible en una fase posterior del torneo.',
     round_32:'RONDA DE 32',round_16:'OCTAVOS',quarterfinals:'CUARTOS',semifinals:'SEMIFINALES',
     // Goals
@@ -300,6 +301,7 @@ const TRANSLATIONS={
     bracket_title:'KNOCKOUT BRACKET',auto_flags:'Flags update automatically as teams advance',
     champion:'WORLD CHAMPION',
     team_col:'Team',advancing:'ADV',top_2_qualify:'Top 2 qualify to round of 16',
+    grp_verifying:'Verifying access…',grp_private:'PRIVATE GROUPS',grp_desc:'Create or join groups of friends, share your predictions and compete in the ranking.',grp_requires:'Requires the predictions package',grp_to_access:'to access.',grp_coins:'1,000 COINS',grp_full_access:'Full access to Groups + Predictions',grp_recheck:'I already have a gift · Verify access',grp_pay_access:'PAY & ACCESS',grp_one_time:'One-time payment · Access to the entire 2026 tournament',
     scorers_soon:'Scorers coming soon',scorers_soon_desc:'The scorers table will be available in a later stage of the tournament.',
     round_32:'ROUND OF 32',round_16:'ROUND OF 16',quarterfinals:'QUARTERFINALS',semifinals:'SEMIFINALS',
     goals_title:'SCORERS',golden_boot:'Golden Boot Candidates',
@@ -376,6 +378,7 @@ const TRANSLATIONS={
     bracket_title:'CHAVES ELIMINATÓRIAS',auto_flags:'As bandeiras aparecem conforme o torneio avança',
     champion:'CAMPEÃO',
     team_col:'Equipe',advancing:'CLF',top_2_qualify:'Top 2 classificam para oitavas',
+    grp_verifying:'Verificando acesso…',grp_private:'GRUPOS PRIVADOS',grp_desc:'Crie ou entre em grupos de amigos, compartilhe seus palpites e compita no ranking.',grp_requires:'Requer o pacote de palpites',grp_to_access:'para acessar.',grp_coins:'1.000 MOEDAS',grp_full_access:'Acesso completo a Grupos + Palpites',grp_recheck:'Já tenho presente · Verificar acesso',grp_pay_access:'PAGAR E ACESSAR',grp_one_time:'Pagamento único · Acesso a todo o torneio 2026',
     scorers_soon:'Artilheiros em breve',scorers_soon_desc:'A tabela de artilheiros estará disponível em uma fase posterior do torneio.',
     round_32:'RODADA DE 32',round_16:'OITAVAS',quarterfinals:'QUARTAS',semifinals:'SEMIFINAIS',
     goals_title:'ARTILHEIROS',golden_boot:'Candidatos à Chuteira de Ouro da Copa 2026',
@@ -452,6 +455,7 @@ const TRANSLATIONS={
     bracket_title:'淘汰赛对阵',auto_flags:'随着赛事推进自动显示国旗',
     champion:'世界冠军',
     team_col:'球队',advancing:'晋级',top_2_qualify:'前2名晋级16强',
+    grp_verifying:'正在验证访问权限…',grp_private:'私人小组',grp_desc:'创建或加入好友小组，分享你的预测并在排行榜上竞争。',grp_requires:'需要预测套餐',grp_to_access:'才能访问。',grp_coins:'1,000 金币',grp_full_access:'完整访问小组 + 预测',grp_recheck:'我已有礼物 · 验证访问',grp_pay_access:'支付并访问',grp_one_time:'一次性付款 · 访问整个2026赛事',
     scorers_soon:'射手榜即将推出',scorers_soon_desc:'射手榜将在赛事后续阶段公布。',
     round_32:'32强',round_16:'16强',quarterfinals:'四分之一决赛',semifinals:'半决赛',
     goals_title:'射手榜',golden_boot:'2026世界杯金靴奖候选人',
@@ -528,6 +532,7 @@ const TRANSLATIONS={
     bracket_title:'토너먼트 대진표',auto_flags:'경기 진행에 따라 국기가 자동으로 표시됩니다',
     champion:'월드컵 우승팀',
     team_col:'팀',advancing:'진출',top_2_qualify:'상위 2팀이 16강 진출',
+    grp_verifying:'접근 확인 중…',grp_private:'비공개 그룹',grp_desc:'친구 그룹을 만들거나 참여하고, 예측을 공유하며 순위에서 경쟁하세요.',grp_requires:'예측 패키지가 필요합니다',grp_to_access:'이용하려면.',grp_coins:'1,000 코인',grp_full_access:'그룹 + 예측 전체 이용',grp_recheck:'이미 선물 있음 · 접근 확인',grp_pay_access:'결제하고 이용하기',grp_one_time:'일회성 결제 · 2026 대회 전체 이용',
     scorers_soon:'득점왕 곧 공개',scorers_soon_desc:'득점 순위표는 대회 후반 단계에서 제공됩니다.',
     round_32:'32강',round_16:'16강',quarterfinals:'8강',semifinals:'4강',
     goals_title:'득점왕',golden_boot:'2026 월드컵 골든 부트 후보',
@@ -604,6 +609,7 @@ const TRANSLATIONS={
     bracket_title:'TABLEAU ÉLIMINATOIRE',auto_flags:'Les drapeaux se mettent à jour automatiquement',
     champion:'CHAMPION DU MONDE',
     team_col:'Équipe',advancing:'QUAL',top_2_qualify:'Les 2 premiers se qualifient',
+    grp_verifying:'Vérification de l\'accès…',grp_private:'GROUPES PRIVÉS',grp_desc:'Créez ou rejoignez des groupes d\'amis, partagez vos pronostics et affrontez-les au classement.',grp_requires:'Nécessite le pack de pronostics',grp_to_access:'pour accéder.',grp_coins:'1 000 PIÈCES',grp_full_access:'Accès complet aux Groupes + Pronostics',grp_recheck:'J\'ai déjà un cadeau · Vérifier l\'accès',grp_pay_access:'PAYER ET ACCÉDER',grp_one_time:'Paiement unique · Accès à tout le tournoi 2026',
     scorers_soon:'Buteurs à venir',scorers_soon_desc:'Le classement des buteurs sera disponible à une phase ultérieure du tournoi.',
     round_32:'TOUR DE 32',round_16:'HUITIÈMES',quarterfinals:'QUARTS',semifinals:'DEMIS',
     goals_title:'BUTEURS',golden_boot:"Candidats au Soulier d'Or de la Coupe 2026",
@@ -5063,7 +5069,7 @@ function GruposScreen({user,userBets,credito,creditoLoading,onPagar,onRecheckAcc
   if(!credito&&creditoLoading) return(
     <div className="scr fin" style={{display:'flex',alignItems:'center',justifyContent:'center',flexDirection:'column',gap:12}}>
       <div style={{width:32,height:32,border:'3px solid var(--gold)',borderTopColor:'transparent',borderRadius:'50%',animation:'spin .8s linear infinite'}}/>
-      <div style={{fontSize:13,color:'var(--muted)'}}>Verificando acceso…</div>
+      <div style={{fontSize:13,color:'var(--muted)'}}>{t.grp_verifying}</div>
     </div>
   );
   if(!credito&&showPago) return <PagoScreen onExito={()=>{setShowPago(false);onPagar();}} onRecheckAccess={onRecheckAccess} user={user}/>;
@@ -5074,20 +5080,20 @@ function GruposScreen({user,userBets,credito,creditoLoading,onPagar,onRecheckAcc
       background:'radial-gradient(ellipse at 50% 30%,rgba(79,142,247,.1) 0%,transparent 60%)'}}>
       <div style={{fontSize:56,marginBottom:16}}>👥</div>
       <div style={{fontFamily:'var(--ff)',fontSize:28,letterSpacing:2,marginBottom:8}}>
-        GRUPOS PRIVADOS
+        {t.grp_private}
       </div>
       <div style={{fontSize:13,color:'var(--muted)',lineHeight:1.8,marginBottom:24,maxWidth:280}}>
-        Crea o únete a grupos de amigos, comparte tus pronósticos y compite en el ranking.
+        {t.grp_desc}
         <br/><br/>
-        <strong style={{color:'var(--txt)'}}>Requiere el paquete de pronósticos</strong> para acceder.
+        <strong style={{color:'var(--txt)'}}>{t.grp_requires}</strong> {t.grp_to_access}
       </div>
       <div style={{background:'rgba(var(--gold-rgb),.08)',borderRadius:16,
         border:'1px solid rgba(var(--gold-rgb),.25)',padding:'16px 20px',marginBottom:20,width:'100%',maxWidth:300}}>
         <div style={{fontFamily:'var(--ff)',fontSize:22,color:'var(--gold)',marginBottom:4}}>
-          🪙 1,000 MONEDAS
+          🪙 {t.grp_coins}
         </div>
         <div style={{fontSize:12,color:'var(--dim)'}}>
-          Acceso completo a Grupos + Pronósticos
+          {t.grp_full_access}
         </div>
         <div style={{fontSize:24,fontWeight:800,color:'var(--gold)',marginTop:6}}>$30 MXN</div>
       </div>
@@ -5097,15 +5103,15 @@ function GruposScreen({user,userBets,credito,creditoLoading,onPagar,onRecheckAcc
             style={{width:'100%',background:'rgba(79,142,247,.12)',border:'1px solid rgba(79,142,247,.3)',
               color:'var(--acc)',borderRadius:12,padding:'10px',fontSize:12,
               cursor:'pointer',fontFamily:'var(--fb)',fontWeight:700}}>
-            🔍 Ya tengo regalo · Verificar acceso
+            🔍 {t.grp_recheck}
           </button>
         </div>
       )}
       <button className="btn" onClick={()=>setShowPago(true)} style={{maxWidth:300,width:'100%'}}>
-        💳 PAGAR Y ACCEDER
+        💳 {t.grp_pay_access}
       </button>
       <div style={{fontSize:11,color:'var(--muted)',marginTop:12}}>
-        Pago único · Acceso a todo el torneo 2026
+        {t.grp_one_time}
       </div>
     </div>
   );
@@ -6444,7 +6450,7 @@ function ElimScreen({credito,creditoLoading,onPagar,currentUser,onRecheckAccess,
   if(!credito&&creditoLoading) return(
     <div className="scr fin" style={{display:'flex',alignItems:'center',justifyContent:'center',flexDirection:'column',gap:12}}>
       <div style={{width:32,height:32,border:'3px solid var(--gold)',borderTopColor:'transparent',borderRadius:'50%',animation:'spin .8s linear infinite'}}/>
-      <div style={{fontSize:13,color:'var(--muted)'}}>Verificando acceso…</div>
+      <div style={{fontSize:13,color:'var(--muted)'}}>{t.grp_verifying}</div>
     </div>
   );
   if(!credito) return <PagoScreen onExito={onPagar} onRecheckAccess={onRecheckAccess} user={currentUser}/>;
@@ -6731,7 +6737,7 @@ function BetsScreen({bets,placeBet,credito,creditoLoading,onPagar,onReset,betsSa
   if(!credito&&creditoLoading) return(
     <div className="scr fin" style={{display:'flex',alignItems:'center',justifyContent:'center',flexDirection:'column',gap:12}}>
       <div style={{width:32,height:32,border:'3px solid var(--gold)',borderTopColor:'transparent',borderRadius:'50%',animation:'spin .8s linear infinite'}}/>
-      <div style={{fontSize:13,color:'var(--muted)'}}>Verificando acceso…</div>
+      <div style={{fontSize:13,color:'var(--muted)'}}>{t.grp_verifying}</div>
     </div>
   );
   if(!credito) return <PagoScreen onExito={onPagar} onRecheckAccess={onRecheckAccess} user={currentUser} onRecover={onRecover}/>;
