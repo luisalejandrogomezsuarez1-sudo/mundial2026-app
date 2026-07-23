@@ -4017,6 +4017,9 @@ function AdminDialog({dlg,onClose}){
   return null;
 }
 
+// Deriva el número de jornada desde el campo `phase` (ej: 'Apertura · J3' → 3).
+const jornadaDe=m=>{ const mt=(m.phase||'').match(/J(\d+)/); return mt?Number(mt[1]):0; };
+
 // ═══════════════════════════════════════════════════════════════
 // PANTALLA ADMIN — RESULTADOS (Tabla · Goles · Puntos)
 // Solo visible para admin. Mete marcadores y goleadores, y calcula puntos.
@@ -4035,7 +4038,6 @@ function AdminResultados({onClose}){
       .then(d=>{ if(d?.scores) setLigaAdmin(d.scores); })
       .catch(()=>{});
   },[]);
-  const jornadaDe=m=>{ const mt=(m.phase||'').match(/J(\d+)/); return mt?Number(mt[1]):0; };
   const guardarLigaMX=async()=>{
     const d=await post('/api/admin/scores-torneo',{torneoId:'ligamxAp2026',scores:ligaAdmin});
     if(d?.ok) setMsg(`✅ Liga MX guardada (${d.count} partidos)`);
