@@ -3034,7 +3034,24 @@ function CalScreen({torneo}){
     };
     trySub();
     return()=>{ mounted=false; if(typeof unsub==='function') unsub(); };
-  },[torneo.formato]);
+  },[torneo.id]);
+
+  // Marcadores Liga MX (admin) desde live/scores_<id> — mismo estado `scores`
+  useEffect(()=>{
+    if(torneo.formato==='grupos+bracket') return;  // gate inverso: solo torneos no-Mundial
+    const doc='scores_'+torneo.id;                 // genérico: sirve p/ Champions, etc.
+    let unsub, mounted=true, timer;
+    const cached=getCachedLive(doc);
+    if(cached?.scores) setScores(cached.scores);
+    const trySub=()=>{
+      if(!mounted) return;
+      const fn=window._fbSubscribeLive;
+      if(!fn){ timer=setTimeout(trySub,800); return; }
+      try{ unsub=fn(doc,data=>{ setCachedLive(doc,data); if(data?.scores) setScores(data.scores); }); }catch(e){}
+    };
+    trySub();
+    return()=>{ mounted=false; if(timer) clearTimeout(timer); if(typeof unsub==='function') unsub(); };
+  },[torneo.id]);
 
   // Firestore: fixtures (con cache 30min — horarios no cambian frecuentemente)
   useEffect(()=>{
@@ -3055,7 +3072,7 @@ function CalScreen({torneo}){
     };
     trySubscribe();
     return()=>{ mounted=false; if(typeof unsub==='function') unsub(); };
-  },[torneo.formato]);
+  },[torneo.id]);
 
   // Build dynamic date tabs from match dates
   const today=new Date();
