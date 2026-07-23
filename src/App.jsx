@@ -1381,6 +1381,32 @@ const LIGAMX_TABLA=[
   ]}
 ];
 
+// Calcula la tabla general de un torneo de liga desde los marcadores del admin.
+// `teamsBase` son los equipos en cero (p.ej. LIGAMX_TABLA[0].teams) para que todos
+// aparezcan aunque no hayan jugado. Cuenta un partido solo si gh/ga son numéricos
+// reales: el admin los escribe como STRING y deja '' en los no jugados.
+function calcularTablaLiga(partidos, scores, teamsBase){
+  const base = (teamsBase||[]).map(t=>({...t, pj:0,g:0,e:0,p:0,gf:0,gc:0,pts:0}));
+  const idx = new Map(base.map(t=>[t.n, t]));
+  for(const m of (partidos||[])){
+    const s = (scores||{})[m.id];
+    if(!s) continue;
+    // '' y null NO cuentan: Number('')===0 y Number(null)===0 los colarían como 0-0
+    if(s.gh===''||s.ga===''||s.gh==null||s.ga==null) continue;
+    const gh = Number(s.gh), ga = Number(s.ga);
+    if(!Number.isFinite(gh)||!Number.isFinite(ga)) continue;
+    const h = idx.get(m.home), a = idx.get(m.away);
+    if(!h||!a) continue;                       // equipo fuera de la tabla: ignorar
+    h.pj++; a.pj++;
+    h.gf+=gh; h.gc+=ga;
+    a.gf+=ga; a.gc+=gh;
+    if(gh>ga){      h.g++; h.pts+=3; a.p++; }
+    else if(gh<ga){ a.g++; a.pts+=3; h.p++; }
+    else {          h.e++; a.e++; h.pts++; a.pts++; }
+  }
+  return base;
+}
+
 const ESCUDOS={
   'América':'/escudos/america.jpg',
   'Atl. San Luis':'/escudos/san_luis.jpg',
@@ -3397,6 +3423,7 @@ function TablaScreen({torneo}){
   const [groups,setGroups]=useState(GROUPS);
   const [apiLoaded,setApiLoaded]=useState(false);
   const [showName,setShowName]=useState(null); // bandera clicada → muestra nombre del equipo
+  const [ligaScoresTabla,setLigaScoresTabla]=useState({});
 
   // ── Initial bracket — all TBD until tournament plays ──
   const mkSlot=(label,date,venue='')=>({label,date,venue,home:null,away:null,winner:null});
@@ -3474,12 +3501,29 @@ function TablaScreen({torneo}){
     return()=>{ mounted=false; if(typeof u1==='function') u1(); if(typeof u2==='function') u2(); if(typeof u3==='function') u3(); };
   },[]);
 
+  // Marcadores Liga MX (admin) desde live/scores_<id> — alimenta calcularTablaLiga
+  useEffect(()=>{
+    if(torneo.formato==='grupos+bracket') return;  // gate inverso: solo torneos no-Mundial
+    const doc='scores_'+torneo.id;
+    let unsub, mounted=true, timer;
+    const cached=getCachedLive(doc);
+    if(cached?.scores) setLigaScoresTabla(cached.scores);
+    const trySub=()=>{
+      if(!mounted) return;
+      const fn=window._fbSubscribeLive;
+      if(!fn){ timer=setTimeout(trySub,800); return; }
+      try{ unsub=fn(doc,data=>{ setCachedLive(doc,data); if(data?.scores) setLigaScoresTabla(data.scores); }); }catch(e){}
+    };
+    trySub();
+    return()=>{ mounted=false; if(timer) clearTimeout(timer); if(typeof unsub==='function') unsub(); };
+  },[torneo.id]);
+
   const grp=groups[gi]||GROUPS[0];
   const sorted=[...grp.teams].sort((a,b)=>
     b.pts!==a.pts?b.pts-a.pts:(b.gf-b.gc)-(a.gf-a.gc)||b.gf-a.gf);
   const hdrs=['PJ','G','E','P','GF','GC','DG','PTS'];
   if(torneo.formato!=='grupos+bracket'){
-    const ligaTeams=[...(torneo.tabla?.[0]?.teams||[])].sort((a,b)=>
+    const ligaTeams=[...calcularTablaLiga(torneo.partidos||[],ligaScoresTabla,torneo.tabla?.[0]?.teams||[])].sort((a,b)=>
       b.pts!==a.pts?b.pts-a.pts:(b.gf-b.gc)-(a.gf-a.gc)||b.gf-a.gf);
     return(
       <div className="scr fin">
