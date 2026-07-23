@@ -32,6 +32,7 @@ import('./firebase.js').then(fb => {
   window._fbSaveElimBets    = fb.saveElimBetsToFirestore;
   window._fbGetElimBets     = fb.getElimBetsFromFirestore;
   window._fbUpdateCoinsSpent = fb.updateCoinsSpent;
+  window._fbSaveLigaBets = fb.saveLigaBetsToFirestore;
   // Auth nativo (Fase 2)
   window._fbAuthRegister    = fb.authRegister;
   window._fbAuthLogin       = fb.authLogin;
@@ -7619,6 +7620,48 @@ export default function App(){
   //         | {kind:'pending'} | {kind:'failure'}
   const [betsSaved,setBetsSaved]=useState(false); // predictions locked after saving
   const [elimBets,setElimBets]=useState({});
+  // Pronósticos Liga MX — mapa {torneoId:{betId:{id,category,selection,odds,ts}}}
+  const [ligaBets,setLigaBets]=useState({});
+  const saveBetsLiga=(u,lb)=>{
+    if(!u?.id)return;
+    try{localStorage.setItem('wc2026_bets_liga_'+u.id,JSON.stringify(lb));}catch(e){}
+  };
+  const placeBetLiga=(torneoId,bet)=>{
+    if(!torneoId||!bet?.id)return;
+    setLigaBets(prev=>{
+      const next={...prev,[torneoId]:{...(prev[torneoId]||{}),[bet.id]:{...bet,ts:Date.now()}}};
+      saveBetsLiga(user,next);                  // local: inmediato
+      if(window._ligaSaveTimer)clearTimeout(window._ligaSaveTimer);
+      window._ligaSaveTimer=setTimeout(()=>{    // nube: debounce 3s
+        const uid=(window._fbCurrentUid&&window._fbCurrentUid())||user?.uid||user?.id;
+        if(uid&&window._fbSaveLigaBets){try{window._fbSaveLigaBets(uid,next);}catch(e){}}
+      },3000);
+      return next;
+    });
+  };
+  // Merge de pronósticos Liga MX: gana el ts más reciente, bet por bet
+  const mergeLigaBets=(a={},b={})=>{
+    const out={...a};
+    Object.keys(b||{}).forEach(tid=>{
+      const dst={...(out[tid]||{})}, src=b[tid]||{};
+      Object.keys(src).forEach(id=>{
+        const prev=dst[id];
+        if(!prev||Number(src[id]?.ts||0)>Number(prev?.ts||0)) dst[id]=src[id];
+      });
+      out[tid]=dst;
+    });
+    return out;
+  };
+  const hidratarLigaBets=(u,fsUser)=>{
+    try{
+      let local={};
+      try{const raw=localStorage.getItem('wc2026_bets_liga_'+u?.id);
+        if(raw){const p=JSON.parse(raw); if(p&&typeof p==='object'&&!Array.isArray(p)) local=p;}
+      }catch(e){}
+      const nube=(fsUser?.ligaBets&&typeof fsUser.ligaBets==='object'&&!Array.isArray(fsUser.ligaBets))?fsUser.ligaBets:{};
+      setLigaBets(prev=>mergeLigaBets(mergeLigaBets(prev,local),nube));
+    }catch(e){}
+  };
   const [groupSyncMsg,setGroupSyncMsg]=useState(''); // feedback de subida a grupos (Flujo A)
   const [logoutMsg,setLogoutMsg]=useState('');
   // credito = {coins:1000, paquetes:N, paidAt:timestamp} | null
@@ -7762,6 +7805,7 @@ export default function App(){
           let fsUser=await getOne(u.id);
           // Fallback por email solo si no se encontró por ID (multi-dispositivo / migración)
           if(!fsUser && findByEmail && u.email){ fsUser=await findByEmail(u.email); }
+          hidratarLigaBets(u,fsUser);   // pronósticos Liga MX: local + nube
           // ── Regalo: otorgar acceso si Firestore dice gifted:true ──
           if(fsUser?.gifted&&!u.isAdmin){
             const gc=fsUser.giftedCoins||1000;
@@ -7773,7 +7817,7 @@ export default function App(){
           if(fsUser?.forceDelete){
             const allDB=await dbLoad();
             await dbSave(allDB.filter(x=>x.id!==u.id));
-            ['wc2026_bets_','wc2026_saved_','wc2026_groups_','wc2026_session_'].forEach(k=>{
+            ['wc2026_bets_','wc2026_bets_liga_','wc2026_saved_','wc2026_groups_','wc2026_session_'].forEach(k=>{
               try{localStorage.removeItem(k+u.id);}catch(e){}
             });
             logout('Tu cuenta fue eliminada. Puedes registrarte de nuevo con el mismo correo.');
@@ -7819,6 +7863,7 @@ export default function App(){
                 if(byEmail&&(byEmail.gifted||(byEmail.paquetes>0))) fsUser=byEmail;
               }
             }
+            hidratarLigaBets(u,fsUser);   // pronósticos Liga MX: local + nube
             if(fsUser?.gifted){
               const gc=fsUser.giftedCoins||1000;
               setCredito({coins:gc+(fsUser?.paquetes||0)*COINS_PER_PAGO,paquetes:fsUser?.paquetes||1,paidAt:Date.now(),gifted:true,giftedCoins:gc});
@@ -8001,6 +8046,7 @@ export default function App(){
     try{ if(user?.id) localStorage.removeItem('wc2026_session_'+user.id); }catch(e){}
     setUser(null);setScreen('auth');setMatch(null);
     setTab('home');setUserBets([]);setCredito(null);setBetsSaved(false);
+    setLigaBets({});
   };
 
   // Suscripción en tiempo real al doc del usuario: expulsión + regalo de monedas

@@ -313,6 +313,17 @@ export async function saveUserBetsToFirestore(userId, bets, meta={}) {
 }
 
 // ── Quiniela de Eliminatorias ────────────────────────────────────────────────
+export async function saveLigaBetsToFirestore(userId, ligaBets) {
+  if(!userId) return { ok:false };
+  try {
+    await setDoc(doc(db,'users', userId), {
+      ligaBets: ligaBets||{},
+      ligaBetsAt: new Date().toISOString(),
+    }, { merge: true });
+    return { ok:true };
+  } catch(e) { console.warn('saveLigaBets error:', e); return { ok:false, error:e.message }; }
+}
+
 export async function saveElimBetsToFirestore(userId, elimBets, elimSaved=null) {
   if(!userId) return { ok:false };
   try {
