@@ -2229,6 +2229,14 @@ function MatchCard({m,onClick}){
   );
 }
 
+// Escudo de club → bandera → 🏴, con fallback si la imagen falla al cargar
+function TeamCrest({name,size=34,emojiSize=28}){
+  const [failed,setFailed]=useState(false);
+  const src=ESCUDOS[name];
+  if(src&&!failed) return <img src={src} alt={name} onError={()=>setFailed(true)} style={{width:size,height:size,borderRadius:8,objectFit:'cover'}}/>;
+  return <span style={{fontSize:emojiSize}}>{FLAGS[name]||'🏴'}</span>;
+}
+
 // ── Next Match Card ──────────────────────────────
 function NextCard({m,score}){
   const st = score?.status || (score && score.gh!=null && score.ga!=null ? 'finalizado' : 'proximo');
@@ -2248,9 +2256,7 @@ function NextCard({m,score}){
       </div>
       <div style={{padding:'6px 14px 10px',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
         <div style={{flex:1,display:'flex',flexDirection:'column',gap:5}}>
-          {ESCUDOS[homeT]
-            ? <img src={ESCUDOS[homeT]} alt={homeT} style={{width:34,height:34,borderRadius:8,objectFit:'cover'}}/>
-            : <span style={{fontSize:28}}>{FLAGS[homeT]||'🏴'}</span>}
+          <TeamCrest name={homeT}/>
           <span style={{fontWeight:700,fontSize:14}}>{homeT}</span>
         </div>
         <div style={{textAlign:'center',minWidth:82}}>
@@ -2261,9 +2267,7 @@ function NextCard({m,score}){
           <div style={{fontSize:10,color:'var(--muted)'}}>🏟 {m.venue}</div>
         </div>
         <div style={{flex:1,display:'flex',flexDirection:'column',alignItems:'flex-end',gap:5}}>
-          {ESCUDOS[awayT]
-            ? <img src={ESCUDOS[awayT]} alt={awayT} style={{width:34,height:34,borderRadius:8,objectFit:'cover'}}/>
-            : <span style={{fontSize:28}}>{FLAGS[awayT]||'🏴'}</span>}
+          <TeamCrest name={awayT}/>
           <span style={{fontWeight:700,fontSize:14}}>{awayT}</span>
         </div>
       </div>
