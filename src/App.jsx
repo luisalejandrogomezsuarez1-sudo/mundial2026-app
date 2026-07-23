@@ -6805,7 +6805,68 @@ function ElimScreen({credito,creditoLoading,onPagar,currentUser,onRecheckAccess,
 }
 
 // ── Bets Screen ───────────────────────────────────
-function BetsScreen({torneo,bets,placeBet,credito,creditoLoading,onPagar,onReset,betsSaved=false,onSave,onEditPredictions,currentUser,onRecheckAccess,onRecover,elimBets={},setElimBets=()=>{}}){
+// ── Pronósticos Liga MX — 1X2 por jornada ────────
+const ODDS_1X2_DEFAULT=[2.2,3.2,3.0];
+function BetsScreenLiga({torneo,ligaBets,placeBetLiga}){
+  const bets=(ligaBets&&ligaBets[torneo?.id])||{};
+  const partidos=LIGAMX_MATCHES;
+  const jornadas=[...new Set(partidos.map(jornadaDe))].filter(j=>j>0).sort((a,b)=>a-b);
+  const tsDe=m=>{const v=new Date((m.isoDate||'')+'T'+(m.time||'00:00')+':00').getTime();return isNaN(v)?0:v;};
+  const ahora=Date.now();
+  const locked=m=>{const ts=tsDe(m);return ts>0&&ahora>=ts;};
+  const vigente=(()=>{for(const j of jornadas){if(partidos.some(m=>jornadaDe(m)===j&&!locked(m)))return j;}return jornadas[jornadas.length-1]||1;})();
+  const [jSel,setJSel]=useState(vigente);
+  const lista=partidos.filter(m=>jornadaDe(m)===jSel).sort((a,b)=>tsDe(a)-tsDe(b));
+  const hechos=lista.filter(m=>bets['m'+m.id+'-1x2']).length;
+  const pick=(m,sel,idx)=>{
+    if(locked(m))return;
+    placeBetLiga(torneo.id,{id:'m'+m.id+'-1x2',category:'1x2',selection:sel,odds:ODDS_1X2_DEFAULT[idx],ts:Date.now()});
+  };
+  return(
+    <div className="scr">
+      <div style={{padding:'10px 16px 2px',display:'flex',alignItems:'baseline',justifyContent:'space-between'}}>
+        <div style={{fontFamily:'var(--ff)',fontSize:20,color:'var(--gold)'}}>Jornada {jSel}</div>
+        <div style={{fontSize:11,color:'var(--muted)'}}>{hechos}/{lista.length} pronosticados</div>
+      </div>
+      <div style={{display:'flex',gap:8,padding:'4px 16px 10px',overflowX:'auto'}}>
+        {jornadas.map(j=>(
+          <button key={j} className={`tpill ${jSel===j?'on':''}`} onClick={()=>setJSel(j)}>J{j}</button>
+        ))}
+      </div>
+      <div style={{padding:'0 16px 24px'}}>
+        {lista.map(m=>{
+          const bid='m'+m.id+'-1x2', sel=bets[bid]?.selection, lk=locked(m);
+          return(
+            <div key={m.id} style={{background:'rgba(255,255,255,.04)',border:'1px solid rgba(255,255,255,.10)',borderRadius:12,padding:'10px 12px',marginBottom:8,opacity:lk?0.55:1}}>
+              <div style={{display:'flex',justifyContent:'space-between',fontSize:10,color:'var(--muted)',marginBottom:6}}>
+                <span>{m.date} · {m.time}</span>
+                <span>{lk?'🔒 Cerrado':''}</span>
+              </div>
+              <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:8}}>
+                <TeamCrest name={m.home} size={26} emojiSize={20}/>
+                <span style={{flex:1,fontSize:13,fontWeight:700}}>{m.home}</span>
+                <span style={{flex:1,fontSize:13,fontWeight:700,textAlign:'right'}}>{m.away}</span>
+                <TeamCrest name={m.away} size={26} emojiSize={20}/>
+              </div>
+              <div style={{display:'flex',gap:6}}>
+                {['1','X','2'].map((k,i)=>(
+                  <button key={k} disabled={lk} onClick={()=>pick(m,k,i)}
+                    style={{flex:1,padding:'8px 0',borderRadius:8,fontWeight:800,fontSize:13,
+                      border:'1px solid '+(sel===k?'var(--gold)':'rgba(255,255,255,.18)'),
+                      background:sel===k?'var(--gold)':'transparent',
+                      color:sel===k?'#000':'inherit',
+                      cursor:lk?'not-allowed':'pointer'}}>{k}</button>
+                ))}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function BetsScreen({torneo,bets,placeBet,credito,creditoLoading,onPagar,onReset,betsSaved=false,onSave,onEditPredictions,currentUser,onRecheckAccess,onRecover,elimBets={},setElimBets=()=>{},ligaBets={},placeBetLiga=()=>{}}){
   const t=useLang();
   const [tab,setTab]=useState('elim');
   const [exact,setExact]=useState({});
@@ -6813,7 +6874,11 @@ function BetsScreen({torneo,bets,placeBet,credito,creditoLoading,onPagar,onReset
   const [confirmReset,setConfirmReset]=useState(false);
   const [showAddPackage,setShowAddPackage]=useState(false);
 
-  // Liga MX y otros torneos no-Mundial: pronósticos aún no disponibles
+  // Liga MX Apertura: pronósticos 1X2 por jornada (Fase 1)
+  if(torneo && torneo.id==='ligamxAp2026') return(
+    <BetsScreenLiga torneo={torneo} ligaBets={ligaBets} placeBetLiga={placeBetLiga}/>
+  );
+  // Otros torneos no-Mundial (Champions, Euro): pronósticos aún no disponibles
   if(torneo && torneo.formato!=='grupos+bracket') return(
     <div className="scr fin" style={{display:'flex',flexDirection:'column',alignItems:'center',
       justifyContent:'center',padding:'40px 28px',textAlign:'center',minHeight:'60vh'}}>
@@ -8379,6 +8444,7 @@ export default function App(){
           {tab==='tabla'      &&<TablaScreen torneo={TORNEOS[torneoActivo]}/>}
           {tab==='goles'      &&<GolesScreen torneo={TORNEOS[torneoActivo]}/>}
           {tab==='pronostico' &&<BetsScreen torneo={TORNEOS[torneoActivo]} bets={userBets} placeBet={placeBet}
+                                  ligaBets={ligaBets} placeBetLiga={placeBetLiga}
                                   credito={credito} creditoLoading={creditoLoading} onPagar={onPagar} onReset={onReset}
                                   betsSaved={betsSaved}
                                   elimBets={elimBets} setElimBets={setElimBets}
