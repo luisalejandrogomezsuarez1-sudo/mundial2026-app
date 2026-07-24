@@ -4044,7 +4044,12 @@ function AdminResultados({onClose}){
       .catch(()=>{});
   },[]);
   const guardarLigaMX=async()=>{
-    const d=await post('/api/admin/scores-torneo',{torneoId:'ligamxAp2026',scores:ligaAdmin});
+    const okNum=v=>v!==''&&v!=null&&!isNaN(Number(v));
+    const limpio={};
+    Object.entries(ligaAdmin).forEach(([id,s])=>{
+      limpio[id]={...s,gh:okNum(s?.gh)?Number(s.gh):'',ga:okNum(s?.ga)?Number(s.ga):''};
+    });
+    const d=await post('/api/admin/scores-torneo',{torneoId:'ligamxAp2026',scores:limpio});
     if(d?.ok) setMsg(`✅ Liga MX guardada (${d.count} partidos)`);
   };
   const [busy,setBusy]=useState(false);
