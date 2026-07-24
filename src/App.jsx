@@ -6817,6 +6817,7 @@ function BetsScreenLiga({torneo,ligaBets,placeBetLiga}){
   const vigente=(()=>{for(const j of jornadas){if(partidos.some(m=>jornadaDe(m)===j&&!locked(m)))return j;}return jornadas[jornadas.length-1]||1;})();
   const [jSel,setJSel]=useState(vigente);
   const [scores,setScores]=useState({});
+  const tabsRef=useRef(null);
   const numOk=v=>v!==''&&v!=null&&!isNaN(Number(v));
   useEffect(()=>{
     if(!torneo?.id)return;
@@ -6833,6 +6834,17 @@ function BetsScreenLiga({torneo,ligaBets,placeBetLiga}){
     trySub();
     return()=>{mounted=false;if(timer)clearTimeout(timer);if(typeof unsub==='function')unsub();};
   },[torneo?.id]);
+  // Centrar la pastilla de la jornada seleccionada (scroll solo horizontal)
+  useEffect(()=>{
+    const cont=tabsRef.current;
+    if(!cont) return;
+    const el=cont.querySelector(`[data-j="${jSel}"]`);
+    if(!el) return;
+    const cRect=cont.getBoundingClientRect();
+    const eRect=el.getBoundingClientRect();
+    const delta=(eRect.left-cRect.left)-(cont.clientWidth/2)+(el.clientWidth/2);
+    cont.scrollBy({left:delta,behavior:'smooth'});
+  },[jSel]);
   const lista=partidos.filter(m=>jornadaDe(m)===jSel).sort((a,b)=>tsDe(a)-tsDe(b));
   const hechos=lista.filter(m=>bets['m'+m.id+'-1x2']).length;
   const pick=(m,sel,idx)=>{
@@ -6845,9 +6857,9 @@ function BetsScreenLiga({torneo,ligaBets,placeBetLiga}){
         <div style={{fontFamily:'var(--ff)',fontSize:20,color:'var(--gold)'}}>Jornada {jSel}</div>
         <div style={{fontSize:11,color:'var(--muted)'}}>{hechos}/{lista.length} pronosticados</div>
       </div>
-      <div style={{display:'flex',gap:8,padding:'4px 16px 10px',overflowX:'auto'}}>
+      <div ref={tabsRef} style={{display:'flex',gap:8,padding:'4px 16px 10px',overflowX:'auto'}}>
         {jornadas.map(j=>(
-          <button key={j} className={`tpill ${jSel===j?'on':''}`} onClick={()=>setJSel(j)}>J{j}</button>
+          <button key={j} data-j={j} className={`tpill ${jSel===j?'on':''}`} onClick={()=>setJSel(j)}>J{j}</button>
         ))}
       </div>
       <div style={{padding:'0 16px 24px'}}>
