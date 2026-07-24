@@ -5068,7 +5068,7 @@ function PerfilScreen({user,onLogout,lang='es'}){
 }
 
 // ── Groups Screen ─────────────────────────────────
-function GruposScreen({user,userBets,credito,creditoLoading,onPagar,onRecheckAccess}){
+function GruposScreen({user,userBets,credito,creditoLoading,onPagar,onRecheckAccess,torneoId=''}){
   const t=useLang();
   // ── PAYMENT GATE: must pay to access groups ──────────────────
   const [view,setView]=useState('list');
@@ -5732,7 +5732,7 @@ function GruposScreen({user,userBets,credito,creditoLoading,onPagar,onRecheckAcc
 
     const visibleTabs=[
       ['ranking','🏆 Ranking'],
-      ['chat','💬 Chat'],
+      ...(torneoId==='ligamxAp2026'?[]:[['chat','💬 Chat']]),
       ['pronosticos','🔮 Pronósticos'],
       ...(locked?[['todos','👥 Ver Todos'],['reporte','📊 Reporte']]:[['info','ℹ️ Info']]),
     ];
@@ -8529,7 +8529,7 @@ export default function App(){
                                     if(user?.id)localStorage.removeItem('wc2026_saved_'+user.id);
                                   }}
                                   currentUser={user} onRecheckAccess={recheckAccess} onRecover={handleMpRecover}/>}
-          {tab==='grupos'     &&<GruposScreen user={user} userBets={userBets} credito={credito} creditoLoading={creditoLoading} onPagar={onPagar} onRecheckAccess={recheckAccess}/>}
+          {tab==='grupos'     &&<GruposScreen user={user} userBets={userBets} credito={credito} creditoLoading={creditoLoading} onPagar={onPagar} onRecheckAccess={recheckAccess} torneoId={TORNEOS[torneoActivo]?.id}/>}
           {tab==='perfil'     &&<PerfilScreen user={user} onLogout={logout} lang={lang}/>}
           {/* Bottom nav */}
           <div className="bnav">
