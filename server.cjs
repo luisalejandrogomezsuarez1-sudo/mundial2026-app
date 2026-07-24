@@ -1347,6 +1347,67 @@ app.post('/api/admin/scores-torneo', async (req,res)=>{
   }catch(e){ console.warn('admin/scores-torneo error:', e.message); res.status(500).json({error:e.message}); }
 });
 
+// ── Puntos Liga MX ────────────────────────────────────────────
+// Bolsa SEPARADA del Mundial: escribe users/{uid}.ptsLiga, nunca .pts
+// Lee ligaBets[torneoId] (objeto) y live/scores_<torneoId>.
+// Fórmula: 3 × cuota guardada en cada bet. Empate SÍ cuenta.
+app.post('/api/admin/puntos-liga', async (req,res)=>{
+  if(!ADMIN_KEY || req.body.key !== ADMIN_KEY)
+    return res.status(403).json({error:'Forbidden'});
+  if(!db) return res.status(503).json({error:'DB no disponible'});
+  const torneoId = req.body.torneoId;
+  if(!TORNEOS_SCORES_OK.includes(torneoId))
+    return res.status(400).json({error:'torneoId no permitido'});
+  const dryRun = req.body.dryRun === true;
+
+  try{
+    const docId = 'scores_'+torneoId;
+    const scores = liveCache[docId]?.scores
+      || (await db.collection('live').doc(docId).get()).data()?.scores || {};
+    const okNum = v => v!=='' && v!=null && !isNaN(Number(v));
+    // Resultado 1X2 de un partido, o null si no hay marcador válido
+    const res1x2 = (mid)=>{
+      const s = scores[mid];
+      if(!s || s.status!=='finalizado' || !okNum(s.gh) || !okNum(s.ga)) return null;
+      const gh = Number(s.gh), ga = Number(s.ga);
+      return gh>ga ? '1' : (gh<ga ? '2' : 'X');
+    };
+
+    const snap = await db.collection('users').get();
+    const summary = [];
+    let batch = db.batch(), pending = 0, written = 0;
+
+    for(const docSnap of snap.docs){
+      const u = docSnap.data();
+      const lb = u.ligaBets && typeof u.ligaBets==='object' ? (u.ligaBets[torneoId]||{}) : {};
+      if(Object.keys(lb).length===0) continue;
+
+      let pts = 0, hits = 0;
+      for(const b of Object.values(lb)){
+        if(!b || !b.id || b.category!=='1x2') continue;
+        const mid = String(b.id).replace(/^m/,'').replace(/-1x2$/,'');
+        const real = res1x2(mid);
+        if(real==null) continue;
+        if(norm(b.selection)===norm(real)){
+          pts += Math.round(3*(Number(b.odds)||0)*10)/10;
+          hits++;
+        }
+      }
+      pts = Math.round(pts*10)/10;
+      summary.push({ uid: docSnap.id, name: u.name||'', bets: Object.keys(lb).length, hits, pts });
+      if(!dryRun){
+        batch.update(docSnap.ref, { ptsLiga: pts, ptsLigaUpdatedAt: new Date().toISOString() });
+        if(++pending >= 400){ await batch.commit(); written += pending; batch = db.batch(); pending = 0; }
+      }
+    }
+    if(!dryRun && pending>0){ await batch.commit(); written += pending; }
+
+    summary.sort((a,b)=>b.pts-a.pts);
+    res.json({ ok:true, dryRun, torneoId, usuariosConBets: summary.length,
+               escritos: dryRun?0:written, ranking: summary });
+  }catch(e){ console.warn('admin/puntos-liga error:', e.message); res.status(500).json({error:e.message}); }
+});
+
 app.get('/api/live/:docId', async (req,res)=>{
   const { docId } = req.params;
   if(!LIVE_DOCS.includes(docId)) return res.status(404).json({ error:'not found' });
