@@ -6816,6 +6816,23 @@ function BetsScreenLiga({torneo,ligaBets,placeBetLiga}){
   const locked=m=>{const ts=tsDe(m);return ts>0&&ahora>=ts;};
   const vigente=(()=>{for(const j of jornadas){if(partidos.some(m=>jornadaDe(m)===j&&!locked(m)))return j;}return jornadas[jornadas.length-1]||1;})();
   const [jSel,setJSel]=useState(vigente);
+  const [scores,setScores]=useState({});
+  const numOk=v=>v!==''&&v!=null&&!isNaN(Number(v));
+  useEffect(()=>{
+    if(!torneo?.id)return;
+    const docId='scores_'+torneo.id;
+    let unsub,mounted=true,timer;
+    const cached=getCachedLive(docId);
+    if(cached?.scores)setScores(cached.scores);
+    const trySub=()=>{
+      if(!mounted)return;
+      const fn=window._fbSubscribeLive;
+      if(!fn){timer=setTimeout(trySub,800);return;}
+      try{unsub=fn(docId,data=>{setCachedLive(docId,data);if(data?.scores)setScores(data.scores);});}catch(e){}
+    };
+    trySub();
+    return()=>{mounted=false;if(timer)clearTimeout(timer);if(typeof unsub==='function')unsub();};
+  },[torneo?.id]);
   const lista=partidos.filter(m=>jornadaDe(m)===jSel).sort((a,b)=>tsDe(a)-tsDe(b));
   const hechos=lista.filter(m=>bets['m'+m.id+'-1x2']).length;
   const pick=(m,sel,idx)=>{
@@ -6836,6 +6853,7 @@ function BetsScreenLiga({torneo,ligaBets,placeBetLiga}){
       <div style={{padding:'0 16px 24px'}}>
         {lista.map(m=>{
           const bid='m'+m.id+'-1x2', sel=bets[bid]?.selection, lk=locked(m);
+          const sc=scores[m.id], fin=numOk(sc?.gh)&&numOk(sc?.ga);
           return(
             <div key={m.id} style={{background:'rgba(255,255,255,.04)',border:'1px solid rgba(255,255,255,.10)',borderRadius:12,padding:'10px 12px',marginBottom:8,opacity:lk?0.55:1}}>
               <div style={{display:'flex',justifyContent:'space-between',fontSize:10,color:'var(--muted)',marginBottom:6}}>
@@ -6844,8 +6862,9 @@ function BetsScreenLiga({torneo,ligaBets,placeBetLiga}){
               </div>
               <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:8}}>
                 <TeamCrest name={m.home} size={26} emojiSize={20}/>
-                <span style={{flex:1,fontSize:13,fontWeight:700}}>{m.home}</span>
-                <span style={{flex:1,fontSize:13,fontWeight:700,textAlign:'right'}}>{m.away}</span>
+                <span style={{flex:1,minWidth:0,fontSize:13,fontWeight:700}}>{m.home}</span>
+                {fin&&<span style={{fontSize:15,fontWeight:800,color:'var(--gold)',padding:'0 8px',whiteSpace:'nowrap'}}>{Number(sc.gh)} - {Number(sc.ga)}</span>}
+                <span style={{flex:1,minWidth:0,fontSize:13,fontWeight:700,textAlign:'right'}}>{m.away}</span>
                 <TeamCrest name={m.away} size={26} emojiSize={20}/>
               </div>
               <div style={{display:'flex',gap:6}}>
