@@ -6849,13 +6849,14 @@ function BetsScreenLiga({torneo,ligaBets,placeBetLiga}){
                 <TeamCrest name={m.away} size={26} emojiSize={20}/>
               </div>
               <div style={{display:'flex',gap:6}}>
-                {['1','X','2'].map((k,i)=>(
+                {[['1','Local'],['X','Emp'],['2','Visitante']].map(([k,lab],i)=>(
                   <button key={k} disabled={lk} onClick={()=>pick(m,k,i)}
-                    style={{flex:1,padding:'8px 0',borderRadius:8,fontWeight:800,fontSize:13,
+                    style={{flex:1,minWidth:0,padding:'9px 4px',borderRadius:8,textAlign:'center',
+                      fontSize:12,fontWeight:800,whiteSpace:'nowrap',
                       border:'1px solid '+(sel===k?'var(--gold)':'rgba(255,255,255,.18)'),
                       background:sel===k?'var(--gold)':'transparent',
                       color:sel===k?'#000':'inherit',
-                      cursor:lk?'not-allowed':'pointer'}}>{k}</button>
+                      cursor:lk?'not-allowed':'pointer'}}>{lab}</button>
                 ))}
               </div>
             </div>
