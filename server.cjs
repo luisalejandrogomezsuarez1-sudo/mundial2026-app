@@ -1117,56 +1117,6 @@ function basePointsFor(betId){
 }
 function norm(s){ return String(s==null?'':s).trim().toLowerCase(); }
 
-app.post('/api/admin/calcular-puntos', async (req,res)=>{
-  if(!ADMIN_KEY || req.body.key !== ADMIN_KEY)
-    return res.status(403).json({error:'Forbidden'});
-  if(!db) return res.status(503).json({error:'DB no disponible'});
-  const results = req.body.results || {};
-  const dryRun  = req.body.dryRun === true;
-  if(!results || typeof results!=='object' || Array.isArray(results))
-    return res.status(400).json({error:'results debe ser un objeto { betId: seleccionGanadora }'});
-
-  try{
-    const snap = await db.collection('users').get();
-    const summary = [];
-    let batch = db.batch(), pending = 0, written = 0;
-
-    for(const docSnap of snap.docs){
-      const u = docSnap.data();
-      const bets = Array.isArray(u.bets) ? u.bets : [];
-      if(bets.length===0) continue;
-
-      let pts = 0;
-      const hits = [];
-      for(const b of bets){
-        const winner = results[b.id];
-        if(winner==null) continue;                 // ese bet aún no tiene resultado
-        if(norm(b.selection)===norm(winner)){      // ACIERTO
-          const base = basePointsFor(b.id);
-          const odds = Number(b.odds)||0;
-          const gained = Math.round(base*odds*10)/10; // 1 decimal
-          pts += gained;
-          hits.push({id:b.id, sel:b.selection, odds, gained});
-        }
-      }
-      pts = Math.round(pts*10)/10;
-      summary.push({ uid: docSnap.id, name: u.name||'', bets: bets.length, hits: hits.length, pts });
-
-      if(!dryRun){
-        batch.update(docSnap.ref, { pts, ptsUpdatedAt: new Date().toISOString() });
-        if(++pending >= 400){ await batch.commit(); written += pending; batch = db.batch(); pending = 0; }
-      }
-    }
-    if(!dryRun && pending>0){ await batch.commit(); written += pending; }
-
-    summary.sort((a,b)=>b.pts-a.pts);
-    res.json({ ok:true, dryRun, usuariosConBets: summary.length, escritos: dryRun?0:written, ranking: summary });
-  }catch(e){
-    console.warn('calcular-puntos error:', e.message);
-    res.status(500).json({error:e.message});
-  }
-});
-
 // ═══════════════════════════════════════════════════════════════
 // PANEL ADMIN — RESULTADOS MANUALES (tabla · goles · puntos)
 // ═══════════════════════════════════════════════════════════════
