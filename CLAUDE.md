@@ -44,8 +44,8 @@
 
 - La clave de API (`AF_KEY`) vive únicamente en variables de entorno del servidor. El frontend usa el proxy `/api/af/*`.
 - Los datos en vivo (marcadores, clasificación, goleadores, fixtures) fluyen así:
-  `API-Football → server.cjs (polling) → Firestore (colección 'live') → frontend (onSnapshot vía window._fbSubscribeLive)`
-- `window._fbSubscribeLive` es la función para suscribirse a documentos en `live/`. Se expone en el bloque `import('./firebase.js').then(...)`.
+  `API-Football → server.cjs (polling) → Firestore (colección 'live') → GET /api/live/<docId> → frontend (polling HTTP cada 60s vía window._fbSubscribeLive)`
+- `window._fbSubscribeLive` (alias de `subscribeToLiveDoc`, `src/firebase.js` L444) NO usa onSnapshot: hace `fetch('/api/live/<docId>')` una vez al suscribirse y luego cada 60s con `setInterval`. Devuelve un unsubscribe que limpia el intervalo. Se expone en el bloque `import('./firebase.js').then(...)`.
 - No exponer claves ni secrets en `src/` — todo lo que está en el frontend es público.
 
 ## Deploy
