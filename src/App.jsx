@@ -5421,6 +5421,7 @@ function GruposScreen({user,userBets,credito,creditoLoading,onPagar,onRecheckAcc
       col:'var(--gold)',
       // pts y locked vienen del servidor (member real); si no existe, de locks local
       pts: mine?.pts!=null ? mine.pts : 0,
+      ptsLiga: mine?.ptsLiga!=null ? mine.ptsLiga : 0,
       locked: mine?.locked!=null ? !!mine.locked : !!l,
       lockedAt: mine?.lockedAt || l?.lockedAt || null,
       bets:l?(l.bets||[]).map(b=>({id:b.id,cat:b.category,sel:b.selection,odds:b.odds})):[],
@@ -5439,7 +5440,10 @@ function GruposScreen({user,userBets,credito,creditoLoading,onPagar,onRecheckAcc
       if(myName&&m.name&&m.name.toLowerCase().trim()===myName) return false;
       return true;
     });
-    return [...others,ue].sort((a,b)=>(b.pts||0)-(a.pts||0));
+    const esLiga=torneoId==='ligamxAp2026';
+    return [...others,ue]
+      .map(m=>({...m, pts: esLiga ? (m.ptsLiga||0) : (m.pts||0)}))
+      .sort((a,b)=>(b.pts||0)-(a.pts||0));
   };
 
   const BackBtn=({to})=>(
