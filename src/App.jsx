@@ -5739,7 +5739,7 @@ function GruposScreen({user,userBets,credito,creditoLoading,onPagar,onRecheckAcc
       ['ranking','🏆 Ranking'],
       ...(esLiga?[]:[['chat','💬 Chat']]),
       ...(esLiga?[]:[['pronosticos','🔮 Pronósticos']]),
-      ...(locked?[...(esLiga?[]:[['todos','👥 Ver Todos']]),['reporte','📊 Reporte']]:[['info','ℹ️ Info']]),
+      ...(locked?[...(esLiga?[]:[['todos','👥 Ver Todos'],['reporte','📊 Reporte']])]:[['info','ℹ️ Info']]),
     ];
 
     return(
