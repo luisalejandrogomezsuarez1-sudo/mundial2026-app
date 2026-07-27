@@ -5734,11 +5734,12 @@ function GruposScreen({user,userBets,credito,creditoLoading,onPagar,onRecheckAcc
       ['Mejor Goleador 3°','5 pts × cuota'],
     ];
 
+    const esLiga=torneoId==='ligamxAp2026';
     const visibleTabs=[
       ['ranking','🏆 Ranking'],
-      ...(torneoId==='ligamxAp2026'?[]:[['chat','💬 Chat']]),
-      ['pronosticos','🔮 Pronósticos'],
-      ...(locked?[['todos','👥 Ver Todos'],['reporte','📊 Reporte']]:[['info','ℹ️ Info']]),
+      ...(esLiga?[]:[['chat','💬 Chat']]),
+      ...(esLiga?[]:[['pronosticos','🔮 Pronósticos']]),
+      ...(locked?[...(esLiga?[]:[['todos','👥 Ver Todos']]),['reporte','📊 Reporte']]:[['info','ℹ️ Info']]),
     ];
 
     return(
