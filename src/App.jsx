@@ -6271,7 +6271,11 @@ function PagoScreen({onExito,onCancelar,esReset=false,onRecheckAccess,user,onRec
           setLoading(false);
         }
       }catch(e){
-        // El usuario canceló o hubo error; no rompemos nada
+        // AbortError = el usuario canceló el diálogo de Play; no es un fallo real
+        if(e?.name!=='AbortError'){
+          alert('Error Play Billing: '+(e?.message||e?.name||'desconocido'));
+          console.error('[Play Billing] error en handlePagar:',e);
+        }
         setLoading(false);
       }
       return;
