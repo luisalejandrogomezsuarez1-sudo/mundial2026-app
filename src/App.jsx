@@ -830,7 +830,7 @@ body{font-family:var(--fb);background:var(--bg);color:var(--txt);height:100%;ove
 @keyframes pulse{0%,100%{box-shadow:var(--glow)}50%{box-shadow:0 0 32px rgba(var(--gold-rgb),.3)}}
 @keyframes marquee{0%{transform:translateX(100%)}100%{transform:translateX(-100%)}}
 @keyframes elimGlow{0%,100%{box-shadow:0 0 6px rgba(var(--gold-rgb),.5);border-color:rgba(var(--gold-rgb),.6)}50%{box-shadow:0 0 18px rgba(var(--gold-rgb),.95),0 0 28px rgba(var(--gold-rgb),.5);border-color:rgba(var(--gold-rgb),1)}}
-.leader-glow{animation:elimGlow 1.8s ease-in-out infinite}
+.leader-glow{animation:elimGlow 1.8s ease-in-out infinite;border:1px solid rgba(var(--gold-rgb),.6);border-radius:10px}
 .score-live{animation:elimGlow 1.2s ease-in-out infinite;padding:1px 6px;border-radius:8px;color:var(--gold)!important}
 .marquee-wrap{overflow:hidden;white-space:nowrap;background:linear-gradient(90deg,rgba(200,16,46,.12),rgba(var(--gold-rgb),.08));border-top:1px solid rgba(var(--gold-rgb),.2);border-bottom:1px solid rgba(var(--gold-rgb),.2);padding:8px 0;}
 .marquee-text{display:inline-block;padding-left:100%;font-size:14px;font-weight:700;color:var(--gold);animation-name:marquee;animation-timing-function:linear;animation-iteration-count:infinite;}
@@ -5824,7 +5824,7 @@ function GruposScreen({user,userBets,credito,creditoLoading,onPagar,onRecheckAcc
                 const pct=Math.round(((m.pts||0)/topPts)*100);
                 const acc=m.correct!=null&&m.total?Math.round((m.correct/m.total)*100):null;
                 return(
-                <div key={m.id} className={i===0?'leader-glow':''} style={{padding:'10px 16px',borderBottom:'1px solid rgba(255,255,255,.04)',
+                <div key={m.id} className={i===0?'leader-glow':''} style={{padding:'10px 16px',borderBottom:i===0?'none':'1px solid rgba(255,255,255,.04)',
                   background:m.id==='user'?'rgba(var(--gold-rgb),.04)':'transparent'}}>
                   <div style={{display:'flex',alignItems:'center',gap:10}}>
                     {/* Posición */}
@@ -5873,7 +5873,8 @@ function GruposScreen({user,userBets,credito,creditoLoading,onPagar,onRecheckAcc
                 </div>
                 );
               })}
-              {/* Points table */}
+              {/* Points table — solo Mundial, oculto en Liga MX */}
+              {torneoId!=='ligamxAp2026' && (
               <div style={{margin:'14px 16px',background:'var(--surf)',borderRadius:12,
                 padding:14,border:'1px solid var(--br)'}}>
                 <div style={{fontSize:11,fontWeight:700,color:'var(--muted)',marginBottom:9,letterSpacing:.5}}>
@@ -5887,6 +5888,7 @@ function GruposScreen({user,userBets,credito,creditoLoading,onPagar,onRecheckAcc
                   </div>
                 ))}
               </div>
+              )}
             </div>
           )}
 
