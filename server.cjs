@@ -1374,6 +1374,8 @@ app.post('/api/admin/puntos-liga', async (req,res)=>{
     };
 
     const snap = await db.collection('users').get();
+    const ptsByUid = {};    // uid -> ptsLiga
+    const ptsByAlias = {};  // alias (id legacy / email) -> ptsLiga. SIN nombre: los nombres se repiten.
     const summary = [];
     let batch = db.batch(), pending = 0, written = 0;
 
@@ -1394,6 +1396,10 @@ app.post('/api/admin/puntos-liga', async (req,res)=>{
         }
       }
       pts = Math.round(pts*10)/10;
+      ptsByUid[docSnap.id] = pts;
+      // Alias por id legacy y email (NO por nombre: se repiten).
+      if(u.migratedFrom) ptsByAlias['id:'+u.migratedFrom] = pts;
+      if(u.email) ptsByAlias['email:'+String(u.email).toLowerCase().trim()] = pts;
       summary.push({ uid: docSnap.id, name: u.name||'', bets: Object.keys(lb).length, hits, pts });
       if(!dryRun){
         batch.update(docSnap.ref, { ptsLiga: pts, ptsLigaUpdatedAt: new Date().toISOString() });
@@ -1402,9 +1408,42 @@ app.post('/api/admin/puntos-liga', async (req,res)=>{
     }
     if(!dryRun && pending>0){ await batch.commit(); written += pending; }
 
+    // Propagar ptsLiga a los miembros de cada grupo (ranking de grupo en Liga MX)
+    let gruposActualizados = 0, miembrosActualizados = 0;
+    if(!dryRun){
+      const ptsForMember=(m)=>{
+        if(m==null) return null;
+        if(m.id!=null && ptsByUid[m.id]!=null) return ptsByUid[m.id];
+        if(m.id!=null && ptsByAlias['id:'+m.id]!=null) return ptsByAlias['id:'+m.id];
+        if(m.email && ptsByAlias['email:'+String(m.email).toLowerCase().trim()]!=null)
+          return ptsByAlias['email:'+String(m.email).toLowerCase().trim()];
+        return null;
+      };
+      const gsnap = await db.collection('groups').get();
+      let gbatch = db.batch(), gpending = 0;
+      for(const gdoc of gsnap.docs){
+        const g = gdoc.data();
+        if(!Array.isArray(g.members)) continue;
+        let changed = false;
+        const members = g.members.map(m=>{
+          const np = ptsForMember(m);
+          if(np!=null && m.ptsLiga!==np){ changed = true; miembrosActualizados++; return { ...m, ptsLiga: np }; }
+          return m;
+        });
+        if(changed){
+          gbatch.update(gdoc.ref, { members });
+          gruposActualizados++;
+          if(serverGroups[gdoc.id]) serverGroups[gdoc.id].members = members;
+          if(++gpending >= 400){ await gbatch.commit(); gbatch = db.batch(); gpending = 0; }
+        }
+      }
+      if(gpending>0) await gbatch.commit();
+      persistGroups();
+    }
+
     summary.sort((a,b)=>b.pts-a.pts);
     res.json({ ok:true, dryRun, torneoId, usuariosConBets: summary.length,
-               escritos: dryRun?0:written, ranking: summary });
+               escritos: dryRun?0:written, gruposActualizados, miembrosActualizados, ranking: summary });
   }catch(e){ console.warn('admin/puntos-liga error:', e.message); res.status(500).json({error:e.message}); }
 });
 
