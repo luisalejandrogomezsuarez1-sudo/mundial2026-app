@@ -2905,6 +2905,7 @@ function HomeScreen({onMatch,onGoToCal,torneo}){
 
   // Marcadores Liga MX (admin) desde live/scores_<id> — paralelo al del Mundial
   const [ligaScores,setLigaScores]=useState({});
+  const [equipoSel,setEquipoSel]=useState(null);
   useEffect(()=>{
     if(torneo.formato==='grupos+bracket')return;   // gate inverso: solo torneos no-Mundial
     const doc='scores_'+torneo.id;                  // genérico: sirve p/ Champions, etc.
@@ -2952,7 +2953,20 @@ function HomeScreen({onMatch,onGoToCal,torneo}){
         <SponsorBanner/>
         <div style={{padding:'6px 0 4px',fontSize:13,fontWeight:700,color:'var(--muted)',
           textAlign:'center',letterSpacing:.5}}>{t.next_matches}</div>
-        {ligaLista.map(m=><NextCard key={m.id} m={m} score={ligaScores[m.id]||null}/>)}
+        <div style={{padding:'4px 12px 16px'}}>
+          <div style={{display:'grid',gridTemplateColumns:'repeat(3,minmax(0,1fr))',gap:8}}>
+            {Object.keys(ESCUDOS).sort((a,b)=>a.localeCompare(b,'es')).map(nombre=>(
+              <div key={nombre} onClick={()=>setEquipoSel(equipoSel===nombre?null:nombre)}
+                style={{cursor:'pointer',background:equipoSel===nombre?'rgba(var(--gold-rgb),.10)':'rgba(255,255,255,.03)',
+                  border:equipoSel===nombre?'2px solid rgba(var(--gold-rgb),.6)':'1px solid rgba(255,255,255,.08)',
+                  borderRadius:12,padding:'12px 6px',display:'flex',flexDirection:'column',alignItems:'center',gap:7}}>
+                <TeamCrest name={nombre} size={52} emojiSize={40}/>
+                <span style={{fontSize:12,fontWeight:600,color:'var(--txt)',textAlign:'center',lineHeight:1.15,
+                  overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',maxWidth:'100%'}}>{nombre}</span>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     );
   }
