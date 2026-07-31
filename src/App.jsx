@@ -2951,9 +2951,7 @@ function HomeScreen({onMatch,onGoToCal,torneo}){
         </div>
         <CommentMarquee torneo={torneo}/>
         <SponsorBanner/>
-        <div style={{padding:'6px 0 4px',fontSize:13,fontWeight:700,color:'var(--muted)',
-          textAlign:'center',letterSpacing:.5}}>{t.next_matches}</div>
-        <div style={{padding:'4px 12px 16px'}}>
+        <div style={{padding:'10px 12px 16px'}}>
           <div style={{display:'grid',gridTemplateColumns:'repeat(3,minmax(0,1fr))',gap:8}}>
             {Object.keys(ESCUDOS).sort((a,b)=>a.localeCompare(b,'es')).map(nombre=>(
               <div key={nombre} onClick={()=>setEquipoSel(equipoSel===nombre?null:nombre)}
