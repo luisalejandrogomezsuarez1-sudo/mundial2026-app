@@ -2966,6 +2966,19 @@ function HomeScreen({onMatch,onGoToCal,torneo}){
             ))}
           </div>
         </div>
+        {equipoSel && (
+          <div style={{padding:'0 4px 20px'}}>
+            <div style={{display:'flex',alignItems:'center',gap:8,margin:'0 16px 10px'}}>
+              <TeamCrest name={equipoSel} size={30}/>
+              <span style={{fontSize:15,fontWeight:800,color:'var(--txt)'}}>{equipoSel}</span>
+              <span style={{fontSize:11,color:'var(--muted)',marginLeft:'auto'}}>Partidos en el torneo</span>
+            </div>
+            {torneo.partidos
+              .filter(m=>m.home===equipoSel||m.away===equipoSel)
+              .sort((a,b)=>a.isoDate<b.isoDate?-1:a.isoDate>b.isoDate?1:0)
+              .map(m=><NextCard key={m.id} m={m} score={ligaScores[m.id]||null}/>)}
+          </div>
+        )}
       </div>
     );
   }
