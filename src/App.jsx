@@ -2240,8 +2240,9 @@ function TeamCrest({name,size=34,emojiSize=28}){
 
 // ── Next Match Card ──────────────────────────────
 function NextCard({m,score}){
-  const st = score?.status || (score && score.gh!=null && score.ga!=null ? 'finalizado' : 'proximo');
-  const finished = score && score.gh!=null && score.ga!=null;
+  const numOk=v=>v!==''&&v!=null&&!isNaN(Number(v));
+  const finished = numOk(score?.gh) && numOk(score?.ga);
+  const st = score?.status || (finished ? 'finalizado' : 'proximo');
   const homeT = score?.home || m.home;
   const awayT = score?.away || m.away;
   return(
