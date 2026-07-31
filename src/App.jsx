@@ -7688,6 +7688,7 @@ function SelectorTorneos({onPick,onProfile,user}){
           style={{position:'relative',flex:1,borderRadius:16,
             cursor:tl.activo?'pointer':'not-allowed',opacity:tl.activo?1:0.55,
             background:`linear-gradient(180deg, rgba(6,10,24,.15), rgba(6,10,24,.35)), url(${tl.img}) center/cover no-repeat`,
+            border:'1px solid rgba(255,255,255,.25)',boxShadow:'0 0 0 1px rgba(0,0,0,.3)',
             overflow:'hidden'}}>
           {!tl.activo&&<div style={{position:'absolute',top:12,right:14,fontSize:10,fontWeight:700,color:tl.color,letterSpacing:1}}>PRÓXIMAMENTE</div>}
         </div>
