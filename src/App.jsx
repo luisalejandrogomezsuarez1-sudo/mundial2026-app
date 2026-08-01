@@ -2317,19 +2317,27 @@ function EquipoDetalle({nombre,torneo,onBack}){
   const partidos=(torneo?.partidos||[])
     .filter(m=>m.home===nombre||m.away===nombre)
     .sort((a,b)=>a.isoDate<b.isoDate?-1:a.isoDate>b.isoDate?1:0);
+  const tabla=calcularTablaLiga(torneo.partidos||[],ligaScores,torneo.tabla?.[0]?.teams||[]);
+  const fila=tabla.find(t=>t.n===nombre)||{pj:0,g:0,e:0,p:0,gf:0,gc:0,pts:0};
+  const dif=(fila.gf||0)-(fila.gc||0);
+  const stats=[['PJ',fila.pj],['G',fila.g],['E',fila.e],['P',fila.p],['GF',fila.gf],['GC',fila.gc],['DIF',dif>0?'+'+dif:dif],['PTS',fila.pts]];
   return(
     <div style={{height:'100%',display:'flex',flexDirection:'column',background:'var(--bg)'}}>
       <div style={{background:'var(--surf)',borderBottom:'1px solid var(--br)',flexShrink:0}}>
-        <div style={{display:'flex',alignItems:'center',padding:'11px 16px',gap:10}}>
+        <div style={{display:'flex',alignItems:'center',padding:'11px 16px',gap:12}}>
           <button onClick={onBack} style={{background:'rgba(255,255,255,.1)',border:'none',color:'#fff',
-            width:36,height:36,borderRadius:10,cursor:'pointer',fontSize:20,
+            width:36,height:36,borderRadius:10,cursor:'pointer',fontSize:20,flexShrink:0,
             display:'flex',alignItems:'center',justifyContent:'center',transition:'background .15s'}}
             onMouseEnter={e=>e.currentTarget.style.background='rgba(255,255,255,.18)'}
             onMouseLeave={e=>e.currentTarget.style.background='rgba(255,255,255,.1)'}>←</button>
-          <TeamCrest name={nombre} size={30}/>
-          <div style={{flex:1,minWidth:0}}>
-            <div style={{fontFamily:'var(--ff)',fontSize:18,letterSpacing:1,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{nombre}</div>
-            <div style={{fontSize:11,color:'var(--muted)'}}>Partidos en el torneo</div>
+          <TeamCrest name={nombre} size={48}/>
+          <div style={{flex:1,display:'flex',justifyContent:'space-around',gap:2}}>
+            {stats.map(([lb,val])=>(
+              <div key={lb} style={{display:'flex',flexDirection:'column',alignItems:'center',minWidth:0}}>
+                <span style={{fontSize:15,fontWeight:800,color:lb==='PTS'?'var(--gold)':'var(--txt)',lineHeight:1}}>{val}</span>
+                <span style={{fontSize:9,color:'var(--muted)',marginTop:2}}>{lb}</span>
+              </div>
+            ))}
           </div>
         </div>
       </div>
