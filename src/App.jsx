@@ -2880,7 +2880,7 @@ function RadialBracket({ scores }) {
     </div>
   );
 }
-function HomeScreen({onMatch,onGoToCal,torneo}){
+function HomeScreen({onMatch,onGoToCal,onEquipo,torneo}){
   const t=useLang();
   const [ref,setRef]=useState(false);
   const [upd,setUpd]=useState(new Date());
@@ -2997,9 +2997,9 @@ function HomeScreen({onMatch,onGoToCal,torneo}){
         <div style={{padding:'10px 12px 16px'}}>
           <div style={{display:'grid',gridTemplateColumns:'repeat(3,minmax(0,1fr))',gap:8}}>
             {Object.keys(ESCUDOS).sort((a,b)=>a.localeCompare(b,'es')).map(nombre=>(
-              <div key={nombre} onClick={()=>setEquipoSel(equipoSel===nombre?null:nombre)}
-                style={{cursor:'pointer',background:equipoSel===nombre?'rgba(var(--gold-rgb),.10)':'rgba(255,255,255,.03)',
-                  border:equipoSel===nombre?'2px solid rgba(var(--gold-rgb),.6)':'1px solid rgba(255,255,255,.08)',
+              <div key={nombre} onClick={()=>onEquipo&&onEquipo(nombre)}
+                style={{cursor:'pointer',background:'rgba(255,255,255,.03)',
+                  border:'1px solid rgba(255,255,255,.08)',
                   borderRadius:12,padding:'12px 6px',display:'flex',flexDirection:'column',alignItems:'center',gap:7}}>
                 <TeamCrest name={nombre} size={52} emojiSize={40}/>
                 <span style={{fontSize:12,fontWeight:600,color:'var(--txt)',textAlign:'center',lineHeight:1.15,
@@ -3008,19 +3008,6 @@ function HomeScreen({onMatch,onGoToCal,torneo}){
             ))}
           </div>
         </div>
-        {equipoSel && (
-          <div style={{padding:'0 4px 20px'}}>
-            <div style={{display:'flex',alignItems:'center',gap:8,margin:'0 16px 10px'}}>
-              <TeamCrest name={equipoSel} size={30}/>
-              <span style={{fontSize:15,fontWeight:800,color:'var(--txt)'}}>{equipoSel}</span>
-              <span style={{fontSize:11,color:'var(--muted)',marginLeft:'auto'}}>Partidos en el torneo</span>
-            </div>
-            {torneo.partidos
-              .filter(m=>m.home===equipoSel||m.away===equipoSel)
-              .sort((a,b)=>a.isoDate<b.isoDate?-1:a.isoDate>b.isoDate?1:0)
-              .map(m=><NextCard key={m.id} m={m} score={ligaScores[m.id]||null}/>)}
-          </div>
-        )}
       </div>
     );
   }
@@ -8563,7 +8550,7 @@ export default function App(){
               <EquipoDetalle nombre={equipoDetalle} torneo={TORNEOS[torneoActivo]} onBack={()=>setEquipoDetalle(null)}/>
             </div>
           )}
-          {tab==='home'       &&<HomeScreen onMatch={setMatch} onGoToCal={()=>setTab('cal')} torneo={TORNEOS[torneoActivo]}/>}
+          {tab==='home'       &&<HomeScreen onMatch={setMatch} onGoToCal={()=>setTab('cal')} onEquipo={setEquipoDetalle} torneo={TORNEOS[torneoActivo]}/>}
           {tab==='cal'        &&<CalScreen torneo={TORNEOS[torneoActivo]}/>}
           {tab==='tabla'      &&<TablaScreen torneo={TORNEOS[torneoActivo]}/>}
           {tab==='goles'      &&<GolesScreen torneo={TORNEOS[torneoActivo]}/>}
