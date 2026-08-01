@@ -7788,6 +7788,7 @@ export default function App(){
   const t=new Proxy(_fn,{get(_,p){return p in _tr?_tr[p]:_fn[p];}});
   const [tab,setTab]=useState('home');
   const [match,setMatch]=useState(null);
+  const [equipoDetalle,setEquipoDetalle]=useState(null);
   const [userBets,setUserBets]=useState([]);
   // Save bets to localStorage whenever they change (so they survive logout)
   const saveBets=(u,bets)=>{
@@ -8554,6 +8555,12 @@ export default function App(){
           {match&&(
             <div style={{position:'absolute',inset:0,background:'var(--bg)',zIndex:50,display:'flex',flexDirection:'column'}}>
               <MatchDetail m={match} onBack={()=>setMatch(null)}/>
+            </div>
+          )}
+          {/* Equipo detail overlay (Liga MX) */}
+          {equipoDetalle&&(
+            <div style={{position:'absolute',inset:0,background:'var(--bg)',zIndex:50,display:'flex',flexDirection:'column'}}>
+              <EquipoDetalle nombre={equipoDetalle} torneo={TORNEOS[torneoActivo]} onBack={()=>setEquipoDetalle(null)}/>
             </div>
           )}
           {tab==='home'       &&<HomeScreen onMatch={setMatch} onGoToCal={()=>setTab('cal')} torneo={TORNEOS[torneoActivo]}/>}
