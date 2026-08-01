@@ -2298,6 +2298,48 @@ function NextCard({m,score}){
 }
 
 // ── Match Detail ─────────────────────────────────
+function EquipoDetalle({nombre,torneo,onBack}){
+  const [ligaScores,setLigaScores]=useState({});
+  useEffect(()=>{
+    const doc='scores_'+torneo.id;
+    let unsub, mounted=true;
+    const cached=getCachedLive(doc);
+    if(cached?.scores) setLigaScores(cached.scores);
+    const trySub=()=>{
+      if(!mounted) return;
+      const fn=window._fbSubscribeLive;
+      if(!fn){ setTimeout(trySub,800); return; }
+      try{ unsub=fn(doc,data=>{ setCachedLive(doc,data); if(data?.scores) setLigaScores(data.scores); }); }catch(e){}
+    };
+    trySub();
+    return()=>{ mounted=false; if(typeof unsub==='function') unsub(); };
+  },[torneo.id]);
+  const partidos=(torneo?.partidos||[])
+    .filter(m=>m.home===nombre||m.away===nombre)
+    .sort((a,b)=>a.isoDate<b.isoDate?-1:a.isoDate>b.isoDate?1:0);
+  return(
+    <div style={{height:'100%',display:'flex',flexDirection:'column',background:'var(--bg)'}}>
+      <div style={{background:'var(--surf)',borderBottom:'1px solid var(--br)',flexShrink:0}}>
+        <div style={{display:'flex',alignItems:'center',padding:'11px 16px',gap:10}}>
+          <button onClick={onBack} style={{background:'rgba(255,255,255,.1)',border:'none',color:'#fff',
+            width:36,height:36,borderRadius:10,cursor:'pointer',fontSize:20,
+            display:'flex',alignItems:'center',justifyContent:'center',transition:'background .15s'}}
+            onMouseEnter={e=>e.currentTarget.style.background='rgba(255,255,255,.18)'}
+            onMouseLeave={e=>e.currentTarget.style.background='rgba(255,255,255,.1)'}>←</button>
+          <TeamCrest name={nombre} size={30}/>
+          <div style={{flex:1,minWidth:0}}>
+            <div style={{fontFamily:'var(--ff)',fontSize:18,letterSpacing:1,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{nombre}</div>
+            <div style={{fontSize:11,color:'var(--muted)'}}>Partidos en el torneo</div>
+          </div>
+        </div>
+      </div>
+      <div style={{flex:1,overflowY:'auto',paddingTop:12}}>
+        {partidos.map(m=><NextCard key={m.id} m={m} score={ligaScores[m.id]||null}/>)}
+      </div>
+    </div>
+  );
+}
+
 function MatchDetail({m,onBack}){
   const [tab,setTab]=useState('eventos');
   const [lmin,setLmin]=useState(m.min);
