@@ -4198,6 +4198,14 @@ function AdminResultados({onClose}){
   // ── Acción: calcular PUNTOS ──
   // Construye results { betId: seleccionGanadora } desde los marcadores.
   const [ranking,setRanking]=useState(null);
+  const [rankingLiga,setRankingLiga]=useState(null);
+  const calcPuntosLiga=async()=>{
+    const d=await post('/api/admin/puntos-liga',{torneoId:'ligamxAp2026'});
+    if(d?.ok){
+      setRankingLiga(d.ranking||[]);
+      setMsg(`✅ Puntos Liga MX actualizados: ${d.escritos} usuarios, ${d.miembrosActualizados} miembros`);
+    }
+  };
   const buildResults=()=>{
     const res={};
     playable.forEach(m=>{
@@ -4528,6 +4536,31 @@ function AdminResultados({onClose}){
               style={btn(busy?'var(--surf2)':'linear-gradient(135deg,var(--gold),var(--gold2))')}>
               {busy?'Procesando…':'💾 Guardar Liga MX'}
             </button>
+            <div style={{margin:'14px 0 4px',borderTop:'1px solid var(--br)',paddingTop:14}}>
+              <div style={{fontSize:11,color:'var(--muted)',marginBottom:8,letterSpacing:.5}}>
+                Tras guardar los marcadores (con estado FINALIZADO), pulsa para calcular los puntos del ranking.
+              </div>
+              <button disabled={busy} onClick={calcPuntosLiga}
+                style={btn(busy?'var(--surf2)':'linear-gradient(135deg,var(--gold),var(--gold2))')}>
+                {busy?'Procesando…':'🏆 Guardar puntos'}
+              </button>
+            </div>
+            {rankingLiga&&rankingLiga.length>0&&(
+              <div style={{marginTop:12,background:'var(--surf)',border:'1px solid var(--br)',borderRadius:10,overflow:'hidden'}}>
+                <div style={{padding:'8px 12px',fontSize:11,fontWeight:700,color:'var(--muted)',
+                  borderBottom:'1px solid var(--br)',letterSpacing:.5}}>RANKING LIGA MX (top 20)</div>
+                {rankingLiga.slice(0,20).map((r,i)=>(
+                  <div key={r.uid} style={{display:'flex',alignItems:'center',gap:8,padding:'8px 12px',
+                    borderBottom:i<19?'1px solid rgba(255,255,255,.04)':'none'}}>
+                    <span style={{width:22,fontSize:12,color:'var(--muted)',fontWeight:700}}>{i+1}</span>
+                    <span style={{flex:1,fontSize:12,color:'var(--txt)',whiteSpace:'nowrap',
+                      overflow:'hidden',textOverflow:'ellipsis'}}>{r.name||r.uid}</span>
+                    <span style={{fontSize:10,color:'var(--muted)'}}>{r.hits} ac.</span>
+                    <span style={{fontFamily:'var(--ff)',fontSize:15,color:'var(--gold)',minWidth:44,textAlign:'right'}}>{r.pts}</span>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
         <div style={{height:30}}/>
