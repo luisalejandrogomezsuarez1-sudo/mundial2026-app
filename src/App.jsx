@@ -4096,7 +4096,8 @@ function AdminResultados({onClose}){
   const [adminKey,setAdminKey]=useState(()=>{ try{return localStorage.getItem('wc2026_admin_key')||'';}catch{return '';} });
   const [keyGuardada,setKeyGuardada]=useState(()=>{ try{return !!localStorage.getItem('wc2026_admin_key');}catch{return false;} });
   const [keyMsg,setKeyMsg]=useState('');
-  const [sec,setSec]=useState('tabla'); // tabla | goles | puntos
+  const [sec,setSec]=useState('tabla'); // tabla | goles | puntos | llave
+  const [grupo,setGrupo]=useState('ligamx'); // mundial | ligamx
   // ── Captura Liga MX (torneo no-Mundial) ──
   const [ligaAdmin,setLigaAdmin]=useState({});     // { matchId:{gh,ga,status} }
   const [jornadaSel,setJornadaSel]=useState(1);
@@ -4288,9 +4289,21 @@ function AdminResultados({onClose}){
           {keyMsg&&<div style={{fontSize:11,color:'var(--muted)',marginTop:6}}>{keyMsg}</div>}
         </div>
 
-        {/* Tabs de sección */}
+        {/* Nivel 1: Mundial | Liga MX */}
+        <div style={{display:'flex',gap:7,marginBottom:10}}>
+          {[['mundial','🌍 Mundial'],['ligamx','🇲🇽 Liga MX']].map(([k,l])=>(
+            <button key={k} onClick={()=>{setGrupo(k);setMsg('');if(k==='mundial')setSec('tabla');}}
+              style={{flex:1,background:grupo===k?'var(--gold)':'var(--surf)',
+                color:grupo===k?'#000':'var(--muted)',border:`1px solid ${grupo===k?'var(--gold)':'var(--br)'}`,
+                borderRadius:9,padding:'11px 4px',fontSize:13,fontWeight:800,cursor:'pointer',fontFamily:'var(--fb)'}}>
+              {l}
+            </button>
+          ))}
+        </div>
+        {/* Nivel 2: sub-pestañas del Mundial */}
+        {grupo==='mundial'&&(
         <div style={{display:'flex',gap:7,marginBottom:14}}>
-          {[['tabla','📊 Tabla'],['goles','⚽ Goles'],['puntos','🏆 Puntos'],['llave','🏆 Llave'],['ligamx','🇲🇽 Liga MX']].map(([k,l])=>(
+          {[['tabla','📊 Tabla'],['goles','⚽ Goles'],['puntos','🏆 Puntos'],['llave','🏆 Llave']].map(([k,l])=>(
             <button key={k} onClick={()=>{setSec(k);setMsg('');}}
               style={{flex:1,background:sec===k?'var(--gold)':'var(--surf)',
                 color:sec===k?'#000':'var(--muted)',border:`1px solid ${sec===k?'var(--gold)':'var(--br)'}`,
@@ -4299,6 +4312,7 @@ function AdminResultados({onClose}){
             </button>
           ))}
         </div>
+        )}
 
         {msg&&(
           <div style={{background:'var(--surf)',border:'1px solid var(--br)',borderRadius:9,
@@ -4308,7 +4322,7 @@ function AdminResultados({onClose}){
         )}
 
         {/* ── SECCIÓN TABLA ── */}
-        {sec==='tabla'&&(
+        {grupo==='mundial'&&sec==='tabla'&&(
           <div>
             <div style={{fontSize:11,color:'var(--muted)',marginBottom:10,lineHeight:1.5}}>
               Mete el marcador final de cada partido. Deja vacío los no jugados. Luego pulsa <strong>Actualizar Tabla</strong>.
@@ -4351,7 +4365,7 @@ function AdminResultados({onClose}){
         )}
 
         {/* ── SECCIÓN LLAVE (ELIMINATORIAS) ── */}
-        {sec==='llave'&&(
+        {grupo==='mundial'&&sec==='llave'&&(
           <div>
             <div style={{fontSize:11,color:'var(--muted)',marginBottom:10,lineHeight:1.5}}>
               Asigna los equipos de eliminatoria conforme se definan. Elige local y visitante, marca el estado y mete el marcador. Luego pulsa <strong>Actualizar Tabla</strong>.
@@ -4417,7 +4431,7 @@ function AdminResultados({onClose}){
         )}
 
         {/* ── SECCIÓN GOLES ── */}
-        {sec==='goles'&&(
+        {grupo==='mundial'&&sec==='goles'&&(
           <div>
             <div style={{fontSize:11,color:'var(--muted)',marginBottom:10,lineHeight:1.5}}>
               Lista de goleadores con su <strong>total acumulado</strong> de goles. Agrega los que vayan anotando.
@@ -4451,7 +4465,7 @@ function AdminResultados({onClose}){
         )}
 
         {/* ── SECCIÓN PUNTOS ── */}
-        {sec==='puntos'&&(
+        {grupo==='mundial'&&sec==='puntos'&&(
           <div>
             <div style={{fontSize:11,color:'var(--muted)',marginBottom:12,lineHeight:1.5}}>
               Calcula los puntos de todos los usuarios con los marcadores cargados en la pestaña Tabla.
@@ -4486,7 +4500,7 @@ function AdminResultados({onClose}){
           </div>
         )}
 
-        {sec==='ligamx'&&(
+        {grupo==='ligamx'&&(
           <div>
             <div style={{fontSize:11,color:'var(--muted)',marginBottom:10,lineHeight:1.5}}>
               Selecciona la jornada, mete el marcador final y marca <strong>FIN</strong>. Pulsa <strong>Guardar Liga MX</strong>.
