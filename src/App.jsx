@@ -7033,9 +7033,21 @@ function BetsScreen({torneo,bets,placeBet,credito,creditoLoading,onPagar,onReset
   const [showAddPackage,setShowAddPackage]=useState(false);
 
   // Liga MX Apertura: pronósticos 1X2 por jornada (Fase 1)
-  if(torneo && torneo.id==='ligamxAp2026') return(
-    <BetsScreenLiga torneo={torneo} ligaBets={ligaBets} placeBetLiga={placeBetLiga}/>
-  );
+  if(torneo && torneo.id==='ligamxAp2026'){
+    const esAdmin=credito?.isAdmin||currentUser?.isAdmin;
+    // Mientras carga el crédito: spinner (evita flash de pronósticos + fuga), igual que el Mundial
+    if(!credito && creditoLoading && !esAdmin) return(
+      <div className="scr fin" style={{display:'flex',alignItems:'center',justifyContent:'center',flexDirection:'column',gap:12}}>
+        <div style={{width:32,height:32,border:'3px solid var(--gold)',borderTopColor:'transparent',borderRadius:'50%',animation:'spin .8s linear infinite'}}/>
+        <div style={{fontSize:13,color:'var(--muted)'}}>{t.grp_verifying}</div>
+      </div>
+    );
+    // Gate: sin paquete pagado ni regalo (y no admin) → pantalla de pago
+    if(!esAdmin && !(credito?.paquetes>0 || credito?.gifted)){
+      return <PagoScreen onExito={onPagar} onRecheckAccess={onRecheckAccess} user={currentUser}/>;
+    }
+    return <BetsScreenLiga torneo={torneo} ligaBets={ligaBets} placeBetLiga={placeBetLiga}/>;
+  }
   // Otros torneos no-Mundial (Champions, Euro): pronósticos aún no disponibles
   if(torneo && torneo.formato!=='grupos+bracket') return(
     <div className="scr fin" style={{display:'flex',flexDirection:'column',alignItems:'center',
