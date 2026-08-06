@@ -6352,6 +6352,7 @@ function PagoScreen({onExito,onCancelar,esReset=false,onRecheckAccess,user,onRec
           setLoading(false); return;
         }
         const item=details[0];
+        alert('[DIAG3] item='+JSON.stringify({id:item?.itemId,title:item?.title,price:item?.price}));
         const request=new PaymentRequest(
           [{ supportedMethods:'https://play.google.com/billing', data:{ sku:PRODUCT_ID } }],
           { total:{ label:item.title||'1000 monedas',
