@@ -6342,7 +6342,6 @@ function PagoScreen({onExito,onCancelar,esReset=false,onRecheckAccess,user,onRec
 
     // ── Rama TWA: Google Play Billing (la web sigue con MercadoPago) ──
     if(await isTWA()){
-      let _ua='no-medido';
       try{
         const service=await window.getDigitalGoodsService('https://play.google.com/billing');
         const PRODUCT_ID='monedas_1000';
@@ -6352,13 +6351,11 @@ function PagoScreen({onExito,onCancelar,esReset=false,onRecheckAccess,user,onRec
           setLoading(false); return;
         }
         const item=details[0];
-        alert('[DIAG3] item='+JSON.stringify({id:item?.itemId,title:item?.title,price:item?.price}));
         const request=new PaymentRequest(
           [{ supportedMethods:'https://play.google.com/billing', data:{ sku:PRODUCT_ID } }],
           { total:{ label:item.title||'1000 monedas',
                     amount:{ currency:item.price?.currency||'MXN', value:item.price?.value||'30' } } }
         );
-        _ua=navigator.userActivation?navigator.userActivation.isActive:'n/a';
         const response=await request.show();
         const purchaseToken=response.details && response.details.purchaseToken;
         if(!purchaseToken){
@@ -6384,9 +6381,11 @@ function PagoScreen({onExito,onCancelar,esReset=false,onRecheckAccess,user,onRec
           setLoading(false);
         }
       }catch(e){
-        // DIAGNÓSTICO TEMPORAL: mostrar SIEMPRE el error, hasta el AbortError
-        alert('[DIAG] name='+(e?.name||'?')+' | msg='+(e?.message||'?')+' | userActivation='+(typeof _ua!=='undefined'?_ua:'no-llego'));
-        console.error('[Play Billing] error en handlePagar:',e);
+        // AbortError = el usuario canceló el diálogo de Play; no es un fallo real
+        if(e?.name!=='AbortError'){
+          alert('Error Play Billing: '+(e?.message||e?.name||'desconocido'));
+          console.error('[Play Billing] error en handlePagar:',e);
+        }
         setLoading(false);
       }
       return;
