@@ -1360,6 +1360,13 @@ app.post('/api/admin/puntos-liga', async (req,res)=>{
     return res.status(400).json({error:'torneoId no permitido'});
   const dryRun = req.body.dryRun === true;
 
+  // Ids de partidos de J1-J3 (jornadas de prueba, no puntúan)
+  const IDS_NO_PUNTUAN = new Set([
+    1001,1002,1003,1004,1005,1006,1007,1008,1009, // J1
+    1010,1011,1012,1013,1014,1015,1016,1017,1018, // J2
+    1019,1020,1021,1022,1023,1024,1025,1026,1027, // J3
+  ]);
+
   try{
     const docId = 'scores_'+torneoId;
     const scores = liveCache[docId]?.scores
@@ -1388,6 +1395,7 @@ app.post('/api/admin/puntos-liga', async (req,res)=>{
       for(const b of Object.values(lb)){
         if(!b || !b.id || b.category!=='1x2') continue;
         const mid = String(b.id).replace(/^m/,'').replace(/-1x2$/,'');
+        if(IDS_NO_PUNTUAN.has(Number(mid))) continue;  // J1-J3 de prueba: ignorar
         const real = res1x2(mid);
         if(real==null) continue;
         if(norm(b.selection)===norm(real)){
