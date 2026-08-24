@@ -418,6 +418,35 @@ app.post('/api/groups/:code/members', (req,res)=>{
   res.json({ok:true, group:g});
 });
 
+// ── Quitar miembro de un grupo (solo lo saca de members[], NO borra su cuenta) ──
+app.post('/api/groups/:code/remove-member', async (req,res)=>{
+  const code = (req.params.code||'').toUpperCase().trim();
+  const { id } = req.body || {};
+  if(!code || !id) return res.status(400).json({error:'Faltan datos'});
+  // Rehidratar desde Firestore si no está en memoria o es stub sin members
+  if(!serverGroups[code] || !Array.isArray(serverGroups[code].members)){
+    if(db){
+      try{
+        const snap = await db.collection('groups').doc(code).get();
+        if(snap.exists){
+          const g0 = snap.data();
+          if(serverGroups[code]?._msgs) g0._msgs = serverGroups[code]._msgs;
+          serverGroups[code] = g0;
+        }
+      }catch(e){}
+    }
+  }
+  if(!serverGroups[code]) return res.status(404).json({error:'Grupo no encontrado'});
+  const g = serverGroups[code];
+  const before = (g.members||[]).length;
+  g.members = (g.members||[]).filter(m=>m.id!==id);
+  const removed = before - g.members.length;
+  persistGroups();
+  const backupOk = await backupGroupToFirestore(g);
+  console.log(`🗑️  quitado ${id} de ${code} (removed=${removed})`);
+  res.json({ok:true, removed, members:g.members.map(m=>({n:m.name,id:m.id})), backup:backupOk});
+});
+
 // ── Bloquear pronósticos de un miembro (persistir bets) ──────────────────────
 // Paso 1 del ranking: guarda en el servidor (memoria + archivo + Firestore) los
 // pronósticos que el usuario bloquea, para que el resto del grupo pueda verlos.
