@@ -6990,8 +6990,9 @@ function BetsScreenLiga({torneo,ligaBets,placeBetLiga}){
       </div>
       <div style={{padding:'0 16px 24px'}}>
         {lista.map(m=>{
-          const bid='m'+m.id+'-1x2', sel=bets[bid]?.selection, lk=locked(m);
+          const bid='m'+m.id+'-1x2', sel=bets[bid]?.selection;
           const sc=scores[m.id], fin=numOk(sc?.gh)&&numOk(sc?.ga);
+          const lk=locked(m)||fin;
           return(
             <div key={m.id} style={{background:'rgba(255,255,255,.04)',border:'1px solid rgba(255,255,255,.10)',borderRadius:12,padding:'10px 12px',marginBottom:8,opacity:lk?0.55:1}}>
               <div style={{display:'flex',justifyContent:'space-between',fontSize:10,color:'var(--muted)',marginBottom:6}}>
