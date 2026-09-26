@@ -6940,7 +6940,7 @@ function BetsScreenLiga({torneo,ligaBets,placeBetLiga}){
   const tsDe=m=>{const v=new Date((m.isoDate||'')+'T'+(m.time||'00:00')+':00').getTime();return isNaN(v)?0:v;};
   const ahora=Date.now();
   const locked=m=>{const ts=tsDe(m);return ts>0&&ahora>=ts;};
-  const vigente=(()=>{for(const j of jornadas){if(partidos.some(m=>jornadaDe(m)===j&&!locked(m)))return j;}return jornadas[jornadas.length-1]||1;})();
+  const vigente=(()=>{const fut=partidos.filter(m=>{const t=tsDe(m);return t>0&&t>ahora;}).sort((a,b)=>tsDe(a)-tsDe(b));if(fut.length)return jornadaDe(fut[0]);return jornadas[jornadas.length-1]||1;})();
   const [jSel,setJSel]=useState(vigente);
   const [scores,setScores]=useState({});
   const tabsRef=useRef(null);
