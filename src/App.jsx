@@ -4531,7 +4531,7 @@ function AdminResultados({onClose}){
               {LIGAMX_MATCHES.filter(m=>jornadaDe(m)===jornadaSel).map(m=>{
                 const s=ligaAdmin[m.id]||{gh:'',ga:''};
                 return(
-                  <div key={m.id} style={{display:'flex',alignItems:'center',gap:6,
+                  <div key={m.id} style={{display:'flex',flexWrap:'wrap',alignItems:'center',gap:6,
                     background:'var(--surf)',borderRadius:9,padding:'7px 9px',border:'1px solid var(--br)'}}>
                     <div style={{flex:1,minWidth:0,fontSize:11,color:'var(--txt)'}}>
                       <div style={{fontSize:9,color:'var(--muted)'}}>{m.date}</div>
@@ -4554,15 +4554,20 @@ function AdminResultados({onClose}){
                       color:'#fff',fontSize:11,fontWeight:600}}>
                       {(ligaAdmin[m.id]?.status||'proximo')==='en_vivo'?'🔴 EN VIVO':(ligaAdmin[m.id]?.status)==='finalizado'?'✓ FIN':'PRÓXIMO'}
                     </button>
-                    {JORNADAS_VUELTA.has(jornadaSel)&&['H','A'].map(k=>(
-                      <button key={k} onClick={()=>setLigaAdmin({...ligaAdmin,[m.id]:{...ligaAdmin[m.id],avanza:ligaAdmin[m.id]?.avanza===k?'':k}})}
-                        style={{marginLeft:4,padding:'4px 8px',borderRadius:6,cursor:'pointer',fontSize:11,fontWeight:700,
-                          border:'1px solid '+(ligaAdmin[m.id]?.avanza===k?'var(--gold)':'var(--br)'),
-                          background:ligaAdmin[m.id]?.avanza===k?'var(--gold)':'transparent',
-                          color:ligaAdmin[m.id]?.avanza===k?'#000':'var(--muted)'}}>
-                        {k==='H'?'Pasa L':'Pasa V'}
-                      </button>
-                    ))}
+                    {JORNADAS_VUELTA.has(jornadaSel)&&(
+                      <div style={{width:'100%',display:'flex',gap:6,marginTop:4}}>
+                        {[['H',m.home],['A',m.away]].map(([k,lab])=>(
+                          <button key={k} onClick={()=>setLigaAdmin({...ligaAdmin,[m.id]:{...ligaAdmin[m.id],avanza:ligaAdmin[m.id]?.avanza===k?'':k}})}
+                            style={{flex:1,minWidth:0,padding:'5px 6px',borderRadius:6,cursor:'pointer',fontSize:11,fontWeight:700,
+                              whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis',
+                              border:'1px solid '+(ligaAdmin[m.id]?.avanza===k?'var(--gold)':'var(--br)'),
+                              background:ligaAdmin[m.id]?.avanza===k?'var(--gold)':'transparent',
+                              color:ligaAdmin[m.id]?.avanza===k?'#000':'var(--muted)'}}>
+                            Pasa {lab}
+                          </button>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 );
               })}
