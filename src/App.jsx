@@ -3611,15 +3611,15 @@ function TablaScreen({torneo}){
             </div>
             {ligaTeams.map((tm,i)=>{
               const vals=[tm.pj,tm.g,tm.e,tm.p,tm.gf,tm.gc,tm.gf-tm.gc,tm.pts];
-              const zoneBg=i<4?'rgba(30,198,108,.06)':i<10?'rgba(var(--gold-rgb),.035)':'transparent';
-              const dotBg=i<4?'rgba(30,198,108,.9)':i<10?'rgba(var(--gold-rgb),.28)':'rgba(255,255,255,.08)';
+              const zoneBg=i<8?'rgba(30,198,108,.06)':'transparent';
+              const dotBg=i<8?'rgba(30,198,108,.9)':'rgba(255,255,255,.08)';
               return(
                 <div key={tm.n} style={{display:'grid',gridTemplateColumns:'26px 1fr repeat(8,26px)',gap:0,
                   padding:'10px 12px',alignItems:'center',
                   borderTop:'1px solid rgba(255,255,255,.05)',background:zoneBg}}>
                   <div style={{width:20,height:20,borderRadius:'50%',background:dotBg,
                     display:'flex',alignItems:'center',justifyContent:'center',
-                    fontSize:10,fontWeight:800,color:i<4?'#000':'#fff'}}>{i+1}</div>
+                    fontSize:10,fontWeight:800,color:i<8?'#000':'#fff'}}>{i+1}</div>
                   <div style={{fontSize:12,fontWeight:600,color:'var(--txt)',
                     whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis',paddingRight:6}}>{tm.n}</div>
                   {vals.map((v,vi)=><div key={vi} style={{textAlign:'center',fontSize:11,
@@ -3629,8 +3629,7 @@ function TablaScreen({torneo}){
             })}
           </div>
           <div style={{display:'flex',gap:14,justifyContent:'center',padding:'10px 8px 0',fontSize:9,color:'var(--muted)'}}>
-            <span><span style={{color:'rgba(30,198,108,.9)'}}>●</span> Directo (1-4)</span>
-            <span><span style={{color:'rgba(var(--gold-rgb),.7)'}}>●</span> Play-in (5-10)</span>
+            <span><span style={{color:'rgba(30,198,108,.9)'}}>●</span> Liguilla (1-8)</span>
           </div>
         </div>
       </div>
