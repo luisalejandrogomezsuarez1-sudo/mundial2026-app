@@ -1395,6 +1395,8 @@ app.post('/api/admin/puntos-liga', async (req,res)=>{
     1010,1011,1012,1013,1014,1015,1016,1017,1018, // J2
     1019,1020,1021,1022,1023,1024,1025,1026,1027, // J3
   ]);
+  // "¿Quién avanza?" — puntos fijos por id del partido de VUELTA de cada serie
+  const PTS_AVANZA = {1158:5,1159:5,1160:5,1161:5, 1164:7,1165:7, 1167:10};
 
   try{
     const docId = 'scores_'+torneoId;
@@ -1422,6 +1424,14 @@ app.post('/api/admin/puntos-liga', async (req,res)=>{
 
       let pts = 0, hits = 0;
       for(const b of Object.values(lb)){
+        if(b && b.id && b.category==='avanza'){
+          const midA = String(b.id).replace(/^m/,'').replace(/-avanza$/,'');
+          const sA = scores[midA], ptsA = PTS_AVANZA[Number(midA)];
+          if(ptsA && sA && sA.status==='finalizado' && (sA.avanza==='H'||sA.avanza==='A') && b.selection===sA.avanza){
+            pts += ptsA; hits++;
+          }
+          continue;
+        }
         if(!b || !b.id || b.category!=='1x2') continue;
         const mid = String(b.id).replace(/^m/,'').replace(/-1x2$/,'');
         if(IDS_NO_PUNTUAN.has(Number(mid))) continue;  // J1-J3 de prueba: ignorar

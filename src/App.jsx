@@ -4088,6 +4088,7 @@ function AdminDialog({dlg,onClose}){
 // Deriva el número de jornada desde el campo `phase` (ej: 'Apertura · J3' → 3).
 const jornadaDe=m=>{ const mt=(m.phase||'').match(/J(\d+)/); return mt?Number(mt[1]):0; };
 const etiquetaJornada=j=>({18:'4tos Ida',19:'4tos Vta',20:'Semis Ida',21:'Semis Vta',22:'Final Ida',23:'Final Vta'})[j]||('J'+j);
+const JORNADAS_VUELTA=new Set([19,21,23]);   // Cuartos/Semis/Final de vuelta: pick "¿Quién avanza?"
 
 // ═══════════════════════════════════════════════════════════════
 // PANTALLA ADMIN — RESULTADOS (Tabla · Goles · Puntos)
@@ -4543,6 +4544,15 @@ function AdminResultados({onClose}){
                       color:'#fff',fontSize:11,fontWeight:600}}>
                       {(ligaAdmin[m.id]?.status||'proximo')==='en_vivo'?'🔴 EN VIVO':(ligaAdmin[m.id]?.status)==='finalizado'?'✓ FIN':'PRÓXIMO'}
                     </button>
+                    {JORNADAS_VUELTA.has(jornadaSel)&&['H','A'].map(k=>(
+                      <button key={k} onClick={()=>setLigaAdmin({...ligaAdmin,[m.id]:{...ligaAdmin[m.id],avanza:ligaAdmin[m.id]?.avanza===k?'':k}})}
+                        style={{marginLeft:4,padding:'4px 8px',borderRadius:6,cursor:'pointer',fontSize:11,fontWeight:700,
+                          border:'1px solid '+(ligaAdmin[m.id]?.avanza===k?'var(--gold)':'var(--br)'),
+                          background:ligaAdmin[m.id]?.avanza===k?'var(--gold)':'transparent',
+                          color:ligaAdmin[m.id]?.avanza===k?'#000':'var(--muted)'}}>
+                        {k==='H'?'Pasa L':'Pasa V'}
+                      </button>
+                    ))}
                   </div>
                 );
               })}
@@ -7018,6 +7028,25 @@ function BetsScreenLiga({torneo,ligaBets,placeBetLiga}){
                       cursor:lk?'not-allowed':'pointer'}}>{lab}</button>
                 ))}
               </div>
+              {JORNADAS_VUELTA.has(jSel)&&(()=>{
+                const bidA='m'+m.id+'-avanza', selA=bets[bidA]?.selection;
+                return(
+                  <div style={{marginTop:8}}>
+                    <div style={{fontSize:10,color:'var(--muted)',marginBottom:4}}>¿Quién avanza?</div>
+                    <div style={{display:'flex',gap:6}}>
+                      {[['H',m.home],['A',m.away]].map(([k,lab])=>(
+                        <button key={k} disabled={lk} onClick={()=>{if(!lk)placeBetLiga(torneo.id,{id:bidA,category:'avanza',selection:k,odds:1,ts:Date.now()});}}
+                          style={{flex:1,minWidth:0,padding:'8px 4px',borderRadius:8,textAlign:'center',fontSize:12,fontWeight:800,
+                            whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis',
+                            border:'1px solid '+(selA===k?'var(--gold)':'rgba(255,255,255,.18)'),
+                            background:selA===k?'var(--gold)':'transparent',
+                            color:selA===k?'#000':'inherit',
+                            cursor:lk?'not-allowed':'pointer'}}>{lab}</button>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })()}
             </div>
           );
         })}
