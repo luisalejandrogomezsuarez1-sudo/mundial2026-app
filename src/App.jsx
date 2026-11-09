@@ -1390,6 +1390,7 @@ function calcularTablaLiga(partidos, scores, teamsBase){
   const base = (teamsBase||[]).map(t=>({...t, pj:0,g:0,e:0,p:0,gf:0,gc:0,pts:0}));
   const idx = new Map(base.map(t=>[t.n, t]));
   for(const m of (partidos||[])){
+    if((m.phase||'').startsWith('Liguilla')) continue;   // Liguilla no suma a la tabla general
     const s = (scores||{})[m.id];
     if(!s) continue;
     // '' y null NO cuentan: Number('')===0 y Number(null)===0 los colarían como 0-0
@@ -4087,6 +4088,7 @@ function AdminDialog({dlg,onClose}){
 
 // Deriva el número de jornada desde el campo `phase` (ej: 'Apertura · J3' → 3).
 const jornadaDe=m=>{ const mt=(m.phase||'').match(/J(\d+)/); return mt?Number(mt[1]):0; };
+const etiquetaJornada=j=>({18:'4tos Ida',19:'4tos Vta',20:'Semis Ida',21:'Semis Vta',22:'Final Ida',23:'Final Vta'})[j]||('J'+j);
 
 // ═══════════════════════════════════════════════════════════════
 // PANTALLA ADMIN — RESULTADOS (Tabla · Goles · Puntos)
@@ -4506,12 +4508,12 @@ function AdminResultados({onClose}){
               Selecciona la jornada, mete el marcador final y marca <strong>FIN</strong>. Pulsa <strong>Guardar Liga MX</strong>.
             </div>
             <div style={{display:'flex',flexWrap:'wrap',gap:5,marginBottom:12}}>
-              {Array.from({length:17},(_,i)=>i+1).map(j=>(
+              {[...new Set(LIGAMX_MATCHES.map(jornadaDe))].filter(j=>j>0).sort((a,b)=>a-b).map(j=>(
                 <button key={j} onClick={()=>setJornadaSel(j)}
                   style={{background:jornadaSel===j?'var(--gold)':'var(--surf)',
                     color:jornadaSel===j?'#000':'var(--muted)',border:`1px solid ${jornadaSel===j?'var(--gold)':'var(--br)'}`,
                     borderRadius:7,padding:'5px 9px',fontSize:11,fontWeight:700,cursor:'pointer'}}>
-                  J{j}
+                  {etiquetaJornada(j)}
                 </button>
               ))}
             </div>
@@ -6980,12 +6982,12 @@ function BetsScreenLiga({torneo,ligaBets,placeBetLiga}){
   return(
     <div className="scr">
       <div style={{padding:'10px 16px 2px',display:'flex',alignItems:'baseline',justifyContent:'space-between'}}>
-        <div style={{fontFamily:'var(--ff)',fontSize:20,color:'var(--gold)'}}>Jornada {jSel}</div>
+        <div style={{fontFamily:'var(--ff)',fontSize:20,color:'var(--gold)'}}>{jSel>=18?etiquetaJornada(jSel):`Jornada ${jSel}`}</div>
         <div style={{fontSize:11,color:'var(--muted)'}}>{hechos}/{lista.length} pronosticados</div>
       </div>
       <div ref={tabsRef} style={{display:'flex',gap:8,padding:'4px 16px 10px',overflowX:'auto'}}>
         {jornadas.map(j=>(
-          <button key={j} data-j={j} className={`tpill ${jSel===j?'on':''}`} onClick={()=>setJSel(j)}>J{j}</button>
+          <button key={j} data-j={j} className={`tpill ${jSel===j?'on':''}`} onClick={()=>setJSel(j)}>{etiquetaJornada(j)}</button>
         ))}
       </div>
       <div style={{padding:'0 16px 24px'}}>
