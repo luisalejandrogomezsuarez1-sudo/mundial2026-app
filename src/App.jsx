@@ -1357,7 +1357,7 @@ const LIGAMX_MATCHES=[
   {id:1151, home:'Tigres', away:'América', isoDate:'2026-11-21', date:'Nov 21', time:'21:00', phase:'Apertura · J17', venue:'Estadio Universitario', city:'San Nicolás de los Garza'},
   {id:1152, home:'Chivas', away:'Cruz Azul', isoDate:'2026-11-22', date:'Nov 22', time:'17:07', phase:'Apertura · J17', venue:'Estadio Akron', city:'Zapopan, Jalisco'},
   {id:1153, home:'Querétaro', away:'Necaxa', isoDate:'2026-11-22', date:'Nov 22', time:'19:00', phase:'Apertura · J17', venue:'Estadio Corregidora', city:'Querétaro'},
-  // ── Liguilla AP2026 · Cuartos (placeholders "N° lugar": fechas/horas PROVISIONALES, editar al publicarse) ──
+  // ── Liguilla AP2026 · Cuartos (equipos y horarios oficiales) ──
   {id:1154, home:'Pachuca', away:'Chivas', isoDate:'2026-11-26', date:'Nov 26', time:'19:00', phase:'Liguilla · J18 · Cuartos Ida', venue:'Estadio Hidalgo', city:'Pachuca'},
   {id:1155, home:'León', away:'Cruz Azul', isoDate:'2026-11-26', date:'Nov 26', time:'21:10', phase:'Liguilla · J18 · Cuartos Ida', venue:'Estadio León', city:'León'},
   {id:1156, home:'Monterrey', away:'América', isoDate:'2026-11-25', date:'Nov 25', time:'21:10', phase:'Liguilla · J18 · Cuartos Ida', venue:'Estadio BBVA', city:'Guadalupe, N.L.'},
@@ -1366,6 +1366,11 @@ const LIGAMX_MATCHES=[
   {id:1159, home:'Cruz Azul', away:'León', isoDate:'2026-11-29', date:'Nov 29', time:'21:00', phase:'Liguilla · J19 · Cuartos Vta', venue:'Estadio Banorte', city:'CDMX'},
   {id:1160, home:'América', away:'Monterrey', isoDate:'2026-11-28', date:'Nov 28', time:'21:10', phase:'Liguilla · J19 · Cuartos Vta', venue:'Estadio Banorte', city:'CDMX'},
   {id:1161, home:'Atlas', away:'Toluca', isoDate:'2026-11-28', date:'Nov 28', time:'19:00', phase:'Liguilla · J19 · Cuartos Vta', venue:'Estadio Jalisco', city:'Guadalajara'},
+  // ── Liguilla AP2026 · Semis (placeholders "N° sembrado": fechas/horas PROVISIONALES, editar al publicarse) ──
+  {id:1162, home:'4° sembrado', away:'1° sembrado', isoDate:'2026-12-02', date:'Dic 2', time:'19:00', phase:'Liguilla · J20 · Semis Ida', venue:'Por definir', city:'Por definir'},
+  {id:1163, home:'3° sembrado', away:'2° sembrado', isoDate:'2026-12-03', date:'Dic 3', time:'19:00', phase:'Liguilla · J20 · Semis Ida', venue:'Por definir', city:'Por definir'},
+  {id:1164, home:'1° sembrado', away:'4° sembrado', isoDate:'2026-12-06', date:'Dic 6', time:'19:00', phase:'Liguilla · J21 · Semis Vta', venue:'Por definir', city:'Por definir'},
+  {id:1165, home:'2° sembrado', away:'3° sembrado', isoDate:'2026-12-05', date:'Dic 5', time:'19:00', phase:'Liguilla · J21 · Semis Vta', venue:'Por definir', city:'Por definir'},
 ];
 
 const LIGAMX_TABLA=[
