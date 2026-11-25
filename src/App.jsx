@@ -1358,14 +1358,14 @@ const LIGAMX_MATCHES=[
   {id:1152, home:'Chivas', away:'Cruz Azul', isoDate:'2026-11-22', date:'Nov 22', time:'17:07', phase:'Apertura · J17', venue:'Estadio Akron', city:'Zapopan, Jalisco'},
   {id:1153, home:'Querétaro', away:'Necaxa', isoDate:'2026-11-22', date:'Nov 22', time:'19:00', phase:'Apertura · J17', venue:'Estadio Corregidora', city:'Querétaro'},
   // ── Liguilla AP2026 · Cuartos (placeholders "N° lugar": fechas/horas PROVISIONALES, editar al publicarse) ──
-  {id:1154, home:'8° lugar', away:'1° lugar', isoDate:'2026-11-26', date:'Nov 26', time:'21:00', phase:'Liguilla · J18 · Cuartos Ida', venue:'Por definir', city:'Por definir'},
-  {id:1155, home:'7° lugar', away:'2° lugar', isoDate:'2026-11-26', date:'Nov 26', time:'19:00', phase:'Liguilla · J18 · Cuartos Ida', venue:'Por definir', city:'Por definir'},
-  {id:1156, home:'6° lugar', away:'3° lugar', isoDate:'2026-11-25', date:'Nov 25', time:'21:00', phase:'Liguilla · J18 · Cuartos Ida', venue:'Por definir', city:'Por definir'},
-  {id:1157, home:'5° lugar', away:'4° lugar', isoDate:'2026-11-25', date:'Nov 25', time:'19:00', phase:'Liguilla · J18 · Cuartos Ida', venue:'Por definir', city:'Por definir'},
-  {id:1158, home:'1° lugar', away:'8° lugar', isoDate:'2026-11-29', date:'Nov 29', time:'21:00', phase:'Liguilla · J19 · Cuartos Vta', venue:'Por definir', city:'Por definir'},
-  {id:1159, home:'2° lugar', away:'7° lugar', isoDate:'2026-11-29', date:'Nov 29', time:'19:00', phase:'Liguilla · J19 · Cuartos Vta', venue:'Por definir', city:'Por definir'},
-  {id:1160, home:'3° lugar', away:'6° lugar', isoDate:'2026-11-28', date:'Nov 28', time:'21:00', phase:'Liguilla · J19 · Cuartos Vta', venue:'Por definir', city:'Por definir'},
-  {id:1161, home:'4° lugar', away:'5° lugar', isoDate:'2026-11-28', date:'Nov 28', time:'19:00', phase:'Liguilla · J19 · Cuartos Vta', venue:'Por definir', city:'Por definir'},
+  {id:1154, home:'Pachuca', away:'Chivas', isoDate:'2026-11-26', date:'Nov 26', time:'19:00', phase:'Liguilla · J18 · Cuartos Ida', venue:'Estadio Hidalgo', city:'Pachuca'},
+  {id:1155, home:'León', away:'Cruz Azul', isoDate:'2026-11-26', date:'Nov 26', time:'21:10', phase:'Liguilla · J18 · Cuartos Ida', venue:'Estadio León', city:'León'},
+  {id:1156, home:'Monterrey', away:'América', isoDate:'2026-11-25', date:'Nov 25', time:'21:10', phase:'Liguilla · J18 · Cuartos Ida', venue:'Estadio BBVA', city:'Guadalupe, N.L.'},
+  {id:1157, home:'Toluca', away:'Atlas', isoDate:'2026-11-25', date:'Nov 25', time:'19:00', phase:'Liguilla · J18 · Cuartos Ida', venue:'Estadio Nemesio Diez', city:'Toluca'},
+  {id:1158, home:'Chivas', away:'Pachuca', isoDate:'2026-11-29', date:'Nov 29', time:'19:07', phase:'Liguilla · J19 · Cuartos Vta', venue:'Estadio Akron', city:'Zapopan, Jalisco'},
+  {id:1159, home:'Cruz Azul', away:'León', isoDate:'2026-11-29', date:'Nov 29', time:'21:00', phase:'Liguilla · J19 · Cuartos Vta', venue:'Estadio Banorte', city:'CDMX'},
+  {id:1160, home:'América', away:'Monterrey', isoDate:'2026-11-28', date:'Nov 28', time:'21:10', phase:'Liguilla · J19 · Cuartos Vta', venue:'Estadio Banorte', city:'CDMX'},
+  {id:1161, home:'Atlas', away:'Toluca', isoDate:'2026-11-28', date:'Nov 28', time:'19:00', phase:'Liguilla · J19 · Cuartos Vta', venue:'Estadio Jalisco', city:'Guadalajara'},
 ];
 
 const LIGAMX_TABLA=[
