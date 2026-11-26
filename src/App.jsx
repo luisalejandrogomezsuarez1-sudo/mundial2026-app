@@ -2262,9 +2262,9 @@ function NextCard({m,score}){
   const awayT = score?.away || m.away;
   return(
     <div className="ncard" style={{margin:'0 16px 11px',background:'var(--surf)',borderRadius:'var(--r)',border:`1px solid ${finished?'rgba(46,204,113,.3)':'var(--br)'}`,overflow:'hidden'}}>
-      <div style={{padding:'8px 14px 3px',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
-        <span style={{fontSize:11,color:'var(--muted)',fontWeight:600}}>{m.phase} · {m.date}</span>
-        <div style={{display:'flex',gap:6,alignItems:'center'}}>
+      <div style={{padding:'8px 14px 3px',display:'flex',justifyContent:'space-between',alignItems:'center',gap:8}}>
+        <span style={{fontSize:11,color:'var(--muted)',fontWeight:600,minWidth:0,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{m.phase} · {m.date}</span>
+        <div style={{display:'flex',gap:6,alignItems:'center',flexShrink:0,whiteSpace:'nowrap'}}>
           <span style={{fontSize:11,color:'var(--muted)'}}>🕐 {m.time}</span>
           {st==='finalizado' && <span style={{fontSize:10,background:'rgba(46,204,113,.18)',color:'var(--grn)',padding:'2px 8px',borderRadius:20,fontWeight:700,letterSpacing:.5}}>✓ FINALIZADO</span>}
           {st==='en_vivo' && <span style={{fontSize:10,background:'rgba(231,76,60,.18)',color:'#e74c3c',padding:'2px 8px',borderRadius:20,fontWeight:700,letterSpacing:.5}}>🔴 EN VIVO</span>}
