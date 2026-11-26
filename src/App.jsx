@@ -2357,14 +2357,15 @@ function MisResultadosLiga({torneo,ligaBets,uid,onBack}){
       return {id,cat,sel:String(b.selection||'').toUpperCase(),txt:nomSel(m,b.selection,cat),pts:det[id]};
     }).filter(Boolean);
     return {m,j:jornadaDe(m),picks};
-  }).filter(f=>f.picks.length>0);
+  });
   const resumen=lista=>{
     let pts=0,dec=0,ok=0;
     lista.forEach(f=>f.picks.forEach(p=>{ if(p.pts!=null){ dec++; pts+=Number(p.pts)||0; if(Number(p.pts)>0) ok++; } }));
     return {pts:Math.round(pts*10)/10,dec,ok,pct:dec?Math.round(ok*100/dec):0};
   };
-  const jornadas=[...new Set(filas.map(f=>f.j))].sort((a,b)=>a-b);
+  const jornadas=[...new Set(filas.filter(f=>f.picks.length>0).map(f=>f.j))].sort((a,b)=>a-b);
   const tot=resumen(filas);
+  const rH=jBig!=null?resumen(filas.filter(f=>f.j===jBig)):tot;
   const stat=(v,l)=>(
     <div style={{flex:1,textAlign:'center'}}>
       <div style={{fontSize:20,fontWeight:800,color:'var(--txt)'}}>{v}</div>
@@ -2404,9 +2405,9 @@ function MisResultadosLiga({torneo,ligaBets,uid,onBack}){
                   <span style={{flex:1,minWidth:0,textAlign:'right',overflow:'hidden',whiteSpace:'nowrap',textOverflow:'ellipsis'}}>{m.away}</span>
                   <TeamCrest name={m.away} size={20} emojiSize={16}/>
                 </div>
-                {p1&&(
+                {(p1||picks.length===0)&&(
                   <div style={{display:'flex',gap:4,marginTop:5}}>
-                    {pill('Local',p1.sel==='1',est(p1))}{pill('Emp',p1.sel==='X',est(p1))}{pill('Visitante',p1.sel==='2',est(p1))}
+                    {pill('Local',p1?.sel==='1',est(p1))}{pill('Emp',p1?.sel==='X',est(p1))}{pill('Visitante',p1?.sel==='2',est(p1))}
                   </div>
                 )}
                 {pA&&(
@@ -2417,7 +2418,7 @@ function MisResultadosLiga({torneo,ligaBets,uid,onBack}){
                 )}
               </div>
               <div style={{width:38,textAlign:'center',flexShrink:0}}>
-                <div style={{fontSize:16,fontWeight:800,color:!dec?'var(--muted)':hit?'var(--grn)':'#e74c3c'}}>{!dec?'⏳':hit?'✓':'✗'}</div>
+                <div style={{fontSize:16,fontWeight:800,color:!dec?'var(--muted)':hit?'var(--grn)':'#e74c3c'}}>{picks.length===0?'—':!dec?'⏳':hit?'✓':'✗'}</div>
                 {dec&&<div style={{fontSize:11,fontWeight:700,color:hit?'var(--grn)':'#e74c3c'}}>{hit?('+'+ptsM):'0'}</div>}
               </div>
             </div>
@@ -2436,14 +2437,14 @@ function MisResultadosLiga({torneo,ligaBets,uid,onBack}){
           <div style={{fontFamily:'var(--ff)',fontSize:20,letterSpacing:1.5,color:'var(--txt)'}}>{jBig!=null?String(etiquetaJornada(jBig)).toUpperCase():'MIS RESULTADOS'}</div>
         </div>
         <div style={{display:'flex',padding:'4px 16px 12px'}}>
-          {stat(fsU?.ptsLiga!=null?fsU.ptsLiga:tot.pts,'Puntos')}
-          {stat(tot.ok+'/'+tot.dec,'Aciertos')}
-          {stat(tot.pct+'%','Bating')}
+          {stat(jBig!=null?rH.pts:(fsU?.ptsLiga!=null?fsU.ptsLiga:tot.pts),jBig!=null?'Puntos jornada':'Puntos')}
+          {stat(rH.ok+'/'+rH.dec,'Aciertos')}
+          {stat(rH.pct+'%','Bating')}
         </div>
       </div>
       <div style={{flex:1,overflowY:'auto',padding:'12px 12px 20px'}}>
         {cargando&&<div style={{textAlign:'center',color:'var(--muted)',fontSize:13,padding:20}}>Cargando…</div>}
-        {!cargando&&filas.length===0&&<div style={{textAlign:'center',color:'var(--muted)',fontSize:13,padding:20}}>Aún no tienes pronósticos en este torneo.</div>}
+        {!cargando&&jornadas.length===0&&<div style={{textAlign:'center',color:'var(--muted)',fontSize:13,padding:20}}>Aún no tienes pronósticos en este torneo.</div>}
         {!cargando&&jBig!=null&&hoja(jBig)}
         {!cargando&&jBig==null&&jornadas.length>0&&(
           <div>
