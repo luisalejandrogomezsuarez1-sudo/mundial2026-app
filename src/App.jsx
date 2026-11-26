@@ -2428,7 +2428,7 @@ function MisResultadosLiga({torneo,ligaBets,uid,onBack}){
     );
   };
   return(
-    <div style={{height:'100%',display:'flex',flexDirection:'column',background:'var(--bg)'}}>
+    <div style={{height:'100%',display:'flex',flexDirection:'column',background:'transparent'}}>
       <div style={{background:'var(--surf)',borderBottom:'1px solid var(--br)',flexShrink:0}}>
         <div style={{display:'flex',alignItems:'center',padding:'11px 16px',gap:12}}>
           <button onClick={()=>{ if(jBig!=null) setJBig(null); else if(onBack) onBack(); }} style={{background:'rgba(255,255,255,.1)',border:'none',color:'#fff',
@@ -2497,7 +2497,7 @@ function EquipoDetalle({nombre,torneo,onBack}){
   const dif=(fila.gf||0)-(fila.gc||0);
   const stats=[['PJ',fila.pj],['G',fila.g],['E',fila.e],['P',fila.p],['GF',fila.gf],['GC',fila.gc],['DIF',dif>0?'+'+dif:dif],['PTS',fila.pts]];
   return(
-    <div style={{height:'100%',display:'flex',flexDirection:'column',background:'var(--bg)'}}>
+    <div style={{height:'100%',display:'flex',flexDirection:'column',background:'transparent'}}>
       <div style={{background:'var(--surf)',borderBottom:'1px solid var(--br)',flexShrink:0}}>
         <div style={{display:'flex',alignItems:'center',padding:'11px 16px',gap:12}}>
           <button onClick={onBack} style={{background:'rgba(255,255,255,.1)',border:'none',color:'#fff',
@@ -8833,13 +8833,15 @@ export default function App(){
           )}
           {/* Equipo detail overlay (Liga MX) */}
           {equipoDetalle&&(
-            <div style={{position:'absolute',inset:0,background:'var(--bg)',zIndex:50,display:'flex',flexDirection:'column'}}>
+            <div style={{position:'absolute',inset:0,zIndex:50,display:'flex',flexDirection:'column',
+              background:"linear-gradient(180deg,rgba(9,9,26,.82) 0%,rgba(9,9,26,.66) 45%,rgba(6,20,12,.78) 100%), url('/fondo-ligamx.jpg') center top/cover no-repeat, var(--bg)"}}>
               <EquipoDetalle nombre={equipoDetalle} torneo={TORNEOS[torneoActivo]} onBack={()=>setEquipoDetalle(null)}/>
             </div>
           )}
           {/* Mis resultados overlay (Liga MX) */}
           {misResultados&&(
-            <div style={{position:'absolute',inset:0,background:'var(--bg)',zIndex:50,display:'flex',flexDirection:'column'}}>
+            <div style={{position:'absolute',inset:0,zIndex:50,display:'flex',flexDirection:'column',
+              background:"linear-gradient(180deg,rgba(9,9,26,.82) 0%,rgba(9,9,26,.66) 45%,rgba(6,20,12,.78) 100%), url('/fondo-ligamx.jpg') center top/cover no-repeat, var(--bg)"}}>
               <MisResultadosLiga torneo={TORNEOS[torneoActivo]} ligaBets={ligaBets} uid={user?.id} onBack={()=>setMisResultados(false)}/>
             </div>
           )}
