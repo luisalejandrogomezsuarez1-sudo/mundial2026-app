@@ -2318,7 +2318,7 @@ function MisResultadosLiga({torneo,ligaBets,uid,onBack}){
   const [scores,setScores]=useState({});
   const [fsU,setFsU]=useState(null);
   const [cargando,setCargando]=useState(true);
-  const [jSel,setJSel]=useState(null);
+  const [jBig,setJBig]=useState(null);
   useEffect(()=>{
     const doc='scores_'+torneo.id;
     let unsub, mounted=true;
@@ -2354,7 +2354,7 @@ function MisResultadosLiga({torneo,ligaBets,uid,onBack}){
     const picks=['1x2','avanza'].map(cat=>{
       const id='m'+m.id+'-'+cat, b=bets[id];
       if(!b) return null;
-      return {id,cat,txt:nomSel(m,b.selection,cat),pts:det[id]};
+      return {id,cat,sel:String(b.selection||'').toUpperCase(),txt:nomSel(m,b.selection,cat),pts:det[id]};
     }).filter(Boolean);
     return {m,j:jornadaDe(m),picks};
   }).filter(f=>f.picks.length>0);
@@ -2364,76 +2364,102 @@ function MisResultadosLiga({torneo,ligaBets,uid,onBack}){
     return {pts:Math.round(pts*10)/10,dec,ok,pct:dec?Math.round(ok*100/dec):0};
   };
   const jornadas=[...new Set(filas.map(f=>f.j))].sort((a,b)=>a-b);
-  const jUlt=[...jornadas].reverse().find(j=>filas.some(f=>f.j===j&&f.picks.some(p=>p.pts!=null)))||jornadas[jornadas.length-1];
-  const jAct=(jSel!=null&&jornadas.includes(jSel))?jSel:jUlt;
   const tot=resumen(filas);
-  const filasJ=filas.filter(f=>f.j===jAct);
-  const rJ=resumen(filasJ);
   const stat=(v,l)=>(
     <div style={{flex:1,textAlign:'center'}}>
       <div style={{fontSize:20,fontWeight:800,color:'var(--txt)'}}>{v}</div>
       <div style={{fontSize:10,color:'var(--muted)',marginTop:2}}>{l}</div>
     </div>
   );
+  const pill=(t,on,est)=>(
+    <div style={{flex:1,minWidth:0,textAlign:'center',padding:'3px 0',borderRadius:8,fontSize:11,fontWeight:700,
+      overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',
+      border:'1px solid '+(on?(est==='ok'?'var(--grn)':est==='mal'?'#e74c3c':'var(--acc)'):'var(--br)'),
+      background:on?(est==='ok'?'rgba(46,204,113,.18)':est==='mal'?'rgba(231,76,60,.18)':'rgba(79,142,247,.15)'):'transparent',
+      color:on?'#fff':'var(--muted)'}}>{t}</div>
+  );
+  // Plantilla de una jornada (se usa en miniatura y en grande)
+  const hoja=j=>{
+    const fj=filas.filter(f=>f.j===j), r=resumen(fj);
+    return(
+      <div>
+        <div style={{display:'flex',justifyContent:'space-between',fontSize:12,fontWeight:700,marginBottom:6,color:'var(--txt)'}}>
+          <span>{etiquetaJornada(j)}</span>
+          <span style={{color:'var(--grn)'}}>{r.pts} pts · {r.ok}/{r.dec}</span>
+        </div>
+        {fj.map(({m,picks})=>{
+          const s=scores[m.id], fin=!!(s&&s.status==='finalizado');
+          const p1=picks.find(p=>p.cat==='1x2'), pA=picks.find(p=>p.cat==='avanza');
+          const est=p=>(!p||p.pts==null)?'pend':(Number(p.pts)>0?'ok':'mal');
+          const dec=picks.some(p=>p.pts!=null);
+          const hit=picks.some(p=>est(p)==='ok');
+          const ptsM=Math.round(picks.reduce((a,p)=>a+(Number(p.pts)||0),0)*10)/10;
+          return(
+            <div key={m.id} style={{display:'flex',gap:6,alignItems:'center',background:'var(--surf)',border:'1px solid var(--br)',borderRadius:10,padding:'6px 8px',marginBottom:6}}>
+              <div style={{flex:1,minWidth:0}}>
+                <div style={{display:'flex',alignItems:'center',gap:5,fontSize:12,fontWeight:700,color:'var(--txt)'}}>
+                  <TeamCrest name={m.home} size={20} emojiSize={16}/>
+                  <span style={{flex:1,minWidth:0,overflow:'hidden',whiteSpace:'nowrap',textOverflow:'ellipsis'}}>{m.home}</span>
+                  <span style={{flexShrink:0,color:fin?'var(--grn)':'var(--muted)'}}>{fin?(s.gh+' - '+s.ga):'vs'}</span>
+                  <span style={{flex:1,minWidth:0,textAlign:'right',overflow:'hidden',whiteSpace:'nowrap',textOverflow:'ellipsis'}}>{m.away}</span>
+                  <TeamCrest name={m.away} size={20} emojiSize={16}/>
+                </div>
+                {p1&&(
+                  <div style={{display:'flex',gap:4,marginTop:5}}>
+                    {pill('Local',p1.sel==='1',est(p1))}{pill('Emp',p1.sel==='X',est(p1))}{pill('Visitante',p1.sel==='2',est(p1))}
+                  </div>
+                )}
+                {pA&&(
+                  <div style={{display:'flex',gap:4,marginTop:4,alignItems:'center'}}>
+                    <span style={{fontSize:10,color:'var(--muted)',flexShrink:0}}>Pasa:</span>
+                    {pill(m.home,pA.sel==='H',est(pA))}{pill(m.away,pA.sel==='A',est(pA))}
+                  </div>
+                )}
+              </div>
+              <div style={{width:38,textAlign:'center',flexShrink:0}}>
+                <div style={{fontSize:16,fontWeight:800,color:!dec?'var(--muted)':hit?'var(--grn)':'#e74c3c'}}>{!dec?'⏳':hit?'✓':'✗'}</div>
+                {dec&&<div style={{fontSize:11,fontWeight:700,color:hit?'var(--grn)':'#e74c3c'}}>{hit?('+'+ptsM):'0'}</div>}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
   return(
     <div style={{height:'100%',display:'flex',flexDirection:'column',background:'var(--bg)'}}>
       <div style={{background:'var(--surf)',borderBottom:'1px solid var(--br)',flexShrink:0}}>
         <div style={{display:'flex',alignItems:'center',padding:'11px 16px',gap:12}}>
-          <button onClick={onBack} style={{background:'rgba(255,255,255,.1)',border:'none',color:'#fff',
+          <button onClick={()=>{ if(jBig!=null) setJBig(null); else if(onBack) onBack(); }} style={{background:'rgba(255,255,255,.1)',border:'none',color:'#fff',
             width:36,height:36,borderRadius:10,cursor:'pointer',fontSize:20,flexShrink:0,
             display:'flex',alignItems:'center',justifyContent:'center'}}>←</button>
-          <div style={{fontFamily:'var(--ff)',fontSize:20,letterSpacing:1.5,color:'var(--txt)'}}>MIS RESULTADOS</div>
+          <div style={{fontFamily:'var(--ff)',fontSize:20,letterSpacing:1.5,color:'var(--txt)'}}>{jBig!=null?String(etiquetaJornada(jBig)).toUpperCase():'MIS RESULTADOS'}</div>
         </div>
         <div style={{display:'flex',padding:'4px 16px 12px'}}>
           {stat(fsU?.ptsLiga!=null?fsU.ptsLiga:tot.pts,'Puntos')}
           {stat(tot.ok+'/'+tot.dec,'Aciertos')}
-          {stat(tot.pct+'%','Bateo')}
+          {stat(tot.pct+'%','Bating')}
         </div>
-        {jornadas.length>0&&(
-          <div style={{display:'flex',gap:8,overflowX:'auto',padding:'0 16px 12px'}}>
-            {jornadas.map(j=>(
-              <button key={j} onClick={()=>setJSel(j)} style={{flexShrink:0,padding:'6px 14px',borderRadius:20,fontSize:12,fontWeight:700,cursor:'pointer',
-                border:'1px solid '+(j===jAct?'var(--grn)':'var(--br)'),
-                background:j===jAct?'rgba(46,204,113,.15)':'transparent',
-                color:j===jAct?'var(--grn)':'var(--txt)'}}>{etiquetaJornada(j)}</button>
-            ))}
-          </div>
-        )}
       </div>
-      <div style={{flex:1,overflowY:'auto',padding:'12px 0 20px'}}>
+      <div style={{flex:1,overflowY:'auto',padding:'12px 12px 20px'}}>
         {cargando&&<div style={{textAlign:'center',color:'var(--muted)',fontSize:13,padding:20}}>Cargando…</div>}
         {!cargando&&filas.length===0&&<div style={{textAlign:'center',color:'var(--muted)',fontSize:13,padding:20}}>Aún no tienes pronósticos en este torneo.</div>}
-        {!cargando&&filasJ.length>0&&(
-          <div style={{margin:'0 16px 10px',fontSize:12,color:'var(--muted)',display:'flex',justifyContent:'space-between',gap:8}}>
-            <span>{etiquetaJornada(jAct)} · {rJ.pts} pts</span>
-            <span>{rJ.ok}/{rJ.dec} aciertos · {rJ.pct}%</span>
+        {!cargando&&jBig!=null&&hoja(jBig)}
+        {!cargando&&jBig==null&&jornadas.length>0&&(
+          <div>
+            <div style={{display:'grid',gridTemplateColumns:'repeat(3,minmax(0,1fr))',gap:8}}>
+              {jornadas.map(j=>(
+                <div key={j} onClick={()=>setJBig(j)} style={{cursor:'pointer',height:150,overflow:'hidden',borderRadius:10,
+                  border:'1px solid var(--br)',background:'var(--bg)',position:'relative'}}>
+                  <div style={{width:'322.6%',transform:'scale(.31)',transformOrigin:'top left',padding:8,pointerEvents:'none'}}>{hoja(j)}</div>
+                  <div style={{position:'absolute',left:0,right:0,bottom:0,padding:'4px 6px',background:'var(--surf)',
+                    fontSize:11,fontWeight:700,textAlign:'center',color:'var(--txt)'}}>{etiquetaJornada(j)}</div>
+                </div>
+              ))}
+            </div>
+            <div style={{fontSize:11,color:'var(--muted)',textAlign:'center',marginTop:10}}>Toca una jornada para verla en grande</div>
           </div>
         )}
-        {!cargando&&filasJ.map(({m,picks})=>{
-          const s=scores[m.id];
-          const fin=!!(s&&s.status==='finalizado');
-          return(
-            <div key={m.id} style={{margin:'0 16px 10px',background:'var(--surf)',border:'1px solid var(--br)',borderRadius:'var(--r)',padding:'10px 14px'}}>
-              <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:8,fontSize:13,fontWeight:700,color:'var(--txt)'}}>
-                <span style={{minWidth:0,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{m.home} vs {m.away}</span>
-                <span style={{flexShrink:0,color:fin?'var(--txt)':'var(--muted)'}}>{fin?(s.gh+' - '+s.ga):m.date}</span>
-              </div>
-              {picks.map(p=>{
-                const ok=p.pts!=null&&Number(p.pts)>0, mal=p.pts!=null&&!ok;
-                return(
-                  <div key={p.id} style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:8,marginTop:8,fontSize:12}}>
-                    <span style={{color:'var(--muted)',minWidth:0,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>
-                      {p.cat==='avanza'?'¿Quién avanza?':'Resultado'}: <b style={{color:'var(--txt)'}}>{p.txt}</b>
-                    </span>
-                    <span style={{flexShrink:0,fontWeight:700,color:ok?'var(--grn)':mal?'#e74c3c':'var(--muted)'}}>
-                      {ok?('✓ +'+p.pts):mal?'✗ 0':(fin?'⏳ Por calcular':'Pendiente')}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-          );
-        })}
       </div>
     </div>
   );
