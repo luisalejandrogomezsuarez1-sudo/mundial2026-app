@@ -1423,12 +1423,14 @@ app.post('/api/admin/puntos-liga', async (req,res)=>{
       if(Object.keys(lb).length===0) continue;
 
       let pts = 0, hits = 0;
+      const det = {};  // detalle por bet en partidos decididos: { 'm1157-1x2': 4.2, 'm1158-avanza': 0, ... }
       for(const b of Object.values(lb)){
         if(b && b.id && b.category==='avanza'){
           const midA = String(b.id).replace(/^m/,'').replace(/-avanza$/,'');
           const sA = scores[midA], ptsA = PTS_AVANZA[Number(midA)];
-          if(ptsA && sA && sA.status==='finalizado' && (sA.avanza==='H'||sA.avanza==='A') && b.selection===sA.avanza){
-            pts += ptsA; hits++;
+          if(ptsA && sA && sA.status==='finalizado' && (sA.avanza==='H'||sA.avanza==='A')){
+            if(b.selection===sA.avanza){ pts += ptsA; hits++; det[b.id] = ptsA; }
+            else det[b.id] = 0;
           }
           continue;
         }
@@ -1438,9 +1440,9 @@ app.post('/api/admin/puntos-liga', async (req,res)=>{
         const real = res1x2(mid);
         if(real==null) continue;
         if(norm(b.selection)===norm(real)){
-          pts += Math.round(3*(Number(b.odds)||0)*10)/10;
-          hits++;
-        }
+          const p = Math.round(3*(Number(b.odds)||0)*10)/10;
+          pts += p; hits++; det[b.id] = p;
+        } else det[b.id] = 0;
       }
       pts = Math.round(pts*10)/10;
       ptsByUid[docSnap.id] = pts;
@@ -1449,7 +1451,7 @@ app.post('/api/admin/puntos-liga', async (req,res)=>{
       if(u.email) ptsByAlias['email:'+String(u.email).toLowerCase().trim()] = pts;
       summary.push({ uid: docSnap.id, name: u.name||'', bets: Object.keys(lb).length, hits, pts });
       if(!dryRun){
-        batch.update(docSnap.ref, { ptsLiga: pts, ptsLigaUpdatedAt: new Date().toISOString() });
+        batch.update(docSnap.ref, { ptsLiga: pts, ptsLigaDetalle: det, ptsLigaUpdatedAt: new Date().toISOString() });
         if(++pending >= 400){ await batch.commit(); written += pending; batch = db.batch(); pending = 0; }
       }
     }

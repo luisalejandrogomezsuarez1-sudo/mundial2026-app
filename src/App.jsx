@@ -2313,6 +2313,132 @@ function NextCard({m,score}){
 }
 
 // ── Match Detail ─────────────────────────────────
+// ── Mis resultados Liga MX: picks por jornada + puntos del servidor (users/{uid}.ptsLigaDetalle) ──
+function MisResultadosLiga({torneo,ligaBets,uid,onBack}){
+  const [scores,setScores]=useState({});
+  const [fsU,setFsU]=useState(null);
+  const [cargando,setCargando]=useState(true);
+  const [jSel,setJSel]=useState(null);
+  useEffect(()=>{
+    const doc='scores_'+torneo.id;
+    let unsub, mounted=true;
+    const cached=getCachedLive(doc);
+    if(cached?.scores) setScores(cached.scores);
+    const trySub=()=>{
+      if(!mounted) return;
+      const fn=window._fbSubscribeLive;
+      if(!fn){ setTimeout(trySub,800); return; }
+      try{ unsub=fn(doc,data=>{ setCachedLive(doc,data); if(data?.scores) setScores(data.scores); }); }catch(e){}
+    };
+    trySub();
+    return()=>{ mounted=false; if(typeof unsub==='function') unsub(); };
+  },[torneo.id]);
+  useEffect(()=>{
+    let vivo=true;
+    const id=(window._fbCurrentUid&&window._fbCurrentUid())||uid;
+    const fn=window._fbGetUser;
+    if(!id||!fn){ setCargando(false); return; }
+    fn(id).then(u=>{ if(vivo){ setFsU(u||null); setCargando(false); } })
+          .catch(()=>{ if(vivo) setCargando(false); });
+    return()=>{ vivo=false; };
+  },[uid]);
+  const bets=(ligaBets&&ligaBets[torneo.id])||{};
+  const det=(fsU&&fsU.ptsLigaDetalle)||{};
+  const nomSel=(m,sel,cat)=>{
+    const s=String(sel||'').toUpperCase();
+    if(cat==='avanza') return s==='H'?m.home:s==='A'?m.away:'—';
+    return s==='1'?m.home:s==='2'?m.away:s==='X'?'Empate':'—';
+  };
+  // Un partido por fila con sus picks (1X2 y, en vuelta, avanza). J1-J3 (ids<1028) no puntúan.
+  const filas=(torneo.partidos||[]).filter(m=>m.id>=1028).map(m=>{
+    const picks=['1x2','avanza'].map(cat=>{
+      const id='m'+m.id+'-'+cat, b=bets[id];
+      if(!b) return null;
+      return {id,cat,txt:nomSel(m,b.selection,cat),pts:det[id]};
+    }).filter(Boolean);
+    return {m,j:jornadaDe(m),picks};
+  }).filter(f=>f.picks.length>0);
+  const resumen=lista=>{
+    let pts=0,dec=0,ok=0;
+    lista.forEach(f=>f.picks.forEach(p=>{ if(p.pts!=null){ dec++; pts+=Number(p.pts)||0; if(Number(p.pts)>0) ok++; } }));
+    return {pts:Math.round(pts*10)/10,dec,ok,pct:dec?Math.round(ok*100/dec):0};
+  };
+  const jornadas=[...new Set(filas.map(f=>f.j))].sort((a,b)=>a-b);
+  const jUlt=[...jornadas].reverse().find(j=>filas.some(f=>f.j===j&&f.picks.some(p=>p.pts!=null)))||jornadas[jornadas.length-1];
+  const jAct=(jSel!=null&&jornadas.includes(jSel))?jSel:jUlt;
+  const tot=resumen(filas);
+  const filasJ=filas.filter(f=>f.j===jAct);
+  const rJ=resumen(filasJ);
+  const stat=(v,l)=>(
+    <div style={{flex:1,textAlign:'center'}}>
+      <div style={{fontSize:20,fontWeight:800,color:'var(--txt)'}}>{v}</div>
+      <div style={{fontSize:10,color:'var(--muted)',marginTop:2}}>{l}</div>
+    </div>
+  );
+  return(
+    <div style={{height:'100%',display:'flex',flexDirection:'column',background:'var(--bg)'}}>
+      <div style={{background:'var(--surf)',borderBottom:'1px solid var(--br)',flexShrink:0}}>
+        <div style={{display:'flex',alignItems:'center',padding:'11px 16px',gap:12}}>
+          <button onClick={onBack} style={{background:'rgba(255,255,255,.1)',border:'none',color:'#fff',
+            width:36,height:36,borderRadius:10,cursor:'pointer',fontSize:20,flexShrink:0,
+            display:'flex',alignItems:'center',justifyContent:'center'}}>←</button>
+          <div style={{fontFamily:'var(--ff)',fontSize:20,letterSpacing:1.5,color:'var(--txt)'}}>MIS RESULTADOS</div>
+        </div>
+        <div style={{display:'flex',padding:'4px 16px 12px'}}>
+          {stat(fsU?.ptsLiga!=null?fsU.ptsLiga:tot.pts,'Puntos')}
+          {stat(tot.ok+'/'+tot.dec,'Aciertos')}
+          {stat(tot.pct+'%','Bateo')}
+        </div>
+        {jornadas.length>0&&(
+          <div style={{display:'flex',gap:8,overflowX:'auto',padding:'0 16px 12px'}}>
+            {jornadas.map(j=>(
+              <button key={j} onClick={()=>setJSel(j)} style={{flexShrink:0,padding:'6px 14px',borderRadius:20,fontSize:12,fontWeight:700,cursor:'pointer',
+                border:'1px solid '+(j===jAct?'var(--grn)':'var(--br)'),
+                background:j===jAct?'rgba(46,204,113,.15)':'transparent',
+                color:j===jAct?'var(--grn)':'var(--txt)'}}>{etiquetaJornada(j)}</button>
+            ))}
+          </div>
+        )}
+      </div>
+      <div style={{flex:1,overflowY:'auto',padding:'12px 0 20px'}}>
+        {cargando&&<div style={{textAlign:'center',color:'var(--muted)',fontSize:13,padding:20}}>Cargando…</div>}
+        {!cargando&&filas.length===0&&<div style={{textAlign:'center',color:'var(--muted)',fontSize:13,padding:20}}>Aún no tienes pronósticos en este torneo.</div>}
+        {!cargando&&filasJ.length>0&&(
+          <div style={{margin:'0 16px 10px',fontSize:12,color:'var(--muted)',display:'flex',justifyContent:'space-between',gap:8}}>
+            <span>{etiquetaJornada(jAct)} · {rJ.pts} pts</span>
+            <span>{rJ.ok}/{rJ.dec} aciertos · {rJ.pct}%</span>
+          </div>
+        )}
+        {!cargando&&filasJ.map(({m,picks})=>{
+          const s=scores[m.id];
+          const fin=!!(s&&s.status==='finalizado');
+          return(
+            <div key={m.id} style={{margin:'0 16px 10px',background:'var(--surf)',border:'1px solid var(--br)',borderRadius:'var(--r)',padding:'10px 14px'}}>
+              <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:8,fontSize:13,fontWeight:700,color:'var(--txt)'}}>
+                <span style={{minWidth:0,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{m.home} vs {m.away}</span>
+                <span style={{flexShrink:0,color:fin?'var(--txt)':'var(--muted)'}}>{fin?(s.gh+' - '+s.ga):m.date}</span>
+              </div>
+              {picks.map(p=>{
+                const ok=p.pts!=null&&Number(p.pts)>0, mal=p.pts!=null&&!ok;
+                return(
+                  <div key={p.id} style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:8,marginTop:8,fontSize:12}}>
+                    <span style={{color:'var(--muted)',minWidth:0,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>
+                      {p.cat==='avanza'?'¿Quién avanza?':'Resultado'}: <b style={{color:'var(--txt)'}}>{p.txt}</b>
+                    </span>
+                    <span style={{flexShrink:0,fontWeight:700,color:ok?'var(--grn)':mal?'#e74c3c':'var(--muted)'}}>
+                      {ok?('✓ +'+p.pts):mal?'✗ 0':(fin?'⏳ Por calcular':'Pendiente')}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 function EquipoDetalle({nombre,torneo,onBack}){
   const [ligaScores,setLigaScores]=useState({});
   useEffect(()=>{
@@ -2903,7 +3029,7 @@ function RadialBracket({ scores }) {
     </div>
   );
 }
-function HomeScreen({onMatch,onGoToCal,onEquipo,torneo}){
+function HomeScreen({onMatch,onGoToCal,onEquipo,onMisResultados,torneo}){
   const t=useLang();
   const [ref,setRef]=useState(false);
   const [upd,setUpd]=useState(new Date());
@@ -3018,6 +3144,13 @@ function HomeScreen({onMatch,onGoToCal,onEquipo,torneo}){
         <CommentMarquee torneo={torneo}/>
         <SponsorBanner/>
         <div style={{padding:'10px 12px 16px'}}>
+          {onMisResultados&&(
+            <button onClick={onMisResultados} style={{width:'100%',marginBottom:10,padding:'12px 16px',borderRadius:12,cursor:'pointer',
+              border:'1px solid rgba(46,204,113,.45)',background:'rgba(46,204,113,.12)',color:'var(--grn)',
+              fontSize:15,fontWeight:800,letterSpacing:.5,display:'flex',alignItems:'center',justifyContent:'center',gap:8}}>
+              📊 MIS RESULTADOS
+            </button>
+          )}
           <div style={{display:'grid',gridTemplateColumns:'repeat(3,minmax(0,1fr))',gap:8}}>
             {Object.keys(ESCUDOS).sort((a,b)=>a.localeCompare(b,'es')).map(nombre=>(
               <div key={nombre} onClick={()=>onEquipo&&onEquipo(nombre)}
@@ -7895,6 +8028,7 @@ export default function App(){
   const [tab,setTab]=useState('home');
   const [match,setMatch]=useState(null);
   const [equipoDetalle,setEquipoDetalle]=useState(null);
+  const [misResultados,setMisResultados]=useState(false);
   const [userBets,setUserBets]=useState([]);
   // Save bets to localStorage whenever they change (so they survive logout)
   const saveBets=(u,bets)=>{
@@ -8669,7 +8803,13 @@ export default function App(){
               <EquipoDetalle nombre={equipoDetalle} torneo={TORNEOS[torneoActivo]} onBack={()=>setEquipoDetalle(null)}/>
             </div>
           )}
-          {tab==='home'       &&<HomeScreen onMatch={setMatch} onGoToCal={()=>setTab('cal')} onEquipo={setEquipoDetalle} torneo={TORNEOS[torneoActivo]}/>}
+          {/* Mis resultados overlay (Liga MX) */}
+          {misResultados&&(
+            <div style={{position:'absolute',inset:0,background:'var(--bg)',zIndex:50,display:'flex',flexDirection:'column'}}>
+              <MisResultadosLiga torneo={TORNEOS[torneoActivo]} ligaBets={ligaBets} uid={user?.id} onBack={()=>setMisResultados(false)}/>
+            </div>
+          )}
+          {tab==='home'       &&<HomeScreen onMatch={setMatch} onGoToCal={()=>setTab('cal')} onEquipo={setEquipoDetalle} onMisResultados={()=>setMisResultados(true)} torneo={TORNEOS[torneoActivo]}/>}
           {tab==='cal'        &&<CalScreen torneo={TORNEOS[torneoActivo]}/>}
           {tab==='tabla'      &&<TablaScreen torneo={TORNEOS[torneoActivo]}/>}
           {tab==='goles'      &&<GolesScreen torneo={TORNEOS[torneoActivo]}/>}
