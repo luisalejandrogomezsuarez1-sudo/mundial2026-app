@@ -2396,7 +2396,7 @@ function MisResultadosLiga({torneo,ligaBets,uid,onBack}){
           const hit=picks.some(p=>est(p)==='ok');
           const ptsM=Math.round(picks.reduce((a,p)=>a+(Number(p.pts)||0),0)*10)/10;
           return(
-            <div key={m.id} style={{display:'flex',gap:6,alignItems:'center',background:'var(--surf)',border:'1px solid var(--br)',borderRadius:10,padding:'6px 8px',marginBottom:6}}>
+            <div key={m.id} style={{display:'flex',gap:6,alignItems:'center',background:'rgba(15,15,36,.45)',border:'1px solid var(--br)',borderRadius:10,padding:'6px 8px',marginBottom:6}}>
               <div style={{flex:1,minWidth:0}}>
                 <div style={{display:'flex',alignItems:'center',gap:5,fontSize:12,fontWeight:700,color:'var(--txt)'}}>
                   <TeamCrest name={m.home} size={20} emojiSize={16}/>
@@ -2429,7 +2429,7 @@ function MisResultadosLiga({torneo,ligaBets,uid,onBack}){
   };
   return(
     <div style={{height:'100%',display:'flex',flexDirection:'column',background:'transparent'}}>
-      <div style={{background:'var(--surf)',borderBottom:'1px solid var(--br)',flexShrink:0}}>
+      <div style={{background:'rgba(15,15,36,.35)',backdropFilter:'blur(8px)',WebkitBackdropFilter:'blur(8px)',borderBottom:'1px solid var(--br)',flexShrink:0}}>
         <div style={{display:'flex',alignItems:'center',padding:'11px 16px',gap:12}}>
           <button onClick={()=>{ if(jBig!=null) setJBig(null); else if(onBack) onBack(); }} style={{background:'rgba(255,255,255,.1)',border:'none',color:'#fff',
             width:36,height:36,borderRadius:10,cursor:'pointer',fontSize:20,flexShrink:0,
@@ -2458,9 +2458,9 @@ function MisResultadosLiga({torneo,ligaBets,uid,onBack}){
             <div style={{display:'grid',gridTemplateColumns:'repeat(3,minmax(0,1fr))',gap:8}}>
               {jornadas.map(j=>(
                 <div key={j} onClick={()=>setJBig(j)} style={{cursor:'pointer',height:150,overflow:'hidden',borderRadius:10,
-                  border:'1px solid var(--br)',background:'var(--bg)',position:'relative'}}>
+                  border:'1px solid var(--br)',background:'rgba(15,15,36,.35)',backdropFilter:'blur(8px)',WebkitBackdropFilter:'blur(8px)',position:'relative'}}>
                   <div style={{width:'322.6%',transform:'scale(.31)',transformOrigin:'top left',padding:8,pointerEvents:'none'}}>{hoja(j)}</div>
-                  <div style={{position:'absolute',left:0,right:0,bottom:0,padding:'4px 6px',background:'var(--surf)',
+                  <div style={{position:'absolute',left:0,right:0,bottom:0,padding:'4px 6px',background:'rgba(15,15,36,.75)',
                     fontSize:11,fontWeight:700,textAlign:'center',color:'var(--txt)'}}>{etiquetaJornada(j)}</div>
                 </div>
               ))}
