@@ -2437,12 +2437,19 @@ function MisResultadosLiga({torneo,ligaBets,uid,onBack}){
           <div style={{fontFamily:'var(--ff)',fontSize:20,letterSpacing:1.5,color:'var(--txt)'}}>{jBig!=null?String(etiquetaJornada(jBig)).toUpperCase():'MIS RESULTADOS'}</div>
         </div>
         <div style={{display:'flex',padding:'4px 16px 12px'}}>
-          {stat(jBig!=null?rH.pts:(fsU?.ptsLiga!=null?fsU.ptsLiga:tot.pts),jBig!=null?'Puntos jornada':'Puntos')}
-          {stat(rH.ok+'/'+rH.dec,'Aciertos')}
-          {stat(rH.pct+'%','Bating')}
+          {stat(fsU?.ptsLiga!=null?fsU.ptsLiga:tot.pts,'Puntos')}
+          {stat(tot.ok+'/'+tot.dec,'Aciertos')}
+          {stat(tot.pct+'%','Bating')}
         </div>
+        {jBig!=null&&(
+          <div style={{display:'flex',padding:'10px 16px 12px',borderTop:'1px solid var(--br)'}}>
+            {stat(rH.pts,'Puntos jornada')}
+            {stat(rH.ok+'/'+rH.dec,'Aciertos jornada')}
+            {stat(rH.pct+'%','Bating jornada')}
+          </div>
+        )}
       </div>
-      <div style={{flex:1,overflowY:'auto',padding:'12px 12px 20px'}}>
+      <div style={{flex:1,overflowY:'auto',padding:'12px 12px 110px'}}>
         {cargando&&<div style={{textAlign:'center',color:'var(--muted)',fontSize:13,padding:20}}>Cargando…</div>}
         {!cargando&&jornadas.length===0&&<div style={{textAlign:'center',color:'var(--muted)',fontSize:13,padding:20}}>Aún no tienes pronósticos en este torneo.</div>}
         {!cargando&&jBig!=null&&hoja(jBig)}
