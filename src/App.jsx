@@ -3182,7 +3182,7 @@ function HomeScreen({onMatch,onGoToCal,onEquipo,onMisResultados,torneo}){
         <SponsorBanner/>
         <div style={{padding:'10px 12px 16px'}}>
           {onMisResultados&&(
-            <button onClick={onMisResultados} style={{position:'relative',width:'100%',height:56,marginBottom:10,padding:0,borderRadius:28,cursor:'pointer',overflow:'hidden',
+            <button onClick={onMisResultados} style={{position:'relative',width:'100%',height:56,marginBottom:10,padding:0,borderRadius:12,cursor:'pointer',overflow:'hidden',
               border:'2px solid var(--grn)',
               background:"linear-gradient(rgba(6,14,10,.35),rgba(6,14,10,.35)), linear-gradient(rgba(30,140,70,.12),rgba(30,140,70,.12)), url('/btn-cancha.jpg') center/cover no-repeat",
               display:'flex',alignItems:'center',justifyContent:'center'}}>
