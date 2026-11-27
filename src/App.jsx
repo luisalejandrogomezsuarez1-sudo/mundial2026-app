@@ -2365,6 +2365,9 @@ function MisResultadosLiga({torneo,ligaBets,uid,onBack}){
   };
   const jornadas=[...new Set(filas.filter(f=>f.picks.length>0).map(f=>f.j))].sort((a,b)=>a-b);
   const tot=resumen(filas);
+  const ptsJ={}; jornadas.forEach(j=>{ ptsJ[j]=resumen(filas.filter(f=>f.j===j)).pts; });
+  const maxPtsJ=Math.max(0,...Object.values(ptsJ));
+  const esMejor=j=>maxPtsJ>0&&ptsJ[j]===maxPtsJ;
   const rH=jBig!=null?resumen(filas.filter(f=>f.j===jBig)):tot;
   const stat=(v,l)=>(
     <div style={{flex:1,textAlign:'center'}}>
@@ -2458,10 +2461,10 @@ function MisResultadosLiga({torneo,ligaBets,uid,onBack}){
             <div style={{display:'grid',gridTemplateColumns:'repeat(3,minmax(0,1fr))',gap:8}}>
               {jornadas.map(j=>(
                 <div key={j} onClick={()=>setJBig(j)} style={{cursor:'pointer',height:150,overflow:'hidden',borderRadius:10,
-                  border:'1px solid var(--br)',background:'rgba(15,15,36,.35)',backdropFilter:'blur(8px)',WebkitBackdropFilter:'blur(8px)',position:'relative'}}>
+                  border:esMejor(j)?'2px solid #fff':'1px solid var(--br)',background:'rgba(15,15,36,.35)',backdropFilter:'blur(8px)',WebkitBackdropFilter:'blur(8px)',position:'relative'}}>
                   <div style={{width:'322.6%',transform:'scale(.31)',transformOrigin:'top left',padding:8,pointerEvents:'none'}}>{hoja(j)}</div>
                   <div style={{position:'absolute',left:0,right:0,bottom:0,padding:'4px 6px',background:'rgba(15,15,36,.75)',
-                    fontSize:11,fontWeight:700,textAlign:'center',color:'var(--txt)'}}>{etiquetaJornada(j)}</div>
+                    fontSize:11,fontWeight:700,textAlign:'center',color:'var(--txt)'}}>{esMejor(j)?'★ ':''}{etiquetaJornada(j)}</div>
                 </div>
               ))}
             </div>
