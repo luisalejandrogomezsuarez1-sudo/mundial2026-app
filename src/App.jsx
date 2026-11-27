@@ -3179,10 +3179,13 @@ function HomeScreen({onMatch,onGoToCal,onEquipo,onMisResultados,torneo}){
         <SponsorBanner/>
         <div style={{padding:'10px 12px 16px'}}>
           {onMisResultados&&(
-            <button onClick={onMisResultados} style={{width:'100%',marginBottom:10,padding:'12px 16px',borderRadius:12,cursor:'pointer',
-              border:'1px solid rgba(46,204,113,.45)',background:'rgba(46,204,113,.12)',color:'var(--grn)',
-              fontSize:15,fontWeight:800,letterSpacing:.5,display:'flex',alignItems:'center',justifyContent:'center',gap:8}}>
-              📊 MIS RESULTADOS
+            <button onClick={onMisResultados} style={{position:'relative',width:'100%',height:56,marginBottom:10,padding:0,borderRadius:28,cursor:'pointer',overflow:'hidden',
+              border:'2px solid var(--grn)',
+              background:"linear-gradient(rgba(6,14,10,.35),rgba(6,14,10,.35)), linear-gradient(rgba(30,140,70,.12),rgba(30,140,70,.12)), url('/btn-cancha.jpg') center/cover no-repeat",
+              display:'flex',alignItems:'center',justifyContent:'center'}}>
+              <img src="/trofeo2.png" alt="" style={{position:'absolute',left:16,top:'50%',transform:'translateY(-50%)',height:46,width:'auto',pointerEvents:'none'}}/>
+              <span style={{color:'#fff',fontSize:16,fontWeight:800,letterSpacing:1,textShadow:'0 1px 3px rgba(0,0,0,.85)'}}>MIS RESULTADOS</span>
+              <span style={{position:'absolute',right:18,top:'50%',transform:'translateY(-50%)',color:'#fff',fontSize:22,fontWeight:800,textShadow:'0 1px 3px rgba(0,0,0,.85)'}}>›</span>
             </button>
           )}
           <div style={{display:'grid',gridTemplateColumns:'repeat(3,minmax(0,1fr))',gap:8}}>
